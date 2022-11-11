@@ -1,5 +1,5 @@
  /*actually either class is good, use both just to be sure*/
-.DateInput_input, .DateInput_input_1 {
-  font-size: 15px;  /*or whatever size you would like to have*/
+.DateInput_input, .DateInput_input_1 { 
+  font-size: 15px;  
   text-align: center;
 }
