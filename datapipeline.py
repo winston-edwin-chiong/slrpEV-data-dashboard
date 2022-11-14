@@ -34,4 +34,14 @@ df_power_time = ohe_day_name(df_power_time)
 df_power_time = ohe_federal_holiday(df_power_time)
 
 # save dataframe to data file
-df_power_time.to_csv("data/5minpowerdemand.csv")
+df_power_time.to_csv("data/5minpowerdemand.csv") # 5-min power demand
+
+# create hourly energy demand
+hourly_energy_demand_df = df_power_time.resample("1H").agg({"power_demand":"sum","day":"first",
+                                                           "Monday":"first","Tuesday":"first","Wednesday":"first","Thursday":"first","Friday":"first",
+                                                           "Saturday":"first","Sunday":"first",
+                                                           "Federal Holiday":"first"})
+hourly_energy_demand_df["power_demand"] = hourly_energy_demand_df["power_demand"]/1000
+hourly_energy_demand_df["power_demand"] = hourly_energy_demand_df["power_demand"]/12 # convert to kWh
+hourly_energy_demand_df.rename(columns={"power_demand":"energy_demand"}, inplace=True) 
+hourly_energy_demand_df.to_csv("data/hourlyenergydemand.csv")
