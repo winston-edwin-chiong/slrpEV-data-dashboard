@@ -36,7 +36,7 @@ class CleanSession(BaseEstimator, TransformerMixin):
         # join w/ original dataframe
         return X.join(temp)
 
-class ExtractUpsampleGroupby(BaseEstimator, TransformerMixin):
+class ExtractUpsampleGroupby5Min(BaseEstimator, TransformerMixin):
 
         def fit(self, X, y=None):
             return self
@@ -62,3 +62,21 @@ class OHEDaysHolidays(BaseEstimator, TransformerMixin):
             new_X = ohe_federal_holiday(X)
             new_X = ohe_day_name(new_X)
             return new_X
+
+class CreateEnergyDemand(BaseEstimator, TransformerMixin):
+
+        def fit(self, X, y=None):
+            return self
+
+        def transform(self, X):
+            # TODO Create description function documentation.
+            return 
+
+class CreatePowerDemand(BaseEstimator, TransformerMixin):
+
+        def fit(self, X, y=None):
+            return self
+
+        def transform(self, X):
+            # TODO Create description function documentation.
+            return 

@@ -9,10 +9,10 @@ import time
 
 import plotly.graph_objects as go
 
-def plot_daily_peak_power():
+def plot_daily_peak_power(df):
     fig = go.Figure()
     fig.add_trace(
-        go.Scatter(x = df_24h.index, y = df_24h["power_demand"] , name = "Daily Peak Power" , hovertext=df_24h["day"])
+        go.Scatter(x = df.index, y = df["power_demand"] , name = "Daily Peak Power" , hovertext=df["day"])
     )
     fig.update_layout(title = f"Peak Daily Power Demand", xaxis_title = "Time", yaxis_title="Power (W)")
     return fig
@@ -36,6 +36,7 @@ app.layout = html.Div([
             clearable=True,
             start_date_placeholder_text="MM/DD/YYYY",
             end_date_placeholder_text="MM/DD/YYYY",
+            with_portal=True
         ),
         dcc.Dropdown(
             id = "granularity_picker",
@@ -54,17 +55,23 @@ app.layout = html.Div([
                        "textAlign": "center", 
                        "color": "black", 
                        "fontFamily": 'Sans-Serif', 
-                       "fontWeight": 800}),
+                       "fontWeight": 800}
+        ),
         html.H2(
             dcc.Graph(
                 id = "daily peak time series",
+            )
+        ),
+        html.H2(
+            dcc.Graph(
+                id = "distribution"
             )
         )
     ])
 ])
 
 
-# callback function for calendar 
+# time series callback function for calendar 
 @app.callback(Output("daily peak time series", "figure"),
               Input("date_time_picker", "start_date"),
               Input("date_time_picker", "end_date"),
@@ -85,6 +92,30 @@ def display_selected_time(start_date, end_date, value):
         fig.update_layout(title = f"Daily Peak Power Demand", xaxis_title = "Time", yaxis_title="Peak Demand (W)")
     if value == 'hourlyenergydemand':
         fig.add_trace(go.Scatter(x = df.index, y = df["energy_demand"], name = "Hourly Energy Demand" , hovertext=df["day"]))
+        fig.update_layout(title = f"Hourly Energy Demand", xaxis_title = "Time", yaxis_title="Energy Demand (kWh)")
+    return fig
+
+# histogram callback function for calendar
+@app.callback(Output("distribution", "figure"),
+              Input("date_time_picker", "start_date"),
+              Input("date_time_picker", "end_date"),
+              Input("granularity_picker", 'value')
+             )
+def display_selected_time_barchart(start_date, end_date, value):
+    df = pd.read_csv(f"data/{value}.csv")
+    df.set_index("time", inplace=True)
+    fig = go.Figure()
+    if start_date != None and end_date != None:
+        df = df.loc[(df.index >= start_date) & (df.index <= end_date)]
+    elif start_date != None and end_date == None:
+        df = df.loc[df.index >= start_date]
+    elif start_date == None and end_date != None:
+        df = df.loc[df.index <= end_date]
+    if value == '5minpowerdemand':
+        fig.add_trace(go.Histogram(x = df["power_demand"], name = "Daily Peak Power" , hovertext=df["day"]))
+        fig.update_layout(title = f"Daily Peak Power Demand", xaxis_title = "Time", yaxis_title="Peak Demand (W)")
+    if value == 'hourlyenergydemand':
+        fig.add_trace(go.Histogram(x = df["energy_demand"], name = "Hourly Energy Demand" , hovertext=df["day"]))
         fig.update_layout(title = f"Hourly Energy Demand", xaxis_title = "Time", yaxis_title="Energy Demand (kWh)")
     return fig
 
