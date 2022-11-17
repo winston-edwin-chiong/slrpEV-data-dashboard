@@ -6,20 +6,20 @@ from app_utils import round_format_UNIX_time, ohe_day_name, ohe_federal_holiday
 original_df = pd.read_csv("data/slrpEV11052020-09222022.csv")
 
 pattern = r"(\[?\{'power_W':\sDecimal\(')|('timestamp':\sDecimal\(')|('\)\}?\]?)"
-power_and_time = original_df["power"].str.replace(pattern , "" , regex = True) # remove all pattern instances 
+power_and_time = original_df["power"].str.replace(pattern, "", regex=True) # remove all pattern instances
 
 power_and_time = power_and_time.str.split(', ')
-power_and_time = power_and_time.apply(lambda lst : [int(val) for val in lst]) # cast all str value to int
+power_and_time = power_and_time.apply(lambda lst: [int(val) for val in lst]) # cast all str value to int
 
-power_vals = power_and_time.apply(lambda x : x[::2])
-time_vals = power_and_time.apply(lambda x : x[1::2])
+power_vals = power_and_time.apply(lambda x: x[::2])
+time_vals = power_and_time.apply(lambda x: x[1::2])
 
 power_vals = power_vals.explode()
 time_vals = time_vals.explode()
 
 time_vals = time_vals.apply(round_format_UNIX_time)
 
-temp = pd.DataFrame({"time" : time_vals , "power_demand" : power_vals}) 
+temp = pd.DataFrame({"time": time_vals , "power_demand" : power_vals})
 master_df = original_df.join(temp)
 
 df_power_time = master_df[["time" , "power_demand"]]
