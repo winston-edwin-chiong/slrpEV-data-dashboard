@@ -43,3 +43,21 @@ def ohe_federal_holiday(dataframe):
     # round to midnight, compare to holidays index, cast Boolean values to binary
     copy["Federal Holiday"] = dataframe.index.normalize().isin(holidays).astype(int)
     return copy 
+
+def query_date_df(df, start_date, end_date):
+    """
+    Function querys a dataframe based on a specified start date and end date. If any argument is None, 
+    function will ignore those bounds Assumes dataframe has a datetime-like index. Start and end dates are 
+    also assumed to be in the form 'mm-dd-yyy'.
+    """
+    if start_date == None and end_date == None:
+        return df
+    elif start_date != None and end_date == None:
+        return df.loc[(df.index >= start_date)]
+    elif start_date == None and end_date != None:
+        return df.loc[(df.index <= end_date)]
+    else:
+        return df.loc[(df.index >= start_date) & (df.index <= end_date)]
+
+def resample_df(df, granularity):
+    return 

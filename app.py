@@ -6,16 +6,13 @@ from dash.dependencies import Output, Input
 
 import pandas as pd
 import time
-
 import plotly.graph_objects as go
 
-def plot_daily_peak_power(df):
-    fig = go.Figure()
-    fig.add_trace(
-        go.Scatter(x = df.index, y = df["power_demand"] , name = "Daily Peak Power" , hovertext=df["day"])
-    )
-    fig.update_layout(title = f"Peak Daily Power Demand", xaxis_title = "Time", yaxis_title="Power (W)")
-    return fig
+from app_utils import query_date_df
+
+# load data 
+hourlyenergydemand = pd.read_csv("data/hourlyenergydemand.csv").set_index("time")
+fiveminpowerdemand = pd.read_csv("data/5minpowerdemand.csv").set_index("time")
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.PULSE])
@@ -24,18 +21,12 @@ image_path = "assets/slrpEVlogo.png"
 
 # app layout
 app.layout = html.Div([
-     html.Img(
-        src=image_path, 
-        height="100px", 
-        style={'display': 'inlineBlock'}),
-    html.Br(),
-    html.Br(),
     html.Div([
         dcc.DatePickerRange(
             id = "date_time_picker",
             clearable=True,
-            start_date_placeholder_text="MM/DD/YYYY",
-            end_date_placeholder_text="MM/DD/YYYY",
+            start_date_placeholder_text="mm/dd/yyyy",
+            end_date_placeholder_text="mm/dd/yyyy",
             with_portal=True
         ),
         dcc.Dropdown(
@@ -47,74 +38,68 @@ app.layout = html.Div([
             value = '5minpowerdemand', # default value
             clearable=False,
             searchable=False
+        ),
+        dcc.Dropdown(
+            id = "unit_picker",
+            options=[
+                {'label':'Energy Demand', 'value':'energydemand'},
+                {'label':'Power Demand', 'value':'powerdemand'},
+                {'label':'Peak Power Demand', 'value':'peakpowerdemand'}
+            ],
+            value = 'energydemand', # default value
+            clearable=False,
+            searchable=False
         )
     ]),
     html.Div([
-        html.H1("slprEV Dashboard",
-                style={'display': 'inlineBlock', 
-                       "textAlign": "center", 
-                       "color": "black", 
-                       "fontFamily": 'Sans-Serif', 
-                       "fontWeight": 800}
-        ),
-        html.H2(
-            dcc.Graph(
-                id = "daily peak time series",
-            )
-        ),
-        dcc.Store(id="dataframe")
-    ])
+        dcc.Graph(
+            id = "time_series_plot",
+        )
+    ]),
+    dcc.Store(id='current_df') # stores current dataframe
 ])
 
-# read data callback function
-@app.callback(Output("dataframe", "data"),
-              Input("granularity_picker", 'value')
-             )
-def read_granularity_data(value):
-    df = pd.read_csv(f"data/{value}.csv")
-    df.set_index("time", inplace=True)
-    return df.to_json(date_format='iso', orient='split') 
-       
 
-# granularity callback function  
-@app.callback(Output("daily peak time series", "figure"),
-              Input("dataframe", "data"),
-              Input("granularity_picker", "value")
-             )
-def display_granularity_figure(df_json, granularity):
-    df = pd.read_json(df_json, orient='split')
+# calendar and granularity dropdown callback function  
+@app.callback(
+    Output("time_series_plot", "figure"),
+    Output("current_df", "data"),
+    Input("granularity_picker", "value"),
+    Input("unit_picker", "value"),
+    Input("date_time_picker", "start_date"),
+    Input("date_time_picker", "end_date"),
+    )
+def display_main_figure(granularity, start_date, end_date):
     fig = go.Figure()
+
     if granularity == '5minpowerdemand':
-        fig.add_trace(go.Scatter(x = df.index, y = df["power_demand"], name = "Daily Peak Power" , hovertext=df["day"]))
-        fig.update_layout(title = f"Daily Peak Power Demand", xaxis_title = "Time", yaxis_title="Peak Demand (W)")
-    if granularity == 'hourlyenergydemand':
-        fig.add_trace(go.Scatter(x = df.index, y = df["energy_demand"], name = "Hourly Energy Demand" , hovertext=df["day"]))
-        fig.update_layout(title = f"Hourly Energy Demand", xaxis_title = "Time", yaxis_title="Energy Demand (kWh)")
-    return fig
+        df = query_date_df(fiveminpowerdemand, start_date=start_date, end_date=end_date)
+        fig.add_trace(
+            go.Scatter(
+                x=df.index, 
+                y=df["power_demand"], 
+                name="Daily Peak Power", 
+                hovertext=df["day"]))
+        fig.update_layout(
+            title="5-Min Power Demand",
+            xaxis_title="Time",
+            yaxis_title="Peak Demand (W)")
 
+    elif granularity == 'hourlyenergydemand':
+        df = query_date_df(hourlyenergydemand, start_date=start_date, end_date=end_date)
+        fig.add_trace(
+            go.Scatter(
+                x=df.index, 
+                y=df["energy_demand"], 
+                name="Hourly Energy Demand",
+                hovertext=df["day"]))
+        fig.update_layout(
+            title="Hourly Energy Demand", 
+            xaxis_title="Time", 
+            yaxis_title="Energy Demand (kWh)")
 
-# # calendar callback function 
-# @app.callback(Output("daily peak time series", "figure"),
-#               Input("date_time_picker", "start_date"),
-#               Input("date_time_picker", "end_date"),
-#              )
-# def display_selected_time(start_date, end_date, value):
-#     df = pd.read_csv(f"data/{value}.csv")
-#     df.set_index("time", inplace=True)
-#     fig = go.Figure()
-#     if start_date != None and end_date != None:
-#         df = df.loc[(df.index >= start_date) & (df.index <= end_date)]
-#     elif start_date != None and end_date == None:
-#         df = df.loc[df.index >= start_date]
-#     elif start_date == None and end_date != None:
-#         df = df.loc[df.index <= end_date]
-#     if value == '5minpowerdemand':
-#         fig.add_trace(go.Scatter(x = df.index, y = df["power_demand"], name = "Daily Peak Power" , hovertext=df["day"]))
-#         fig.update_layout(title = f"Daily Peak Power Demand", xaxis_title = "Time", yaxis_title="Peak Demand (W)")
-#     if value == 'hourlyenergydemand':
-#         fig.add_trace(go.Scatter(x = df.index, y = df["energy_demand"], name = "Hourly Energy Demand" , hovertext=df["day"]))
-#         fig.update_layout(title = f"Hourly Energy Demand", xaxis_title = "Time", yaxis_title="Energy Demand (kWh)")
-#     return fig
+    return fig, df.to_json(orient='split')
+
 
 # running the app
 if __name__ == '__main__':

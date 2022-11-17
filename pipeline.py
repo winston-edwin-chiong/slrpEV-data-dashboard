@@ -74,14 +74,8 @@ class CreateEnergyDemand(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         # TODO Create description function documentation.
-        return
-
-
-class CreatePowerDemand(BaseEstimator, TransformerMixin):
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        # TODO Create description function documentation.
-        return
+        new_X = X.copy(deep=True)
+        new_X["power_demand"] = new_X["power_demand"]/1000 # convert to kW
+        new_X["power_demand"] = new_X["power_demand"]/12 # convert to kWh
+        new_X.rename(columns={"power_demand":"energy_demand"}, inplace=True) 
+        return new_X
