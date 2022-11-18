@@ -60,4 +60,5 @@ def query_date_df(df, start_date, end_date):
         return df.loc[(df.index >= start_date) & (df.index <= end_date)]
 
 def resample_df(df, granularity):
+    
     return 

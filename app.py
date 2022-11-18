@@ -27,7 +27,7 @@ app.layout = html.Div([
             clearable=True,
             start_date_placeholder_text="mm/dd/yyyy",
             end_date_placeholder_text="mm/dd/yyyy",
-            with_portal=True
+            with_portal = False
         ),
         dcc.Dropdown(
             id = "granularity_picker",
@@ -65,7 +65,6 @@ app.layout = html.Div([
     Output("time_series_plot", "figure"),
     Output("current_df", "data"),
     Input("granularity_picker", "value"),
-    Input("unit_picker", "value"),
     Input("date_time_picker", "start_date"),
     Input("date_time_picker", "end_date"),
     )
