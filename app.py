@@ -8,11 +8,16 @@ import pandas as pd
 import time
 import plotly.graph_objects as go
 
-from app_utils import query_date_df
+from app_utils import query_date_df, resample_df, plot_time_series
 
 # load data 
-hourlyenergydemand = pd.read_csv("data/hourlyenergydemand.csv").set_index("time")
-fiveminpowerdemand = pd.read_csv("data/5minpowerdemand.csv").set_index("time")
+fiveminenergydemand = pd.read_csv("data/5minenergydemand.csv")
+fiveminpowerdemand = pd.read_csv("data/5minpowerdemand.csv")
+
+fiveminenergydemand.set_index("time", inplace=True)
+fiveminenergydemand.index = pd.to_datetime(fiveminenergydemand.index)
+fiveminpowerdemand.set_index("time", inplace=True)
+fiveminpowerdemand.index = pd.to_datetime(fiveminpowerdemand.index)
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.PULSE])
@@ -32,21 +37,23 @@ app.layout = html.Div([
         dcc.Dropdown(
             id = "granularity_picker",
             options=[
-                {'label':'5-Min', 'value':'5minpowerdemand'},
-                {'label':'Hourly', 'value':'hourlyenergydemand'}
+                {'label':'5-Min', 'value':'5-Min'},
+                {'label':'Hourly', 'value':'Hourly'},
+                {'label':'Daily', 'value':"Daily"},
+                {'label':'Monthly', 'value':'Monthly'}
             ],
-            value = '5minpowerdemand', # default value
+            value = '5-Min', # default value
             clearable=False,
             searchable=False
         ),
         dcc.Dropdown(
-            id = "unit_picker",
+            id = "quantity_picker",
             options=[
-                {'label':'Energy Demand', 'value':'energydemand'},
-                {'label':'Power Demand', 'value':'powerdemand'},
-                {'label':'Peak Power Demand', 'value':'peakpowerdemand'}
+                {'label':'Energy Demand', 'value':'Energy Demand'},
+                {'label':'Power Demand', 'value':'Power Demand'},
+                {'label':'Peak Power Demand', 'value':'Peak Power Demand'}
             ],
-            value = 'energydemand', # default value
+            value = 'Energy Demand', # default value
             clearable=False,
             searchable=False
         )
@@ -65,41 +72,28 @@ app.layout = html.Div([
     Output("time_series_plot", "figure"),
     Output("current_df", "data"),
     Input("granularity_picker", "value"),
+    Input("quantity_picker", "value"),
     Input("date_time_picker", "start_date"),
     Input("date_time_picker", "end_date"),
     )
-def display_main_figure(granularity, start_date, end_date):
-    fig = go.Figure()
+def display_main_figure(granularity, quantity, start_date, end_date):
+    
+    if quantity == "Energy Demand":
+        df = fiveminenergydemand
 
-    if granularity == '5minpowerdemand':
-        df = query_date_df(fiveminpowerdemand, start_date=start_date, end_date=end_date)
-        fig.add_trace(
-            go.Scatter(
-                x=df.index, 
-                y=df["power_demand"], 
-                name="Daily Peak Power", 
-                hovertext=df["day"]))
-        fig.update_layout(
-            title="5-Min Power Demand",
-            xaxis_title="Time",
-            yaxis_title="Peak Demand (W)")
+    elif quantity == "Power Demand":
+        df = fiveminpowerdemand
 
-    elif granularity == 'hourlyenergydemand':
-        df = query_date_df(hourlyenergydemand, start_date=start_date, end_date=end_date)
-        fig.add_trace(
-            go.Scatter(
-                x=df.index, 
-                y=df["energy_demand"], 
-                name="Hourly Energy Demand",
-                hovertext=df["day"]))
-        fig.update_layout(
-            title="Hourly Energy Demand", 
-            xaxis_title="Time", 
-            yaxis_title="Energy Demand (kWh)")
+    elif quantity == "Peak Power Demand":
+        df = fiveminpowerdemand
+    
+    df = query_date_df(df, start_date, end_date)
+    df = resample_df(df, granularity, peak=(True if "Peak" in quantity else False))
 
-    return fig, df.to_json(orient='split')
-
-
+    fig = plot_time_series(df, granularity, quantity)
+    jsonified_df = df.to_json(orient='split')
+    return fig, jsonified_df
+        
 # running the app
 if __name__ == '__main__':
     app.run(debug=True)

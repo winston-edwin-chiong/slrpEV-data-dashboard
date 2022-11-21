@@ -3,16 +3,10 @@ from pipeline import *
 from sklearn.pipeline import Pipeline
 
 # create pipelines
-pipe_power = Pipeline([
+pipe= Pipeline([
     ("clean_session", CleanSession()),
     ("clean_time", ExtractUpsampleGroupby5Min()),
-    ("holidays", OHEDaysHolidays()),
-])
-
-pipe_energy = Pipeline([
-    ("clean_session", CleanSession()),
-    ("clean_time", ExtractUpsampleGroupby5Min()),
-    ("holidays", OHEDaysHolidays()),
+    ("day_name", OnlyDayName()),
     ("create_energy", CreateEnergyDemand())
 ])
 
@@ -20,9 +14,7 @@ pipe_energy = Pipeline([
 raw_data = pd.read_csv("data/slrpEV11052020-09222022.csv")
 
 # clean data 
-fiveminpowerdemand = pipe_power.fit_transform(raw_data)
-fiveminenergydemand = pipe_energy.fit_transform(raw_data)
+fivemindemand = pipe.fit_transform(raw_data)
 
 # save to csv
-fiveminpowerdemand.to_csv("data/5minpowerdemand.csv")
-fiveminenergydemand.to_csv("data/5minenergydemand.csv")
+fivemindemand.to_csv("data/5mindemand.csv")

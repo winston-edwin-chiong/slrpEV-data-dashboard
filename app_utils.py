@@ -2,6 +2,7 @@ import time
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from pandas.tseries.holiday import USFederalHolidayCalendar
+import plotly.graph_objects as go
 
 def round_format_UNIX_time(time_value):
     """
@@ -59,6 +60,71 @@ def query_date_df(df, start_date, end_date):
     else:
         return df.loc[(df.index >= start_date) & (df.index <= end_date)]
 
-def resample_df(df, granularity):
-    
-    return 
+def resample_df(df, granularity, peak: bool = False):
+    """
+    Function takes in a dataframe with a demand unit (power or energy, assumed to be the first column), 
+    and OHE-encoded calendar variables. Function will return a resampled dataframe, aggregated by sum or max.  
+    For example, a dataframe representing 5-min power demand can be resampled to a new dataframe 
+    representing hourly peak power demand. 
+    """
+
+    # convert to pd.resample type granularity argument
+    convert_granularity = {
+        '5-Min':'5min',
+        'Hourly':"1H",
+        'Daily':"24H",
+        "Monthly":'1M',
+    }
+
+    if peak == True:
+        df = df.resample(convert_granularity[granularity]).max()
+        df.rename(columns={"power_demand":"peak_power_demand"}, inplace=True)
+        return df 
+
+    # sum will not return correct OHE variables, unlike max
+    df = df.resample(convert_granularity[granularity]).agg({
+        df.columns[0]:"sum","day":"first",
+        "Monday":"first","Tuesday":"first",
+        "Wednesday":"first","Thursday":"first",
+        "Friday":"first","Saturday":"first",
+        "Sunday":"first","Federal Holiday":"first", 
+        })
+
+    return df
+
+def plot_time_series(df, granularity, quantity):
+    """
+    Function takes in a dataframe and returns figure of the plotted dataframe.
+    """
+    plot_specifics = {
+    "Energy Demand": {
+        "column_name":"energy_demand",
+        "units_measurement":"(kWh)"
+    },
+    "Power Demand": {
+        "column_name":"power_demand",
+        "units_measurement":"(W)"
+    },
+    "Peak Power Demand": {
+        "column_name":"peak_power_demand",
+        "units_measurement":"(W)"
+    },
+}   
+    plot_layout = plot_specifics[quantity]
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=df.index,
+            y=df[plot_layout["column_name"]],
+            name=granularity + " " + quantity,
+            hovertext=df["day"],
+        )
+)
+    fig.update_layout(
+        title=granularity + " " + quantity,
+        xaxis_title="Time",
+        yaxis_title=quantity + " " + plot_layout["units_measurement"]
+    )
+
+    return fig 

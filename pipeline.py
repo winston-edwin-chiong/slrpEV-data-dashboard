@@ -21,7 +21,7 @@ class CleanSession(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        # TODO Create description function documentation. Clean up complexity?
+        # TODO Create descriptive function documentation. Clean up complexity?
         # pattern match, remove pattern instances, cast to int
         power_and_time = X["power"].str.replace(self.pattern, "", regex=True)
         power_and_time = power_and_time.str.split(', ')
@@ -44,7 +44,7 @@ class ExtractUpsampleGroupby5Min(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        # TODO Create description function documentation. Clean up complexity?
+        # TODO Create descriptive function documentation. Clean up complexity?
         # extract time and power fields, group and sort
         new_X = X[["time", "power_demand"]]
         new_X = new_X.groupby("time").sum()
@@ -55,13 +55,24 @@ class ExtractUpsampleGroupby5Min(BaseEstimator, TransformerMixin):
         return new_X
 
 
+class OnlyDayName(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        # TODO Create descriptive function documentation.
+        new_X = X.copy(deep=True)
+        new_X.index = pd.to_datetime(new_X.index)
+        new_X["day"] = new_X.index.day_name()
+        return new_X
+
 class OHEDaysHolidays(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
-        # TODO Create description function documentation.
+        # TODO Create descriptive function documentation.
         new_X = ohe_federal_holiday(X)
         new_X = ohe_day_name(new_X)
         return new_X
@@ -73,9 +84,8 @@ class CreateEnergyDemand(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        # TODO Create description function documentation.
+        # TODO Create descriptive function documentation.
         new_X = X.copy(deep=True)
-        new_X["power_demand"] = new_X["power_demand"]/1000 # convert to kW
-        new_X["power_demand"] = new_X["power_demand"]/12 # convert to kWh
-        new_X.rename(columns={"power_demand":"energy_demand"}, inplace=True) 
+        new_X["energy_demand"] = new_X["power_demand"]/1000 # convert to kW
+        new_X["energy_demand"] = new_X["energy_demand"]/12 # convert to kWh
         return new_X
