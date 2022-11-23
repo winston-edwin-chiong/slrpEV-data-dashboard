@@ -8,7 +8,7 @@ import pandas as pd
 import time
 import plotly.graph_objects as go
 
-from app_utils import query_date_df, plot_time_series, set_index_and_datetime
+from app_utils import query_date_df, plot_time_series, set_index_and_datetime, get_last_days_datetime
 
 # load data, set time column to index, set to datetime
 fivemindemand = set_index_and_datetime(pd.read_csv("data/5mindemand.csv"))
@@ -33,11 +33,12 @@ image_path = "assets/slrpEVlogo.png"
 app.layout = html.Div([
     html.Div([
         dcc.DatePickerRange(
-            id = "date_time_picker",
+            id="date_time_picker",
             clearable=True,
+            start_date=("08/15/2022" if True else get_last_days_datetime(7)), # placeholder, no new data yet
             start_date_placeholder_text="mm/dd/yyyy",
             end_date_placeholder_text="mm/dd/yyyy",
-            with_portal = False
+            with_portal=False
         ),
         dcc.Dropdown(
             id = "granularity_picker",
@@ -47,18 +48,18 @@ app.layout = html.Div([
                 {'label':'Daily', 'value':"Daily"},
                 {'label':'Monthly', 'value':'Monthly'}
             ],
-            value = '5-Min', # default value
+            value='Hourly', # default value
             clearable=False,
             searchable=False
         ),
         dcc.Dropdown(
-            id = "quantity_picker",
+            id="quantity_picker",
             options=[
                 {'label':'Energy Demand', 'value':'energy_demand'},
                 {'label':'Average Power Demand', 'value':'power_demand'},
                 {'label':'Peak Power Demand', 'value':'peak_power_demand'}
             ],
-            value = 'energy_demand', # default value
+            value = 'peak_power_demand', # default value
             clearable=False,
             searchable=False
         )
@@ -70,7 +71,7 @@ app.layout = html.Div([
     ]),
     dcc.Store(id='current_df'), # stores current dataframe
     html.Div([
-        "7-Day Rolling Peak Power Demand:"
+        "Maybe some useful metrics..."
     ])
 ])
 
@@ -87,8 +88,6 @@ app.layout = html.Div([
 def display_main_figure(granularity, quantity, start_date, end_date):
     
     df = dataframes[granularity]
-    print(quantity)
-    print(df.head())
 
     df = df[[quantity, "day"]]
     

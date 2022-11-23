@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
+import datetime
 
 def query_date_df(df, start_date, end_date):
     """
@@ -88,6 +89,9 @@ def set_index_and_datetime(df):
     df.index = pd.to_datetime(df.index)
     return df 
 
-def calculate_n_day_rollings(df):
-    current_time = pd.to_datetime("today")
-    return
+def get_last_days_datetime(n=7):
+    """
+    """
+    current_time = pd.to_datetime("today") - datetime.timedelta(days=7)
+    current_time = current_time.strftime("%m/%d/%Y")
+    return current_time 
