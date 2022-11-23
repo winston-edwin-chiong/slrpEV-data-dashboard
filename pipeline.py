@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from app_utils import round_format_UNIX_time, ohe_day_name, ohe_federal_holiday
+from cleaning_utils import round_format_UNIX_time, ohe_day_name, ohe_federal_holiday
 
 # Processing Pipeline Steps:
 # - [1]  Use Regex to pattern match and clean each session
@@ -55,7 +55,7 @@ class ExtractUpsampleGroupby5Min(BaseEstimator, TransformerMixin):
         return new_X
 
 
-class OnlyDayName(BaseEstimator, TransformerMixin):
+class OHEOnlyDayName(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
@@ -66,7 +66,7 @@ class OnlyDayName(BaseEstimator, TransformerMixin):
         new_X["day"] = new_X.index.day_name()
         return new_X
 
-class OHEDaysHolidays(BaseEstimator, TransformerMixin):
+class OHEDaysAndHolidays(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         return self
@@ -78,7 +78,7 @@ class OHEDaysHolidays(BaseEstimator, TransformerMixin):
         return new_X
 
 
-class CreateEnergyDemand(BaseEstimator, TransformerMixin):
+class CreateEnergyAndPeakPowerDemand(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         return self
@@ -88,4 +88,5 @@ class CreateEnergyDemand(BaseEstimator, TransformerMixin):
         new_X = X.copy(deep=True)
         new_X["energy_demand"] = new_X["power_demand"]/1000 # convert to kW
         new_X["energy_demand"] = new_X["energy_demand"]/12 # convert to kWh
+        new_X["peak_power_demand"] = new_X["power_demand"] # for 5-minute granularities, peak power equal to power demand
         return new_X

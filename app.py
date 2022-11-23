@@ -8,16 +8,21 @@ import pandas as pd
 import time
 import plotly.graph_objects as go
 
-from app_utils import query_date_df, resample_df, plot_time_series
+from app_utils import query_date_df, plot_time_series, set_index_and_datetime
 
-# load data 
-fiveminenergydemand = pd.read_csv("data/5minenergydemand.csv")
-fiveminpowerdemand = pd.read_csv("data/5minpowerdemand.csv")
+# load data, set time column to index, set to datetime
+fivemindemand = set_index_and_datetime(pd.read_csv("data/5mindemand.csv"))
+hourlydemand = set_index_and_datetime(pd.read_csv("data/hourlydemand.csv"))
+dailydemand = set_index_and_datetime(pd.read_csv("data/dailydemand.csv"))
+monthlydemand = set_index_and_datetime(pd.read_csv("data/monthlydemand.csv"))
 
-fiveminenergydemand.set_index("time", inplace=True)
-fiveminenergydemand.index = pd.to_datetime(fiveminenergydemand.index)
-fiveminpowerdemand.set_index("time", inplace=True)
-fiveminpowerdemand.index = pd.to_datetime(fiveminpowerdemand.index)
+# map dataframes 
+dataframes = {
+    "5-Min": fivemindemand,
+    "Hourly": hourlydemand,
+    "Daily": dailydemand,
+    "Monthly": monthlydemand
+}
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.PULSE])
@@ -49,21 +54,24 @@ app.layout = html.Div([
         dcc.Dropdown(
             id = "quantity_picker",
             options=[
-                {'label':'Energy Demand', 'value':'Energy Demand'},
-                {'label':'Power Demand', 'value':'Power Demand'},
-                {'label':'Peak Power Demand', 'value':'Peak Power Demand'}
+                {'label':'Energy Demand', 'value':'energy_demand'},
+                {'label':'Average Power Demand', 'value':'power_demand'},
+                {'label':'Peak Power Demand', 'value':'peak_power_demand'}
             ],
-            value = 'Energy Demand', # default value
+            value = 'energy_demand', # default value
             clearable=False,
             searchable=False
         )
     ]),
     html.Div([
         dcc.Graph(
-            id = "time_series_plot",
+            id="time_series_plot",
         )
     ]),
-    dcc.Store(id='current_df') # stores current dataframe
+    dcc.Store(id='current_df'), # stores current dataframe
+    html.Div([
+        "7-Day Rolling Peak Power Demand:"
+    ])
 ])
 
 
@@ -78,17 +86,13 @@ app.layout = html.Div([
     )
 def display_main_figure(granularity, quantity, start_date, end_date):
     
-    if quantity == "Energy Demand":
-        df = fiveminenergydemand
+    df = dataframes[granularity]
+    print(quantity)
+    print(df.head())
 
-    elif quantity == "Power Demand":
-        df = fiveminpowerdemand
-
-    elif quantity == "Peak Power Demand":
-        df = fiveminpowerdemand
+    df = df[[quantity, "day"]]
     
     df = query_date_df(df, start_date, end_date)
-    df = resample_df(df, granularity, peak=(True if "Peak" in quantity else False))
 
     fig = plot_time_series(df, granularity, quantity)
     jsonified_df = df.to_json(orient='split')
