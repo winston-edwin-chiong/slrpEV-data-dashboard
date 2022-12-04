@@ -47,7 +47,7 @@ def plot_time_series(df, granularity, quantity):
         go.Scatter(
             x=df.index,
             y=df[plot_layout["column_name"]],
-            name=plot_layout["cleaned_quantity"] + " " + plot_layout["cleaned_quantity"],
+            name=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
             hovertext=(df["day"] if granularity != "Monthly" else df.index.month_name()),
         )
 )
@@ -58,26 +58,6 @@ def plot_time_series(df, granularity, quantity):
     )
 
     return fig 
-
-
-def resample_df(df, granularity):
-    """
-    Function takes in a dataframe with columns "power_demand", "energy_demand",
-    "peak_power", and "day". Given a pd.resample()-like resample code (ex. "5min", "1H", "24H", "1M", etc.),
-    returns the resampled dataframe where "power_demand" is aggregated by mean, "energy_demand" is aggregated by sum, and
-    "peak_power" is aggregated by max. 
-    """
-
-    df = df.resample(granularity).agg(
-        {
-            "power_demand": "mean",
-            "energy_demand": "sum",
-            "peak_power_demand": "max",
-            "day": "first"
-        }
-    )
-
-    return df 
 
 
 def set_index_and_datetime(df):
@@ -95,3 +75,19 @@ def get_last_days_datetime(n=7):
     current_time = pd.to_datetime("today") - datetime.timedelta(days=7)
     current_time = current_time.strftime("%m/%d/%Y")
     return current_time 
+
+def add_predictions(figure, start_date, end_date):
+    """
+    Function should add a predictions trace to the figure.
+    Currently only supports hourly. TODO: Add other granularities.
+    """
+    predictions_df = set_index_and_datetime(pd.read_csv("predictions/hourlydemandpredictions"))
+    predictions_df = query_date_df(predictions_df, start_date, end_date)
+    figure.add_trace(
+        go.Scatter(
+            x=predictions_df.index,
+            y=predictions_df["energy_demand_predictions"],
+            name="Energy Demand Forecast",
+            line={"dash":"dash"}
+        )
+    )

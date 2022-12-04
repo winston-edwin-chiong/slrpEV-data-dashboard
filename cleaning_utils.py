@@ -45,3 +45,22 @@ def ohe_federal_holiday(dataframe):
     # round to midnight, compare to holidays index, cast Boolean values to binary
     copy["Federal Holiday"] = dataframe.index.normalize().isin(holidays).astype(int)
     return copy 
+
+def resample_df(df, granularity):
+    """
+    Function takes in a dataframe with columns "power_demand", "energy_demand",
+    "peak_power", and "day". Given a pd.resample()-like resample code (ex. "5min", "1H", "24H", "1M", etc.),
+    returns the resampled dataframe where "power_demand" is aggregated by mean, "energy_demand" is aggregated by sum, and
+    "peak_power" is aggregated by max. 
+    """
+
+    df = df.resample(granularity).agg(
+        {
+            "power_demand": "mean",
+            "energy_demand": "sum",
+            "peak_power_demand": "max",
+            "day": "first"
+        }
+    )
+
+    return df 
