@@ -13,7 +13,7 @@ best_depth = 60
 
 # ML pipeline
 ml_pipe = Pipeline([
-        ("append_24hour_ahead", Append24HourForecast(extra_days=1)),
+        ("append_24hour_ahead", AppendForecast(extra_timesteps=1)),
         ("add_day_name", OHEOnlyDayName()),
         ("relevent_columns", ExtractHourlyEnergyDemand()),
         ("create_lags", CreateHourlyEnergyLags(best_depth)),

@@ -4,7 +4,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input
 import dash_daq as daq
 import pandas as pd
-from app_utils import query_date_df, plot_time_series, set_index_and_datetime, get_last_days_datetime, add_predictions
+from app_utils import query_date_df, plot_time_series, set_index_and_datetime, get_last_days_datetime, add_predictions, add_training_end_vline
 
 # load data, set time column to index, set to datetime
 fivemindemand = set_index_and_datetime(pd.read_csv("data/5mindemand.csv"))
@@ -20,7 +20,7 @@ dataframes = {
     "Monthly": monthlydemand
 }
 # today's date
-today_date = "08/15/2022" if True else get_last_days_datetime(7)
+today_date = "2022-08-15" if True else get_last_days_datetime(7)
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.PULSE])
@@ -87,7 +87,7 @@ app.layout = html.Div([
     Input("jump_to_present_btn", "n_clicks")
 )
 def jump_to_present(button_press):
-    return "08/15/2022", None # placeholder, no new data yet
+    return "2022-08-15", None # placeholder, no new data yet
 
 
 # calendar and granularity dropdown callback function  
@@ -110,6 +110,7 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
 
     if predictions == True:
         add_predictions(fig, start_date, end_date)
+        add_training_end_vline(fig, start_date, end_date)
 
     jsonified_df = df.to_json(orient='split')
 

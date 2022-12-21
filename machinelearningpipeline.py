@@ -12,17 +12,17 @@ def create_energy_demand_lags(df, depth):
     # drops only rows with NaN features ("energy_demand" can be NaN, for future predictions)
     return hourly_energy_demand_with_lags_df.dropna(subset=hourly_energy_demand_with_lags_df.columns.drop("energy_demand"))
 
-class Append24HourForecast(BaseEstimator, TransformerMixin):
+class AppendForecast(BaseEstimator, TransformerMixin):
 
-    def __init__ (self, extra_days):
+    def __init__ (self, extra_timesteps):
         super().__init__()
-        self.extra_days = extra_days
+        self.extra_timesteps = extra_timesteps
     
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
-        return pd.concat([X, pd.DataFrame(index=(X.tail(24).index + pd.Timedelta(days=self.extra_days)))])
+        return pd.concat([X, pd.DataFrame(index=(X.tail(24).index + pd.Timedelta(days=self.extra_timesteps)))])
 
 
 class CreateHourlyEnergyLags(BaseEstimator, TransformerMixin):

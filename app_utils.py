@@ -6,8 +6,9 @@ def query_date_df(df, start_date, end_date):
     """
     Function querys a dataframe based on a specified start date and end date. If any argument is None, 
     function will ignore those bounds Assumes dataframe has a datetime-like index. Start and end dates are 
-    also assumed to be in the form 'mm-dd-yyy'.
+    also assumed to be in the form 'yyyy-mm-dd'.
     """
+    print(start_date, end_date)
     if start_date == None and end_date == None:
         return df
     elif start_date != None and end_date == None:
@@ -83,6 +84,7 @@ def add_predictions(figure, start_date, end_date):
     """
     predictions_df = set_index_and_datetime(pd.read_csv("predictions/hourlydemandpredictions"))
     predictions_df = query_date_df(predictions_df, start_date, end_date)
+
     figure.add_trace(
         go.Scatter(
             x=predictions_df.index,
@@ -91,3 +93,19 @@ def add_predictions(figure, start_date, end_date):
             line={"dash":"dash"}
         )
     )
+    
+def add_training_end_vline(figure, start_date, end_date):
+    """
+    """
+    training_end = "2022-08-15"
+    
+    plotly_friendly_date = datetime.datetime.strptime(training_end, "%Y-%m-%d").timestamp() * 1000 # this is a known bug
+
+    if start_date == None and end_date == None: 
+        figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
+    elif start_date != None and end_date == None and start_date <= training_end:
+        figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
+    elif start_date == None and end_date != None and training_end <= end_date:
+        figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
+    elif start_date != None and end_date != None and start_date <= training_end <= end_date:
+        figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
