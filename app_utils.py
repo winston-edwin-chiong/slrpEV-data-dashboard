@@ -8,7 +8,6 @@ def query_date_df(df, start_date, end_date):
     function will ignore those bounds Assumes dataframe has a datetime-like index. Start and end dates are 
     also assumed to be in the form 'yyyy-mm-dd'.
     """
-    print(start_date, end_date)
     if start_date == None and end_date == None:
         return df
     elif start_date != None and end_date == None:
@@ -55,7 +54,8 @@ def plot_time_series(df, granularity, quantity):
     fig.update_layout(
         title=granularity + " " + plot_layout["cleaned_quantity"],
         xaxis_title="Time",
-        yaxis_title=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"]
+        yaxis_title=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
+        template="plotly_dark"
     )
 
     return fig 
