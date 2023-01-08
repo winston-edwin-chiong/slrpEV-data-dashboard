@@ -23,18 +23,18 @@ def plot_time_series(df, granularity, quantity):
     Function takes in a dataframe and returns figure of the plotted dataframe.
     """
     plot_specifics = {
-    "energy_demand": {
-        "column_name":"energy_demand",
+    "energy_demand_kWh": {
+        "column_name":"energy_demand_kWh",
         "units_measurement":"(kWh)",
         "cleaned_quantity": "Energy Demand"
     },
-    "power_demand": {
-        "column_name":"power_demand",
+    "power_demand_W": {
+        "column_name":"power_demand_W",
         "units_measurement":"(W)",
         "cleaned_quantity": "Average Power Demand"
     },
-    "peak_power_demand": {
-        "column_name":"peak_power_demand",
+    "peak_power_W": {
+        "column_name":"peak_power_W",
         "units_measurement":"(W)",
         "cleaned_quantity": "Peak Power Demand"
     },
