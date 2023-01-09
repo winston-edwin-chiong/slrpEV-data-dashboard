@@ -2,11 +2,16 @@ import pandas as pd
 import plotly.graph_objects as go
 import datetime
 
-def query_date_df(df, start_date, end_date):
+def query_date_df(df, start_date, end_date) -> pd.DataFrame:
     """
     Function querys a dataframe based on a specified start date and end date. If any argument is None, 
     function will ignore those bounds Assumes dataframe has a datetime-like index. Start and end dates are 
     also assumed to be in the form 'yyyy-mm-dd'.
+    ~~~
+    Parameters:
+    df : Dataframe to be queried.
+    start_date : Inclusive start date in 'yyyy-mm-dd' format.
+    end_date : Inclusive end date in 'yyyy-mm-dd' format.
     """
     if start_date == None and end_date == None:
         return df
@@ -22,14 +27,14 @@ def plot_time_series(df, granularity, quantity):
     """
     Function takes in a dataframe and returns figure of the plotted dataframe.
     """
-    plot_specifics = {
+    plot_key = {
     "energy_demand_kWh": {
         "column_name":"energy_demand_kWh",
         "units_measurement":"(kWh)",
         "cleaned_quantity": "Energy Demand"
     },
-    "power_demand_W": {
-        "column_name":"power_demand_W",
+    "avg_power_demand_W": {
+        "column_name":"avg_power_demand_W",
         "units_measurement":"(W)",
         "cleaned_quantity": "Average Power Demand"
     },
@@ -40,7 +45,7 @@ def plot_time_series(df, granularity, quantity):
     },
 } 
         
-    plot_layout = plot_specifics[quantity]
+    plot_layout = plot_key[quantity]
     fig = go.Figure()
 
     fig.add_trace(
@@ -49,13 +54,14 @@ def plot_time_series(df, granularity, quantity):
             y=df[plot_layout["column_name"]],
             name=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
             hovertext=(df["day"] if granularity != "Monthly" else df.index.month_name()),
+            fill="tozeroy",
         )
 )
     fig.update_layout(
         title=granularity + " " + plot_layout["cleaned_quantity"],
         xaxis_title="Time",
         yaxis_title=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
-        template="plotly_dark"
+        template="plotly",
     )
 
     return fig 
