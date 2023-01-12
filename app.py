@@ -6,8 +6,8 @@ import dash_daq as daq
 import pandas as pd
 from datetime import datetime
 from app_utils import query_date_df, plot_time_series, set_index_and_datetime, get_last_days_datetime, add_predictions, add_training_end_vline
-from cleaningclasses.FetchData import FetchData
-from cleaningclasses.CleanData import CleanData
+from janitorial.FetchData import FetchData
+from janitorial.CleanData import CleanData
 
 # load data, set time column to index, set to datetime
 fivemindemand = set_index_and_datetime(pd.read_csv("data/fivemindemand.csv"))
