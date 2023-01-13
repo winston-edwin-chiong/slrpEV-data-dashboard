@@ -5,23 +5,14 @@ from dash.dependencies import Output, Input
 import dash_daq as daq
 import pandas as pd
 from datetime import datetime
-from app_utils import query_date_df, plot_time_series, set_index_and_datetime, get_last_days_datetime, add_predictions, add_training_end_vline
+from app_utils import get_last_days_datetime, LoadDataFrames, PlotDataFrame, PlotPredictions
 from janitorial.FetchData import FetchData
 from janitorial.CleanData import CleanData
+from sklearn.pipeline import Pipeline
 
-# load data, set time column to index, set to datetime
-fivemindemand = set_index_and_datetime(pd.read_csv("data/fivemindemand.csv"))
-hourlydemand = set_index_and_datetime(pd.read_csv("data/hourlydemand.csv"))
-dailydemand = set_index_and_datetime(pd.read_csv("data/dailydemand.csv"))
-monthlydemand = set_index_and_datetime(pd.read_csv("data/monthlydemand.csv"))
 
-# map dataframes 
-dataframes = {
-    "5-Min": fivemindemand,
-    "Hourly": hourlydemand,
-    "Daily": dailydemand,
-    "Monthly": monthlydemand
-}
+# load dataframes 
+dataframes = LoadDataFrames.load_csv()
 
 # last week's date
 seven_days_ago = get_last_days_datetime(7)
@@ -47,14 +38,14 @@ app.layout = html.Div([
                         with_portal=False
                     ),
                     dcc.Dropdown(
-                        id = "granularity_picker",
+                        id = "dataframe_picker",
                         options=[
-                            {'label':'5-Min', 'value':'5-Min'},
-                            {'label':'Hourly', 'value':'Hourly'},
-                            {'label':'Daily', 'value':"Daily"},
-                            {'label':'Monthly', 'value':'Monthly'}
+                            {'label':'5-Min', 'value':'fivemindemand'},
+                            {'label':'Hourly', 'value':'hourlydemand'},
+                            {'label':'Daily', 'value':"dailydemand"},
+                            {'label':'Monthly', 'value':'monthlydemand'}
                         ],
-                        value='Hourly', # default value
+                        value='hourlydemand', # default value
                         clearable=False,
                         searchable=False
                     ),
@@ -121,23 +112,18 @@ def jump_to_present(button_press):
 @app.callback(
     Output("time_series_plot", "figure"),
     Output("current_df", "data"),
-    Input("granularity_picker", "value"),
+    Input("dataframe_picker", "value"),
     Input("quantity_picker", "value"),
     Input("date_time_picker", "start_date"),
     Input("date_time_picker", "end_date"),
     Input("toggle_predictions", "value")
     )
 def display_main_figure(granularity, quantity, start_date, end_date, predictions):
-    
-    df = dataframes[granularity]
-    df = df[[quantity, "day"]]
-    df = query_date_df(df, start_date, end_date)
-
-    fig = plot_time_series(df, granularity, quantity)
+    df = dataframes.get(granularity)
+    fig = PlotDataFrame(df, granularity, quantity, start_date, end_date).plot()
 
     if predictions == True:
-        add_predictions(fig, start_date, end_date)
-        add_training_end_vline(fig, start_date, end_date)
+        PlotPredictions(fig, granularity, quantity, start_date, end_date).add_predictions()
 
     jsonified_df = df.to_json(orient='split')
 

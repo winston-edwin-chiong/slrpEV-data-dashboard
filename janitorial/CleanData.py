@@ -16,7 +16,7 @@ class CleanData:
             ("create_features", FeatureCreation()),
             ("save_to_csv", SaveToCsv()),
         ])
-
+    
     def clean_raw_data(self):
         self.cleaned_data = self.__pipeline.fit_transform(self.__raw_data)
         return self.cleaned_data

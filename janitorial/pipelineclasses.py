@@ -75,6 +75,7 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
         X["peak_power_W"] = X["avg_power_demand_W"] 
         X.index.name = "time"
         X["day"] = X.index.day_name()
+        X["month"] = X.index.month_name()
         return X
 
 class SaveToCsv(BaseEstimator, TransformerMixin):
@@ -87,7 +88,8 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
             "avg_power_demand_W": "mean",
             "energy_demand_kWh": "sum",
             "peak_power_W": "max",
-            "day": "first"
+            "day": "first",
+            "month": "first"
         }
         self.dataframe_names = [
             "fivemindemand", 
