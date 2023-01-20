@@ -2,19 +2,24 @@ import pandas as pd
 import plotly.graph_objects as go
 import datetime
 
+
 def get_last_days_datetime(n=7):
     """
     """
-    current_time = pd.to_datetime("today") - datetime.timedelta(days=7)
+    current_time = pd.to_datetime("today") - datetime.timedelta(days=n)
     current_time = current_time.strftime("%m/%d/%Y")
-    return current_time 
+    return current_time
 
-class LoadDataFrames():
 
+class LoadDataFrames:
     dataframes = {}
 
     @classmethod
     def load_csv(cls):
+        """
+        Loads dataframes and converts them into a datetime-like time series.
+        :return: Dictionary of time series dataframes.
+        """
         cls.dataframes["fivemindemand"] = cls.set_index_and_datetime(pd.read_csv("data/fivemindemand.csv"))
         cls.dataframes["hourlydemand"] = cls.set_index_and_datetime(pd.read_csv("data/hourlydemand.csv"))
         cls.dataframes["dailydemand"] = cls.set_index_and_datetime(pd.read_csv("data/dailydemand.csv"))
@@ -29,7 +34,8 @@ class LoadDataFrames():
         """
         df.set_index("time", inplace=True)
         df.index = pd.to_datetime(df.index)
-        return df 
+        return df
+
 
 class PlotPredictions:
 
@@ -49,12 +55,12 @@ class PlotPredictions:
                 x=predictions_df.index,
                 y=predictions_df[f"{self.quantity} forecast"],
                 name="Energy Demand Forecast",
-                line={"dash":"dash"},
+                line={"dash": "dash"},
                 fill="tozeroy"
             )
         )
         self.figure.update_layout(legend=dict(orientation="h"))
-    
+
     @staticmethod
     def set_index_and_datetime(df):
         """
@@ -63,7 +69,7 @@ class PlotPredictions:
         """
         df.set_index("time", inplace=True)
         df.index = pd.to_datetime(df.index)
-        return df   
+        return df
 
     @staticmethod
     def query_date_df(df, start_date, end_date) -> pd.DataFrame:
@@ -77,48 +83,54 @@ class PlotPredictions:
         start_date : Inclusive start date in 'yyyy-mm-dd' format.
         end_date : Inclusive end date in 'yyyy-mm-dd' format.
         """
-        if start_date == None and end_date == None:
+        if start_date is None and end_date is None:
             return df
-        elif start_date != None and end_date == None:
+        elif start_date is not None and end_date is None:
             return df.loc[(df.index >= start_date)]
-        elif start_date == None and end_date != None:
+        elif start_date is None and end_date is not None:
             return df.loc[(df.index <= end_date)]
         else:
             return df.loc[(df.index >= start_date) & (df.index <= end_date)]
 
-    def add_training_end_vline(figure, start_date, end_date):
+    def add_training_end_vline(self, start_date, end_date):
         """
         """
         training_end = "2022-08-15"
-        
-        plotly_friendly_date = datetime.datetime.strptime(training_end, "%Y-%m-%d").timestamp() * 1000 # this is a known bug
 
-        if start_date == None and end_date == None: 
-            figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
-        elif start_date != None and end_date == None and start_date <= training_end:
-            figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
-        elif start_date == None and end_date != None and training_end <= end_date:
-            figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
-        elif start_date != None and end_date != None and start_date <= training_end <= end_date:
-            figure.add_vline(x=plotly_friendly_date, line_color = "green", line_dash="dash", annotation_text="End of Training Data")
+        plotly_friendly_date = datetime.datetime.strptime(training_end,
+                                                          "%Y-%m-%d").timestamp() * 1000  # this is a known bug
 
-class PlotDataFrame():
-    
+        if start_date is None and end_date is None:
+            self.add_vline(x=plotly_friendly_date, line_color="green", line_dash="dash",
+                           annotation_text="End of Training Data")
+        elif start_date is not None and end_date is None and start_date <= training_end:
+            self.add_vline(x=plotly_friendly_date, line_color="green", line_dash="dash",
+                           annotation_text="End of Training Data")
+        elif start_date is None and end_date is not None and training_end <= end_date:
+            self.add_vline(x=plotly_friendly_date, line_color="green", line_dash="dash",
+                           annotation_text="End of Training Data")
+        elif start_date is not None and end_date is not None and start_date <= training_end <= end_date:
+            self.add_vline(x=plotly_friendly_date, line_color="green", line_dash="dash",
+                           annotation_text="End of Training Data")
+
+
+class PlotDataFrame:
+
     def __init__(self, df, granularity, quantity, start_date, end_date):
         self.df = df
         self.granularity = granularity
         self.granularity_key = {
             'fivemindemand': {
-                "other_cols" : ["day"]
+                "other_cols": ["day"]
             },
-            'hourlydemand' : {
-                "other_cols" : ["day"]
+            'hourlydemand': {
+                "other_cols": ["day"]
             },
             'dailydemand': {
-                "other_cols" : ["day"]
+                "other_cols": ["day"]
             },
             'monthlydemand': {
-                "other_cols" : ["month"]
+                "other_cols": ["month"]
             }
         }
         self.quantity = quantity
@@ -126,22 +138,22 @@ class PlotDataFrame():
         self.end_date = end_date
         self.plot_key = {
             "energy_demand_kWh": {
-                "column_name":"energy_demand_kWh",
-                "units_measurement":"(kWh)",
+                "column_name": "energy_demand_kWh",
+                "units_measurement": "(kWh)",
                 "cleaned_quantity": "Energy Demand"
             },
             "avg_power_demand_W": {
-                "column_name":"avg_power_demand_W",
-                "units_measurement":"(W)",
+                "column_name": "avg_power_demand_W",
+                "units_measurement": "(W)",
                 "cleaned_quantity": "Average Power Demand"
             },
             "peak_power_W": {
-                "column_name":"peak_power_W",
-                "units_measurement":"(W)",
+                "column_name": "peak_power_W",
+                "units_measurement": "(W)",
                 "cleaned_quantity": "Peak Power Demand"
             },
-        } 
-    
+        }
+
     def plot(self):
         self.__prepare()
         return self.__plot_time_series()
@@ -164,11 +176,11 @@ class PlotDataFrame():
         start_date : Inclusive start date in 'yyyy-mm-dd' format.
         end_date : Inclusive end date in 'yyyy-mm-dd' format.
         """
-        if start_date == None and end_date == None:
+        if start_date is None and end_date is None:
             return df
-        elif start_date != None and end_date == None:
+        elif start_date is not None and end_date is None:
             return df.loc[(df.index >= start_date)]
-        elif start_date == None and end_date != None:
+        elif start_date is None and end_date is not None:
             return df.loc[(df.index <= end_date)]
         else:
             return df.loc[(df.index >= start_date) & (df.index <= end_date)]
@@ -188,7 +200,7 @@ class PlotDataFrame():
                 hovertext=self.df[other_layout.get('other_cols')[0]],
                 fill="tozeroy",
             )
-    )
+        )
         self.fig.update_layout(
             title=plot_layout["cleaned_quantity"] + " " + plot_layout["cleaned_quantity"],
             xaxis_title="Time",
@@ -196,4 +208,4 @@ class PlotDataFrame():
             template="plotly",
         )
 
-        return self.fig 
+        return self.fig

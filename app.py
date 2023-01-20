@@ -1,24 +1,34 @@
-import dash 
+import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from dash.dependencies import Output, Input
+from dash.dependencies import Output, Input, State
 import dash_daq as daq
 import pandas as pd
 from datetime import datetime
 from app_utils import get_last_days_datetime, LoadDataFrames, PlotDataFrame, PlotPredictions
-from janitorial.FetchData import FetchData
-from janitorial.CleanData import CleanData
-from sklearn.pipeline import Pipeline
+from datacleaning.FetchData import FetchData
+from datacleaning.CleanData import CleanData
+from flask_caching import Cache
+import os
 
-
-# load dataframes 
+# load dataframes
 dataframes = LoadDataFrames.load_csv()
 
 # last week's date
 seven_days_ago = get_last_days_datetime(7)
 
+
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+server = app.server
+
+# cache
+CACHE_CONFIG = {
+    'CACHE_TYPE': 'FileSystemCache',
+    'CACHE_DIR': "cache/"
+}
+cache = Cache()
+cache.init_app(app.server, config=CACHE_CONFIG)
 
 image_path = "assets/slrpEVlogo.png"
 
@@ -30,38 +40,43 @@ app.layout = html.Div([
             children=[
                 html.Div([
                     dcc.DatePickerRange(
-                        id="date_time_picker",
+                        id="date_picker",
                         clearable=True,
-                        start_date=seven_days_ago, # placeholder, no new data yet
+                        start_date=seven_days_ago,
                         start_date_placeholder_text="mm/dd/yyyy",
                         end_date_placeholder_text="mm/dd/yyyy",
                         with_portal=False
                     ),
                     dcc.Dropdown(
-                        id = "dataframe_picker",
+                        id="dataframe_picker",
                         options=[
-                            {'label':'5-Min', 'value':'fivemindemand'},
-                            {'label':'Hourly', 'value':'hourlydemand'},
-                            {'label':'Daily', 'value':"dailydemand"},
-                            {'label':'Monthly', 'value':'monthlydemand'}
+                            {'label': '5-Min', 'value': 'fivemindemand'},
+                            {'label': 'Hourly', 'value': 'hourlydemand'},
+                            {'label': 'Daily', 'value': "dailydemand"},
+                            {'label': 'Monthly', 'value': 'monthlydemand'}
                         ],
-                        value='hourlydemand', # default value
+                        value='hourlydemand',  # default value
                         clearable=False,
                         searchable=False
                     ),
                     dcc.Dropdown(
                         id="quantity_picker",
                         options=[
-                            {'label':'Energy Demand', 'value':'energy_demand_kWh'},
-                            {'label':'Average Power Demand', 'value':'avg_power_demand_W'},
-                            {'label':'Peak Power Demand', 'value':'peak_power_W'}
+                            {'label': 'Energy Demand', 'value': 'energy_demand_kWh'},
+                            {'label': 'Average Power Demand', 'value': 'avg_power_demand_W'},
+                            {'label': 'Peak Power Demand', 'value': 'peak_power_W'}
                         ],
-                        value = 'energy_demand_kWh', # default value
+                        value='energy_demand_kWh',  # default value
                         clearable=False,
                         searchable=False
                     ),
                     html.Button("Jump to Past 7 Days", id="jump_to_present_btn"),
-                    daq.ToggleSwitch(label="Toggle Predictions", value=False, id="toggle_predictions")
+                    daq.ToggleSwitch(
+                        label="Toggle Predictions", 
+                        value=False, 
+                        id="toggle_predictions", 
+                        disabled=True,
+                        )
                 ]),
                 html.Div([
                     dcc.Graph(
@@ -72,19 +87,16 @@ app.layout = html.Div([
                         }
                     )
                 ]),
-                dcc.Store(id='current_df'), # stores current dataframe
-                html.Div([
-                    "Rolling 7-Day RMSE:"
-                ]),
+                dcc.Store(id='current_df'),  # stores current dataframe
                 html.Div([
                     dcc.Interval(
                         id="interval_component",
-                        interval = 20*60*1000,
+                        interval=20 * 60 * 1000,  # update every 20 minutes
                         n_intervals=0
                     ),
                     html.Div(
                         id="last_updated_timer"
-                    )
+                    ),
                 ])
             ]
         ),
@@ -100,12 +112,12 @@ app.layout = html.Div([
 
 # jump to present button 
 @app.callback(
-    Output("date_time_picker", "start_date"),
-    Output("date_time_picker", "end_date"),
+    Output("date_picker", "start_date"),
+    Output("date_picker", "end_date"),
     Input("jump_to_present_btn", "n_clicks")
 )
 def jump_to_present(button_press):
-    return seven_days_ago, None # placeholder, no new data yet
+    return seven_days_ago, None  # placeholder, no new data yet
 
 
 # calendar and granularity dropdown callback function  
@@ -114,31 +126,36 @@ def jump_to_present(button_press):
     Output("current_df", "data"),
     Input("dataframe_picker", "value"),
     Input("quantity_picker", "value"),
-    Input("date_time_picker", "start_date"),
-    Input("date_time_picker", "end_date"),
-    Input("toggle_predictions", "value")
-    )
-def display_main_figure(granularity, quantity, start_date, end_date, predictions):
+    Input("date_picker", "start_date"),
+    Input("date_picker", "end_date"),
+    Input("toggle_predictions", "value"),
+    Input("last_updated_timer", "children")
+)
+def display_main_figure(granularity, quantity, start_date, end_date, predictions, last_updated):
     df = dataframes.get(granularity)
     fig = PlotDataFrame(df, granularity, quantity, start_date, end_date).plot()
 
-    if predictions == True:
+    if predictions:
         PlotPredictions(fig, granularity, quantity, start_date, end_date).add_predictions()
 
     jsonified_df = df.to_json(orient='split')
 
     return fig, jsonified_df
 
+
 @app.callback(
     Output("last_updated_timer", "children"),
     Input("interval_component", "n_intervals"),
     prevent_initial_call=True
-    )
+)
 def update_data(n):
+
     print("Fetching data...")
-    FetchData("Sessions2").scan_save_all_records()
+    FetchData.scan_save_all_records()
+
     print("Cleaning data...")
-    CleanData().clean_raw_data()
+    CleanData.clean_save_raw_data()
+
     print("Done!")
     return f"Data last updated {datetime.now().strftime('%H:%M:%S')}."
 
