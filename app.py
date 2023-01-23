@@ -11,8 +11,6 @@ from datacleaning.CleanData import CleanData
 from flask_caching import Cache
 import os
 
-# load dataframes
-dataframes = LoadDataFrames.load_csv()
 
 # last week's date
 seven_days_ago = get_last_days_datetime(7)
@@ -132,7 +130,12 @@ def jump_to_present(button_press):
     Input("last_updated_timer", "children")
 )
 def display_main_figure(granularity, quantity, start_date, end_date, predictions, last_updated):
+
+    # load dataframes, get specific one
+    dataframes = LoadDataFrames.load_csv()
     df = dataframes.get(granularity)
+
+    # plot dataframe
     fig = PlotDataFrame(df, granularity, quantity, start_date, end_date).plot()
 
     if predictions:
@@ -155,6 +158,9 @@ def update_data(n):
 
     print("Cleaning data...")
     CleanData.clean_save_raw_data()
+
+    print("Reloading data...")
+    dataframes = LoadDataFrames.load_csv()
 
     print("Done!")
     return f"Data last updated {datetime.now().strftime('%H:%M:%S')}."
