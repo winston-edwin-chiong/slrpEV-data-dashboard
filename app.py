@@ -68,7 +68,7 @@ app.layout = html.Div([
                         clearable=False,
                         searchable=False
                     ),
-                    html.Button("Jump to Past 7 Days", id="jump_to_present_btn"),
+                    html.Button("Today", id="jump_to_present_btn"),
                     daq.ToggleSwitch(
                         label="Toggle Predictions", 
                         value=False, 
@@ -131,7 +131,7 @@ def jump_to_present(button_press):
 )
 def display_main_figure(granularity, quantity, start_date, end_date, predictions, last_updated):
 
-    # load dataframes, get specific one
+    # load dataframes, get specific dataframe
     dataframes = LoadDataFrames.load_csv()
     df = dataframes.get(granularity)
 
@@ -149,7 +149,7 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
 @app.callback(
     Output("last_updated_timer", "children"),
     Input("interval_component", "n_intervals"),
-    prevent_initial_call=True
+    prevent_initial_call=False
 )
 def update_data(n):
 
@@ -158,9 +158,6 @@ def update_data(n):
 
     print("Cleaning data...")
     CleanData.clean_save_raw_data()
-
-    print("Reloading data...")
-    dataframes = LoadDataFrames.load_csv()
 
     print("Done!")
     return f"Data last updated {datetime.now().strftime('%H:%M:%S')}."
