@@ -101,7 +101,15 @@ app.layout = html.Div([
         dcc.Tab(
             label="Tab Two",
             children=[
-
+                html.Div([
+                    dcc.Graph(
+                        id="daily_time_series",
+                        config={
+                            "displaylogo": False,
+                            "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                        }
+                    )
+                ]),
             ]
         )
     ])
@@ -117,6 +125,15 @@ app.layout = html.Div([
 def jump_to_present(button_press):
     return seven_days_ago, None  # placeholder, no new data yet
 
+
+# daily time series
+@app.callback(
+    Output("daily_time_series", "figure"),
+    Input("quantity_picker", "value"),
+    Input("last_updated_timer", "children")
+)
+def display_daily_time_series(quantity, last_updated):
+    return 
 
 # calendar and granularity dropdown callback function  
 @app.callback(
