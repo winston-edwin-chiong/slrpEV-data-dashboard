@@ -5,16 +5,13 @@ from dash.dependencies import Output, Input, State
 import dash_daq as daq
 import pandas as pd
 from datetime import datetime
-from app_utils import get_last_days_datetime, LoadDataFrames, PlotDataFrame, PlotPredictions
+from app_utils import LoadDataFrames, PlotDataFrame, PlotPredictions, get_last_days_datetime
+from layout.tab_one_layout import tab_one_layout
+from layout.tab_two_layout import tab_two_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from flask_caching import Cache
 import os
-
-
-# last week's date
-seven_days_ago = get_last_days_datetime(7)
-
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
@@ -33,85 +30,8 @@ image_path = "assets/slrpEVlogo.png"
 # app layout
 app.layout = html.Div([
     dcc.Tabs([
-        dcc.Tab(
-            label="Tab One",
-            children=[
-                html.Div([
-                    dcc.DatePickerRange(
-                        id="date_picker",
-                        clearable=True,
-                        start_date=seven_days_ago,
-                        start_date_placeholder_text="mm/dd/yyyy",
-                        end_date_placeholder_text="mm/dd/yyyy",
-                        with_portal=False
-                    ),
-                    dcc.Dropdown(
-                        id="dataframe_picker",
-                        options=[
-                            {'label': '5-Min', 'value': 'fivemindemand'},
-                            {'label': 'Hourly', 'value': 'hourlydemand'},
-                            {'label': 'Daily', 'value': "dailydemand"},
-                            {'label': 'Monthly', 'value': 'monthlydemand'}
-                        ],
-                        value='hourlydemand',  # default value
-                        clearable=False,
-                        searchable=False
-                    ),
-                    dcc.Dropdown(
-                        id="quantity_picker",
-                        options=[
-                            {'label': 'Energy Demand', 'value': 'energy_demand_kWh'},
-                            {'label': 'Average Power Demand', 'value': 'avg_power_demand_W'},
-                            {'label': 'Peak Power Demand', 'value': 'peak_power_W'}
-                        ],
-                        value='energy_demand_kWh',  # default value
-                        clearable=False,
-                        searchable=False
-                    ),
-                    html.Button("Today", id="jump_to_present_btn"),
-                    daq.ToggleSwitch(
-                        label="Toggle Predictions", 
-                        value=False, 
-                        id="toggle_predictions", 
-                        disabled=True,
-                        )
-                ]),
-                html.Div([
-                    dcc.Graph(
-                        id="time_series_plot",
-                        config={
-                            "displaylogo": False,
-                            "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                        }
-                    )
-                ]),
-                dcc.Store(id='current_df'),  # stores current dataframe
-                html.Div([
-                    dcc.Interval(
-                        id="interval_component",
-                        interval=20 * 60 * 1000,  # update every 20 minutes
-                        n_intervals=0
-                    ),
-                    html.Div(
-                        id="last_updated_timer"
-                    ),
-                ])
-            ]
-        ),
-        dcc.Tab(
-            label="Tab Two",
-            children=[
-                html.Div([
-                    dcc.Graph(
-                        id="daily_time_series",
-                        config={
-                            "displaylogo": False,
-                            "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                        }
-                    )
-                ]),
-            ]
-        )
+        tab_one_layout(),
+        tab_two_layout()
     ])
 ])
 
@@ -123,7 +43,7 @@ app.layout = html.Div([
     Input("jump_to_present_btn", "n_clicks")
 )
 def jump_to_present(button_press):
-    return seven_days_ago, None  # placeholder, no new data yet
+    return get_last_days_datetime(7), get_last_days_datetime(-1)  # placeholder, no new data yet
 
 
 # daily time series
@@ -133,7 +53,11 @@ def jump_to_present(button_press):
     Input("last_updated_timer", "children")
 )
 def display_daily_time_series(quantity, last_updated):
-    return 
+    data = pd.read_csv("data/todays_sessions.csv")
+    import plotly.express as px
+    fig = px.bar(data, x=data["time_vals"], y=data["power_vals"], color=data["userId"].astype(str))
+    fig.update_yaxes(showgrid=False)
+    return fig 
 
 # calendar and granularity dropdown callback function  
 @app.callback(
@@ -166,7 +90,7 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
 @app.callback(
     Output("last_updated_timer", "children"),
     Input("interval_component", "n_intervals"),
-    prevent_initial_call=False
+    prevent_initial_call=True
 )
 def update_data(n):
 

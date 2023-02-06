@@ -1,4 +1,5 @@
 from sklearn.base import BaseEstimator, TransformerMixin
+from datetime import datetime
 import pandas as pd 
 import numpy as np 
 
@@ -8,15 +9,19 @@ class SortDropCast(BaseEstimator, TransformerMixin):
     This pipeline step will sort values by field "connectTime",
     drop columns "user_email", "slrpPaymentId", 
     and cast columns "cumEnergy_Wh", "peakPower_W" as float values. 
+    "connectTime" will be converted into pd_datetime like.
     """
     def fit(self, X, y=None):
         return self
 
     @staticmethod
     def transform(X) -> pd.DataFrame:
+        now = datetime.now().strftime('%D')
         X = X.sort_values(by="connectTime").drop(columns=["user_email", "slrpPaymentId"]).reset_index(drop=True)
+        X["connectTime"] = pd.to_datetime(X["connectTime"])
         X["cumEnergy_Wh"] = X["cumEnergy_Wh"].astype(float)
         X["peakPower_W"] = X["peakPower_W"].astype(float)
+        X = X[X["connectTime"] >= now]
         return X
 
 
@@ -43,43 +48,45 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
     """
     This pipeline step will create a time series for each session. Two new columns will be created, 
-    "time_vals" and "power_vals", respective lists for a time and power demand.
+    "time_vals" and "power_vals", respective lists for a time and power demand. "time_vals" are rounded to the 
+    closest 5 min. 
     """ 
     def __init__(self) -> None:
-        self.ts_df = pd.DataFrame(columns=["time_vals", "power_vals"])
         super().__init__()
     
     def fit(self, X, y=None):
         return self 
 
     def transform(self, X) -> pd.DataFrame:
+        self.ts_df = pd.DataFrame(columns=["time_vals", "power_vals"])
         X.apply(self.__create_ts, axis=1)
         X = pd.concat([X.reset_index(), self.ts_df], axis=1)
+        X = X.explode(["time_vals", "power_vals"])
+        X["userId"] = X["userId"].astype(str)
         return X
 
     def __create_ts(self, session):
+
         date_range = pd.date_range(start=session["connectTime"], end=session["finishChargeTime"], freq="5min").to_list()
         power_vals = np.ones(len(date_range)) * session["peakPower_W"]
+        
+        now = session["connectTime"].strftime('%D')
+        temp_df = pd.DataFrame({"power":power_vals}, index=date_range).resample("5min").sum().reindex(index = pd.period_range(now, periods=288, freq='5min').to_timestamp(), fill_value=0)
+        
+        date_range = temp_df.index.to_list()
+        power_vals = temp_df["power"].to_list()
+
         temp_df = pd.DataFrame([[date_range, power_vals]], columns=self.ts_df.columns)
+        
         self.ts_df = pd.concat([self.ts_df, temp_df], ignore_index=True)
 
+class SaveCSV(BaseEstimator, TransformerMixin):
+    """
+    Saves session level dataframe to file system. 
+    """
 
-class FeatureCreation(BaseEstimator, TransformerMixin):
-    """
-    This pipeline step will create an "energy_demand_kWh" and "peak_power_W" column. 
-    The name of the dataframe's index will be set to "time", and "day" and "month" columns 
-    will be created. 
-    """
     def fit(self, X, y=None):
         return self 
 
-    @ staticmethod
-    def transform(X) -> pd.DataFrame:
-        X["energy_demand_kWh"] = (X["avg_power_demand_W"]/1000)/12
-        # for the highest granularity, peak power is equal to the power demand
-        # (different for different granularities though)
-        X["peak_power_W"] = X["avg_power_demand_W"] 
-        X.index.name = "time"
-        X["day"] = X.index.day_name()
-        X["month"] = X.index.month_name()
-        return X
+    def transform(self, X) -> None:
+        X.to_csv("data/todays_sessions.csv")
