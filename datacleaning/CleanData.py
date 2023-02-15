@@ -1,6 +1,6 @@
 from sklearn.pipeline import Pipeline
 import pandas as pd
-import datacleaning.pipelineclasses as pc
+import datacleaning.fullcleaningclasses as pc
 import datacleaning.sessionlevelcleaningclasses as sc
 
 

@@ -21,6 +21,7 @@ class SortDropCast(BaseEstimator, TransformerMixin):
         X["connectTime"] = pd.to_datetime(X["connectTime"])
         X["cumEnergy_Wh"] = X["cumEnergy_Wh"].astype(float)
         X["peakPower_W"] = X["peakPower_W"].astype(float)
+        X["userId"] = X["userId"].astype(str)
         X = X[X["connectTime"] >= now]
         return X
 
@@ -62,7 +63,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
         X.apply(self.__create_ts, axis=1)
         X = pd.concat([X.reset_index(), self.ts_df], axis=1)
         X = X.explode(["time_vals", "power_vals"])
-        X["userId"] = X["userId"].astype(str)
+        X.rename(columns={"time_vals":"Time", "power_vals":"Power (W)"}, inplace=True)
         return X
 
     def __create_ts(self, session):

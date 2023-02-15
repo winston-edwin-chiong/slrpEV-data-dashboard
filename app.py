@@ -11,7 +11,7 @@ from layout.tab_two_layout import tab_two_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from flask_caching import Cache
-import os
+import plotly.express as px
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
@@ -47,6 +47,7 @@ def jump_to_present(button_press):
 
 
 # daily time series
+# TODO: Put this somewhere else. 
 @app.callback(
     Output("daily_time_series", "figure"),
     Input("quantity_picker", "value"),
@@ -54,9 +55,22 @@ def jump_to_present(button_press):
 )
 def display_daily_time_series(quantity, last_updated):
     data = pd.read_csv("data/todays_sessions.csv")
-    import plotly.express as px
-    fig = px.bar(data, x=data["time_vals"], y=data["power_vals"], color=data["userId"].astype(str))
+    data["userId"] = data["userId"].astype(str)
+    fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"])
     fig.update_yaxes(showgrid=False)
+    return fig 
+
+# vehicle pie chart
+# TODO: Put this somewhere else. 
+@app.callback(
+    Output("vehicle_pie_chart", "figure"),
+    Input("last_updated_timer", "children")
+)
+def display_vehicle_pie_chart(last_updated):
+    data = pd.read_csv("data/todays_sessions.csv")
+    car_pie = data[["dcosId", "vehicle_model"]].groupby("dcosId").first()
+    car_pie["vehicle_model"].value_counts()
+    fig = px.pie(values = car_pie["vehicle_model"].value_counts(), names=car_pie["vehicle_model"].value_counts().index)
     return fig 
 
 # calendar and granularity dropdown callback function  
