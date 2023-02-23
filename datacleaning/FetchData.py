@@ -7,7 +7,6 @@ from boto3.dynamodb.conditions import Key, Attr
 
 class FetchData:
     table_id = "Sessions2"
-    __scan_results = []
 
     def __init__(self):
         pass
@@ -16,9 +15,10 @@ class FetchData:
     def __configure():
         load_dotenv()
 
+    # TODO: Could be in __init__; does the table ever change? Don't need to call this every time?
     @classmethod
     def __get_table(cls, table_id):
-        cls.__configure()
+        cls.__configure() # load environment variables
         dynamodb = boto3.resource(
             "dynamodb",
             aws_access_key_id=os.getenv("access_key_id"),
@@ -27,9 +27,10 @@ class FetchData:
         )
         return dynamodb.Table(table_id)
 
-    # TODO: Only query for records I don't have. Currently don't know how, so I'm scanning for all records.
+    # TODO: Only query for records I don't have. Currently don't know how, so I'm scanning for all records. It's possible this is impossible with current DB structure.
     @classmethod
     def scan_save_all_records(cls):
+        scan_results = []
         table = cls.__get_table(cls.table_id)
 
         done = False
@@ -41,10 +42,11 @@ class FetchData:
                 params = {"ExclusiveStartKey": start_key}
                 
             response = table.scan(**params)
-            cls.__scan_results.extend(response.get("Items", []))
+            scan_results.extend(response.get("Items", []))
 
             start_key = response.get("LastEvaluatedKey", None)
             done = start_key is None
 
-        raw_data = pd.json_normalize(cls.__scan_results)
+        raw_data = pd.json_normalize(scan_results)
         raw_data.to_csv("data/raw_data.csv")
+        return raw_data

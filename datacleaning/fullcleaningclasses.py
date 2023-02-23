@@ -44,14 +44,12 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
     This pipeline step will create a time series for each session. A dataframe
     with 5-min granularity will be returned, with one column, "power_demand_W".
     """ 
-    def __init__(self) -> None:
-        self.rows = []
-        super().__init__()
-    
+
     def fit(self, X, y=None):
         return self 
 
     def transform(self, X) -> pd.DataFrame:
+        self.rows = []
         X.apply(self.__create_ts, axis=1)
         X = pd.concat(self.rows, axis=0).sort_index()
         X = X.resample("5min").sum()
@@ -74,6 +72,7 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
     The name of the dataframe's index will be set to "time", and "day" and "month" columns 
     will be created. 
     """
+    
     def fit(self, X, y=None):
         return self 
 
@@ -108,17 +107,25 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
             "dailydemand", 
             "monthlydemand"
         ]
-        self.new_dataframes = []
         super().__init__()
 
     def fit(self, X, y=None):
-        hourlydemand = X.resample("1H").agg(self.agg_key)
-        dailydemand = X.resample("24H").agg(self.agg_key)
-        monthlydemand = X.resample("1M").agg(self.agg_key)
-        self.new_dataframes.extend([X, hourlydemand, dailydemand, monthlydemand])
         return self
 
     def transform(self, X):
-        for idx, dataframe in enumerate(self.new_dataframes):
+        # create new granularities
+        hourlydemand = X.resample("1H").agg(self.agg_key)
+        dailydemand = X.resample("24H").agg(self.agg_key)
+        monthlydemand = X.resample("1M").agg(self.agg_key)
+
+        new_dataframes = {
+            "fivemindemand": X, 
+            "hourlydemand": hourlydemand, 
+            "dailydemand": dailydemand, 
+            "monthlydemand": monthlydemand
+        }
+
+        # save to file system
+        for idx, dataframe in enumerate(new_dataframes.values()):
             dataframe.to_csv(f"data/{self.dataframe_names[idx]}.csv")
-        return X
+        return new_dataframes

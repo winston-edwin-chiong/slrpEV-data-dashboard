@@ -89,5 +89,6 @@ class SaveCSV(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self 
 
-    def transform(self, X) -> None:
+    def transform(self, X) -> pd.DataFrame:
         X.to_csv("data/todays_sessions.csv")
+        return X

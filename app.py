@@ -6,8 +6,8 @@ import dash_daq as daq
 import pandas as pd
 from datetime import datetime
 from app_utils import LoadDataFrames, PlotDataFrame, PlotPredictions, get_last_days_datetime
-from layout.tab_one_layout import tab_one_layout
-from layout.tab_two_layout import tab_two_layout
+from layout.tab_one import tab_one_layout
+from layout.tab_two import tab_two_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from flask_caching import Cache
@@ -51,12 +51,15 @@ def jump_to_present(button_press):
 @app.callback(
     Output("daily_time_series", "figure"),
     Input("quantity_picker", "value"),
-    Input("last_updated_timer", "children")
+    Input("signal", "data"),
 )
-def display_daily_time_series(quantity, last_updated):
-    data = pd.read_csv("data/todays_sessions.csv")
+def display_daily_time_series(quantity, signal):
+    data = update_data()[0]
+    data = data["session"]
+    if data.empty:
+        return # TODO: Return a placeholder, rather than null; yesterday's data?
     data["userId"] = data["userId"].astype(str)
-    fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"])
+    fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"], hover_data=["vehicle_model"])
     fig.update_yaxes(showgrid=False)
     return fig 
 
@@ -64,10 +67,13 @@ def display_daily_time_series(quantity, last_updated):
 # TODO: Put this somewhere else. 
 @app.callback(
     Output("vehicle_pie_chart", "figure"),
-    Input("last_updated_timer", "children")
+    Input("signal", "data"),
 )
-def display_vehicle_pie_chart(last_updated):
-    data = pd.read_csv("data/todays_sessions.csv")
+def display_vehicle_pie_chart(signal):
+    data = update_data()[0]
+    data = data["session"]
+    if data.empty:
+        return # TODO: Return a placeholder, rather than null; yesterday's data?
     car_pie = data[["dcosId", "vehicle_model"]].groupby("dcosId").first()
     car_pie["vehicle_model"].value_counts()
     fig = px.pie(values = car_pie["vehicle_model"].value_counts(), names=car_pie["vehicle_model"].value_counts().index)
@@ -77,19 +83,21 @@ def display_vehicle_pie_chart(last_updated):
 @app.callback(
     Output("time_series_plot", "figure"),
     Output("current_df", "data"),
+    Output("last_updated_timer", "children"),
     Input("dataframe_picker", "value"),
     Input("quantity_picker", "value"),
     Input("date_picker", "start_date"),
     Input("date_picker", "end_date"),
     Input("toggle_predictions", "value"),
-    Input("last_updated_timer", "children")
+    Input("signal", "data"),
 )
-def display_main_figure(granularity, quantity, start_date, end_date, predictions, last_updated):
+def display_main_figure(granularity, quantity, start_date, end_date, predictions, signal):
 
     # load dataframes, get specific dataframe
-    dataframes = LoadDataFrames.load_csv()
+    result = update_data()
+    dataframes = result[0]
     df = dataframes.get(granularity)
-
+ 
     # plot dataframe
     fig = PlotDataFrame(df, granularity, quantity, start_date, end_date).plot()
 
@@ -98,25 +106,29 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
 
     jsonified_df = df.to_json(orient='split')
 
-    return fig, jsonified_df
+    return fig, jsonified_df, f"Data last updated at {result[1]}."
 
 
 @app.callback(
-    Output("last_updated_timer", "children"),
+    Output("signal", "data"),
     Input("interval_component", "n_intervals"),
-    prevent_initial_call=True
+    prevent_initial_callback = True
 )
-def update_data(n):
+def interval_thing(n):
+    update_data() # expensive process 
+    return n
+
+@cache.memoize(timeout=1200)
+def update_data():
 
     print("Fetching data...")
-    FetchData.scan_save_all_records()
+    raw_data = FetchData.scan_save_all_records()
 
     print("Cleaning data...")
-    CleanData.clean_save_raw_data()
+    cleaned_df = CleanData.clean_save_raw_data(raw_data)
 
     print("Done!")
-    return f"Data last updated {datetime.now().strftime('%H:%M:%S')}."
-
+    return cleaned_df, datetime.now().strftime('%H:%M:%S')
 
 # running the app
 if __name__ == '__main__':
