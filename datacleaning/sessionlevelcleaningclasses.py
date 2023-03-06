@@ -1,9 +1,38 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd 
 import numpy as np 
+from datetime import datetime 
 
+class SortDropCastSessions(BaseEstimator, TransformerMixin):
+    """
+    This pipeline step will sort values by field "connectTime",
+    drop columns "user_email", "slrpPaymentId", 
+    and cast columns "cumEnergy_Wh", "peakPower_W" as float values. 
+    Time-based columns will be converted into pd_datetime like.
+    """
+    def fit(self, X, y=None):
+        return self
 
-class SortDropCast(BaseEstimator, TransformerMixin):
+    @staticmethod
+    def transform(X) -> pd.DataFrame:
+        X = X[X["connectTime"] >= datetime.now().strftime("%D")].copy()
+
+        X["cumEnergy_Wh"] = X["cumEnergy_Wh"].astype(float)
+        X["peakPower_W"] = X["peakPower_W"].astype(float)
+        X["userId"] = X["userId"].astype(str)
+
+        X["connectTime"] = pd.to_datetime(X["connectTime"])
+        X["startChargeTime"] = pd.to_datetime(X["startChargeTime"])
+        X["Deadline"] = pd.to_datetime(X["Deadline"])
+        X["lastUpdate"] = pd.to_datetime(X["lastUpdate"])
+
+        X = X.loc[(X["peakPower_W"] != 0) & (X["cumEnergy_Wh"] != 0)].copy()
+
+        X = X.sort_values(by="connectTime").drop(columns=["user_email", "slrpPaymentId"]).reset_index(drop=True)
+
+        return X
+    
+class SortDropCastTimeSeries(BaseEstimator, TransformerMixin):
     """
     This pipeline step will sort values by field "connectTime",
     drop columns "user_email", "slrpPaymentId", 
@@ -90,12 +119,14 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
 
 class ResampleTimeSeries(BaseEstimator, TransformerMixin):
     """
+    This pipeline step will add a column for each user, as well as their power demand at that time. The time series will be resampled
+    into 5-minute intervals. For memory, only today's time series will be saved. 
     """
 
     def fit(self, X, y=None):
         return self
     
-    def transform(self, X):
+    def transform(self, X) -> pd.DataFrame:
         X = X[["Time", "Power (W)", "userId"]].set_index("Time", drop=True)
         OHE_users = pd.get_dummies(X["userId"]).astype(float)
         X = pd.concat([X, OHE_users], axis=1).drop(columns=["userId"])
@@ -106,10 +137,13 @@ class ResampleTimeSeries(BaseEstimator, TransformerMixin):
 
         X = X.resample("5MIN").sum()
 
+        X = X[X.index > datetime.now().strftime("%D")]
+
         return X
 
-class SaveToCsv(BaseEstimator, TransformerMixin):
+class SaveTodayTimeSeriesToCsv(BaseEstimator, TransformerMixin):
     """
+    This pipeline step will save today's TS dataset to the file system. 
     """
 
     def fit(self, X, y=None):
@@ -117,4 +151,16 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
     
     def transform(self, X):
         X.to_csv("data/user_data.csv")
+        return X
+    
+class SaveTodaySessionToCSV(BaseEstimator, TransformerMixin):
+    """
+    This pipeline step will save session level dataframe to file system. 
+    """
+
+    def fit(self, X, y=None):
+        return self 
+
+    def transform(self, X) -> pd.DataFrame:
+        X.to_csv("data/todays_sessions.csv")
         return X

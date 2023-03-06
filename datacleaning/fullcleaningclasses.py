@@ -25,7 +25,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     "peakPower_W" or "cumEnergy_Wh". Four additional columns will be created:
     "reqChargeTime", "finishChargeTime", "Overstay", and "Overstay_h". 
     Any records with calculated charging durations greater than a day will be dropped. 
-    Raw data at this staged will be saved.
+    Raw data (with these new features) at this staged will be saved.
     """
     def fit(self, X, y=None):
         return self
@@ -52,6 +52,8 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X.drop(columns = ['temp_0'], inplace=True)
 
+        X.to_csv("data/raw_data.csv")
+
         return X 
 
 
@@ -76,7 +78,7 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         This helper function takes in a session, with a "connectTime", "finishChargeTime", and 
         a "peakPower_W" column. Function will return a time series at 5-min granularity. 
         """
-        date_range = pd.date_range(start=session["connectTime"], end=session["finishChargeTime"], freq="5min")
+        date_range = pd.date_range(start=session["startChargeTime"], end=session["finishChargeTime"], freq="5min")
         temp_df = pd.DataFrame(index=date_range)
         temp_df["avg_power_demand_W"] = session["peakPower_W"]  # rename
         self.rows.append(temp_df)  
@@ -128,7 +130,7 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X) -> dict:
         # create new granularities
         hourlydemand = X.resample("1H").agg(self.agg_key)
         dailydemand = X.resample("24H").agg(self.agg_key)

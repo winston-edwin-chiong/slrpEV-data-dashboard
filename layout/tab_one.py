@@ -65,7 +65,7 @@ def tab_one_layout():
                 html.Div([
                     dcc.Interval(
                         id="interval_component",
-                        interval=60* 1000,  # update every 20 minutes
+                        interval=20* 60* 1000,  # update every 20 minutes
                         n_intervals=0
                     ),
                     html.Div(

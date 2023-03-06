@@ -55,11 +55,20 @@ def jump_to_present(button_press):
 )
 def display_daily_time_series(quantity, signal):
     data = update_data()[0]
-    data = data["session"]
+    data = data["todays_time_series"]
+    data = data.loc[:, data.sum(axis=0) > 0]
     if data.empty:
         return # TODO: Return a placeholder, rather than null; yesterday's data?
-    data["userId"] = data["userId"].astype(str)
-    fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"], hover_data=["vehicle_model"])
+
+    import plotly.graph_objs as go
+    fig = go.Figure()
+    for val in data.columns:
+        if val == "Power (W)":
+            continue
+        fig.add_trace(
+            go.Bar(x=data.index, y=data[f"{val}"], name=f"{val}")
+        )
+    fig.update_layout({"barmode":"stack"})
     fig.update_yaxes(showgrid=False)
     return fig 
 
@@ -71,12 +80,12 @@ def display_daily_time_series(quantity, signal):
 )
 def display_vehicle_pie_chart(signal):
     data = update_data()[0]
-    data = data["session"]
+    data = data["todays_sessions"]
     if data.empty:
         return # TODO: Return a placeholder, rather than null; yesterday's data?
-    car_pie = data[["dcosId", "vehicle_model"]].groupby("dcosId").first()
-    car_pie["vehicle_model"].value_counts()
-    fig = px.pie(values = car_pie["vehicle_model"].value_counts(), names=car_pie["vehicle_model"].value_counts().index)
+    car_pie = data[["dcosId", "cumEnergy_Wh", "vehicle_model"]].groupby("dcosId").first().copy()
+    car_pie["percentage_energy"] = car_pie["cumEnergy_Wh"] / car_pie["cumEnergy_Wh"].sum(axis=0)
+    fig = px.pie(values = car_pie["percentage_energy"])
     return fig 
 
 # calendar and granularity dropdown callback function  
@@ -125,10 +134,10 @@ def update_data():
     raw_data = FetchData.scan_save_all_records()
 
     print("Cleaning data...")
-    cleaned_df = CleanData.clean_save_raw_data(raw_data)
+    cleaned_dataframes = CleanData.clean_save_raw_data(raw_data)
 
     print("Done!")
-    return cleaned_df, datetime.now().strftime('%H:%M:%S')
+    return cleaned_dataframes, datetime.now().strftime('%H:%M:%S')
 
 # running the app
 if __name__ == '__main__':
