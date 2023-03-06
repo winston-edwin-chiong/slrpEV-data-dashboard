@@ -8,7 +8,7 @@ from app_utils import get_last_days_datetime
 def tab_two_layout():
     layout = \
         dcc.Tab(
-            label="Tab Two",
+            label="Today's Sessions",
             children=[
                 html.Div([
                     "Today's Sessions",
@@ -19,7 +19,7 @@ def tab_two_layout():
                             "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                         }
                     ),
-                    "Vehicle Breakdown",
+                    "Energy Breakdown",
                     dcc.Graph(
                         id="vehicle_pie_chart"
                     )

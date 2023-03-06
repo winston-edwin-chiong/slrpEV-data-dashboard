@@ -8,7 +8,7 @@ from app_utils import get_last_days_datetime
 def tab_one_layout():
     layout = \
             dcc.Tab(
-            label="Tab One",
+            label="All Time",
             children=[
                 html.Div([
                     dcc.DatePickerRange(

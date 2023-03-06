@@ -27,17 +27,6 @@ class CleanData:
         )
         cleaned_dataframes = full_ts_pipeline.fit_transform(raw_data)
 
-        # today's time series pipeline
-        todays_timeseries_pipeline = Pipeline(
-            [
-                ("sort_drop_cast", scc.SortDropCastTimeSeries()),
-                ("create_helpers", scc.HelperFeatureCreation()),
-                ("nested_ts", scc.CreateNestedSessionTimeSeries()),
-                ("resample", scc.ResampleTimeSeries()),
-                ("save_csv", scc.SaveTodayTimeSeriesToCsv())
-            ]
-        )
-
         # today's sessions pipeline 
         todays_sessions_pipeline = Pipeline(
             [
@@ -48,7 +37,6 @@ class CleanData:
             ]
         )
 
-        cleaned_dataframes["todays_time_series"] = todays_timeseries_pipeline.fit_transform(raw_data)
         cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(raw_data)
         cleaned_dataframes["raw_data"] = pd.read_csv("data/raw_data.csv")
 
