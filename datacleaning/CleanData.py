@@ -1,7 +1,7 @@
 from sklearn.pipeline import Pipeline
 import pandas as pd
-import datacleaning.fullcleaningclasses as pc
-import datacleaning.sessionlevelcleaningclasses as sc
+import datacleaning.fullcleaningclasses as fcc
+import datacleaning.sessionlevelcleaningclasses as scc
 
 
 class CleanData:
@@ -10,30 +10,34 @@ class CleanData:
         pass
 
     @staticmethod
-    def clean_save_raw_data():
+    def clean_save_raw_data(raw_data) -> dict:
 
         # load data
         __raw_data = pd.read_csv("data/raw_data.csv")
 
         # full time series pipeline
-        __full_ts_pipeline = Pipeline(
+        full_ts_pipeline = Pipeline(
             [
-                ("sort_drop_cast", pc.SortDropCast()),
-                ("create_helpers", pc.HelperFeatureCreation()),
-                ("create_session_TS", pc.CreateSessionTimeSeries()),
-                ("create_features", pc.FeatureCreation()),
-                ("save_to_csv", pc.SaveToCsv()),
+                ("sort_drop_cast", fcc.SortDropCast()),
+                ("create_helpers", fcc.HelperFeatureCreation()),
+                ("create_session_TS", fcc.CreateSessionTimeSeries()),
+                ("create_features", fcc.FeatureCreation()),
+                ("save_to_csv", fcc.SaveToCsv()),
             ]
         )
-        __full_ts_pipeline.fit_transform(__raw_data)
+        cleaned_dataframes = full_ts_pipeline.fit_transform(raw_data)
 
-        # session level pipeline
-        __session_lvl_pipeline = Pipeline(
+        # today's sessions pipeline 
+        todays_sessions_pipeline = Pipeline(
             [
-                ("sort_drop_cast", sc.SortDropCast()),
-                ("create_helpers", sc.HelperFeatureCreation()),
-                ("nested_ts", sc.CreateNestedSessionTimeSeries()),
-                ("save_csv", sc.SaveCSV()),
+                ("sort_drop_cast", scc.SortDropCastSessions()),
+                ("create_helpers", scc.HelperFeatureCreation()),
+                ("nested_ts", scc.CreateNestedSessionTimeSeries()),
+                ("save_csv", scc.SaveTodaySessionToCSV())
             ]
         )
-        __session_lvl_pipeline.fit_transform(__raw_data)
+
+        cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(raw_data)
+        cleaned_dataframes["raw_data"] = pd.read_csv("data/raw_data.csv")
+
+        return cleaned_dataframes

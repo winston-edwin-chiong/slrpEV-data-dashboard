@@ -22,20 +22,38 @@ class SortDropCast(BaseEstimator, TransformerMixin):
 class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     """
     This pipeline step will drop any records that contain 0 for 
-    "peakPower_W" or "cumEnergy_Wh". Two additional columns will be created:
-    "reqChargeTime" and "finishChargeTime".
+    "peakPower_W" or "cumEnergy_Wh". Four additional columns will be created:
+    "reqChargeTime", "finishChargeTime", "Overstay", and "Overstay_h". 
+    Any records with calculated charging durations greater than a day will be dropped. 
+    Raw data (with these new features) at this staged will be saved.
     """
     def fit(self, X, y=None):
         return self
 
     @staticmethod
     def transform(X) -> pd.DataFrame:
-        X = X.loc[(X["peakPower_W"] != 0) & (X["cumEnergy_Wh"] != 0)]
-        X = X.assign(reqChargeTime_h=(X["cumEnergy_Wh"] / X["peakPower_W"]))
-        X = X.assign(connectTime=(pd.to_datetime(X["connectTime"])))
-        X = X.assign(
-            finishChargeTime=(X["connectTime"] + pd.to_timedelta(X['reqChargeTime_h'], unit='hours').round("s"))
-        )
+        X = X.loc[(X["peakPower_W"] != 0) & (X["cumEnergy_Wh"] != 0)].copy(deep=True)
+
+        X["reqChargeTime_h"] = X["cumEnergy_Wh"] / X["peakPower_W"]
+
+        X["connectTime"] = pd.to_datetime(X["connectTime"])
+        X["startChargeTime"] = pd.to_datetime(X["startChargeTime"])
+        X["Deadline"] = pd.to_datetime(X["Deadline"])
+        X["lastUpdate"] = (pd.to_datetime(X["lastUpdate"]))
+
+        X["finishChargeTime"] = (X["startChargeTime"] + pd.to_timedelta(X['reqChargeTime_h'], unit='hours').round("s"))
+        
+        X = X.loc[X["reqChargeTime_h"] < 24] # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
+
+        X['temp_0'] = pd.Timedelta(days=0,seconds=0)
+        X['Overstay'] = X["lastUpdate"] - X['Deadline']
+        X["Overstay"] = X[["Overstay", "temp_0"]].max(axis=1)
+        X['Overstay_h'] = X['Overstay'].dt.seconds / 3600
+
+        X.drop(columns = ['temp_0'], inplace=True)
+
+        X.to_csv("data/raw_data.csv")
+
         return X 
 
 
@@ -44,17 +62,15 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
     This pipeline step will create a time series for each session. A dataframe
     with 5-min granularity will be returned, with one column, "power_demand_W".
     """ 
-    def __init__(self) -> None:
-        self.rows = []
-        super().__init__()
-    
+
     def fit(self, X, y=None):
         return self 
 
     def transform(self, X) -> pd.DataFrame:
+        self.rows = []
         X.apply(self.__create_ts, axis=1)
         X = pd.concat(self.rows, axis=0).sort_index()
-        X = X.resample("5min").sum()
+        X = X.resample("5MIN").sum()
         return X
     
     def __create_ts(self, session):
@@ -62,7 +78,7 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         This helper function takes in a session, with a "connectTime", "finishChargeTime", and 
         a "peakPower_W" column. Function will return a time series at 5-min granularity. 
         """
-        date_range = pd.date_range(start=session["connectTime"], end=session["finishChargeTime"], freq="5min")
+        date_range = pd.date_range(start=session["startChargeTime"], end=session["finishChargeTime"], freq="5min")
         temp_df = pd.DataFrame(index=date_range)
         temp_df["avg_power_demand_W"] = session["peakPower_W"]  # rename
         self.rows.append(temp_df)  
@@ -74,6 +90,7 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
     The name of the dataframe's index will be set to "time", and "day" and "month" columns 
     will be created. 
     """
+    
     def fit(self, X, y=None):
         return self 
 
@@ -108,17 +125,25 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
             "dailydemand", 
             "monthlydemand"
         ]
-        self.new_dataframes = []
         super().__init__()
 
     def fit(self, X, y=None):
+        return self
+
+    def transform(self, X) -> dict:
+        # create new granularities
         hourlydemand = X.resample("1H").agg(self.agg_key)
         dailydemand = X.resample("24H").agg(self.agg_key)
         monthlydemand = X.resample("1M").agg(self.agg_key)
-        self.new_dataframes.extend([X, hourlydemand, dailydemand, monthlydemand])
-        return self
 
-    def transform(self, X):
-        for idx, dataframe in enumerate(self.new_dataframes):
+        new_dataframes = {
+            "fivemindemand": X, 
+            "hourlydemand": hourlydemand, 
+            "dailydemand": dailydemand, 
+            "monthlydemand": monthlydemand
+        }
+
+        # save to file system
+        for idx, dataframe in enumerate(new_dataframes.values()):
             dataframe.to_csv(f"data/{self.dataframe_names[idx]}.csv")
-        return X
+        return new_dataframes
