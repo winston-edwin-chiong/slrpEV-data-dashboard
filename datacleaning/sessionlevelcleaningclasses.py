@@ -34,8 +34,8 @@ class SortDropCastSessions(BaseEstimator, TransformerMixin):
 class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     """
     This pipeline step will drop any records that contain 0 for 
-    "peakPower_W" or "cumEnergy_Wh". Two additional columns will be created:
-    "reqChargeTime" and "finishChargeTime".
+    "peakPower_W" or "cumEnergy_Wh". Four additional columns will be created:
+    "reqChargeTime", "finishChargeTime", "Overstay", and "Overstay_h".
     """
     def fit(self, X, y=None):
         return self
