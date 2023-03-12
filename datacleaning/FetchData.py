@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import os 
+import os
 import pandas as pd
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
@@ -18,7 +18,7 @@ class FetchData:
     # TODO: Could be in __init__; does the table ever change? Don't need to call this every time?
     @classmethod
     def __get_table(cls, table_id):
-        cls.__configure() # load environment variables
+        cls.__configure()  # load environment variables
         dynamodb = boto3.resource(
             "dynamodb",
             aws_access_key_id=os.getenv("access_key_id"),
@@ -40,7 +40,7 @@ class FetchData:
         while not done:
             if start_key is not None:
                 params = {"ExclusiveStartKey": start_key}
-                
+
             response = table.scan(**params)
             scan_results.extend(response.get("Items", []))
 

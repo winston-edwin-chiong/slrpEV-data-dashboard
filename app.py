@@ -4,7 +4,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 import dash_daq as daq
 import pandas as pd
-import numpy as np 
+import numpy as np
 from datetime import datetime, timedelta
 from app_utils import LoadDataFrames, PlotDataFrame, PlotPredictions, get_last_days_datetime
 from layout.tab_one import tab_one_layout
@@ -14,7 +14,7 @@ from datacleaning.CleanData import CleanData
 from flask_caching import Cache
 
 import plotly.express as px
-import plotly.graph_objects as go 
+import plotly.graph_objects as go
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
@@ -40,18 +40,19 @@ app.layout = html.Div([
 ])
 
 
-# jump to present button 
+# jump to present button
 @app.callback(
     Output("date_picker", "start_date"),
     Output("date_picker", "end_date"),
     Input("jump_to_present_btn", "n_clicks")
 )
 def jump_to_present(button_press):
-    return get_last_days_datetime(7), get_last_days_datetime(-1)  # placeholder, no new data yet
+    # placeholder, no new data yet
+    return get_last_days_datetime(7), get_last_days_datetime(-1)
 
 
 # daily time series
-# TODO: Put this somewhere else. 
+# TODO: Put this somewhere else.
 @app.callback(
     Output("daily_time_series", "figure"),
     Input("quantity_picker", "value"),
@@ -63,15 +64,14 @@ def display_daily_time_series(quantity, signal):
 
     if len(data) == 0:
         return go.Figure()
-    
-    fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"], hover_data=["vehicle_model"], 
+
+    fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"], hover_data=["vehicle_model"],
                  range_x=[datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")])
 
     fig.update_yaxes(showgrid=False)
-    return fig 
+    return fig
 
-# vehicle pie chart
-# TODO: Put this somewhere else. 
+
 @app.callback(
     Output("vehicle_pie_chart", "figure"),
     Input("signal", "data"),
@@ -81,18 +81,21 @@ def display_vehicle_pie_chart(signal):
     data = data["todays_sessions"]
 
     if len(data) == 0:
-        return go.Figure() # TODO: Return a placeholder, rather than null; yesterday's data?
-    
-    data = data[["dcosId", "cumEnergy_Wh", "vehicle_model"]].groupby("dcosId").first().copy()
-    data["percentage_energy"] = data["cumEnergy_Wh"] / data["cumEnergy_Wh"].sum(axis=0) 
+        return go.Figure()  # TODO: Return a placeholder, rather than null; yesterday's data?
 
-    fig = go.Figure(data=[go.Pie(labels=data["vehicle_model"], values=data["percentage_energy"], hole=0.6)])
+    data = data[["dcosId", "cumEnergy_Wh", "vehicle_model"]
+                ].groupby("dcosId").first().copy()
+    data["percentage_energy"] = data["cumEnergy_Wh"] / \
+        data["cumEnergy_Wh"].sum(axis=0)
+
+    fig = go.Figure(data=[go.Pie(labels=data["vehicle_model"],
+                    values=data["percentage_energy"], hole=0.6)])
     fig.update_layout(
         title_text=f'Total Energy Delivered Today: {data["cumEnergy_Wh"].sum(axis=0)} kWh',
     )
-    return fig 
+    return fig
 
-# calendar and granularity dropdown callback function  
+
 @app.callback(
     Output("time_series_plot", "figure"),
     Output("current_df", "data"),
@@ -110,12 +113,13 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
     result = update_data()
     dataframes = result[0]
     df = dataframes.get(granularity)
- 
+
     # plot dataframe
     fig = PlotDataFrame(df, granularity, quantity, start_date, end_date).plot()
 
     if predictions:
-        PlotPredictions(fig, granularity, quantity, start_date, end_date).add_predictions()
+        PlotPredictions(fig, granularity, quantity,
+                        start_date, end_date).add_predictions()
 
     jsonified_df = df.to_json(orient='split')
 
@@ -125,13 +129,14 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
 @app.callback(
     Output("signal", "data"),
     Input("interval_component", "n_intervals"),
-    prevent_initial_callback = True
+    prevent_initial_callback=True
 )
 def interval_thing(n):
-    update_data() # expensive process 
+    update_data()  # expensive process
     return n
 
-@cache.memoize(timeout=3600) # refresh every hour
+
+@cache.memoize(timeout=3600)  # refresh every hour
 def update_data():
 
     print("Fetching data...")
@@ -142,6 +147,7 @@ def update_data():
 
     print("Done!")
     return cleaned_dataframes, datetime.now().strftime('%H:%M:%S')
+
 
 # running the app
 if __name__ == '__main__':

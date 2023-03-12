@@ -27,7 +27,7 @@ class CleanData:
         )
         cleaned_dataframes = full_ts_pipeline.fit_transform(raw_data)
 
-        # today's sessions pipeline 
+        # today's sessions pipeline
         todays_sessions_pipeline = Pipeline(
             [
                 ("sort_drop_cast", scc.SortDropCastSessions()),
@@ -37,7 +37,8 @@ class CleanData:
             ]
         )
 
-        cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(raw_data)
+        cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(
+            raw_data)
         cleaned_dataframes["raw_data"] = pd.read_csv("data/raw_data.csv")
 
         return cleaned_dataframes
