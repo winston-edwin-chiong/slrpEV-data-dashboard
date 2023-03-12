@@ -2,19 +2,14 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
-import dash_daq as daq
-import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
-from app_utils import LoadDataFrames, PlotDataFrame, PlotPredictions, get_last_days_datetime
+from app_utils import PlotMainTimeSeries
+from app_utils import get_last_days_datetime, PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown
 from layout.tab_one import tab_one_layout
 from layout.tab_two import tab_two_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from flask_caching import Cache
-
-import plotly.express as px
-import plotly.graph_objects as go
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
@@ -28,8 +23,6 @@ CACHE_CONFIG = {
 }
 cache = Cache()
 cache.init_app(app.server, config=CACHE_CONFIG)
-
-image_path = "assets/slrpEVlogo.png"
 
 # app layout
 app.layout = html.Div([
@@ -47,28 +40,20 @@ app.layout = html.Div([
     Input("jump_to_present_btn", "n_clicks")
 )
 def jump_to_present(button_press):
-    # placeholder, no new data yet
     return get_last_days_datetime(7), get_last_days_datetime(-1)
 
 
-# daily time series
-# TODO: Put this somewhere else.
 @app.callback(
     Output("daily_time_series", "figure"),
     Input("quantity_picker", "value"),
     Input("signal", "data"),
 )
 def display_daily_time_series(quantity, signal):
-    data = update_data()[0]
-    data = data["todays_sessions"]
-
-    if len(data) == 0:
-        return go.Figure()
-
-    fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"], hover_data=["vehicle_model"],
-                 range_x=[datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")])
-
-    fig.update_yaxes(showgrid=False)
+    # load data
+    data = update_data().get("dataframes")
+    data = data.get("todays_sessions")
+    # plot figure
+    fig = PlotDailySessionTimeSeries.plot_daily_time_series(data)
     return fig
 
 
@@ -77,23 +62,15 @@ def display_daily_time_series(quantity, signal):
     Input("signal", "data"),
 )
 def display_vehicle_pie_chart(signal):
-    data = update_data()[0]
-    data = data["todays_sessions"]
-
-    if len(data) == 0:
-        return go.Figure()  # TODO: Return a placeholder, rather than null; yesterday's data?
-
-    data = data[["dcosId", "cumEnergy_Wh", "vehicle_model"]
-                ].groupby("dcosId").first().copy()
-    data["percentage_energy"] = data["cumEnergy_Wh"] / \
-        data["cumEnergy_Wh"].sum(axis=0)
-
-    fig = go.Figure(data=[go.Pie(labels=data["vehicle_model"],
-                    values=data["percentage_energy"], hole=0.6)])
-    fig.update_layout(
-        title_text=f'Total Energy Delivered Today: {data["cumEnergy_Wh"].sum(axis=0)} kWh',
-    )
+    # load data
+    data = update_data().get("dataframes")
+    data = data.get("todays_sessions")
+    # plot figure
+    fig = PlotDailySessionEnergyBreakdown.plot_daily_energy_breakdown(data)
     return fig
+
+
+
 
 
 @app.callback(
@@ -108,22 +85,18 @@ def display_vehicle_pie_chart(signal):
     Input("signal", "data"),
 )
 def display_main_figure(granularity, quantity, start_date, end_date, predictions, signal):
+    # load data
+    data = update_data().get("dataframes")
+    df = data.get(granularity)
 
-    # load dataframes, get specific dataframe
-    result = update_data()
-    dataframes = result[0]
-    df = dataframes.get(granularity)
+    last_updated = update_data().get('last_updated_time')
 
-    # plot dataframe
-    fig = PlotDataFrame(df, granularity, quantity, start_date, end_date).plot()
-
-    if predictions:
-        PlotPredictions(fig, granularity, quantity,
-                        start_date, end_date).add_predictions()
+    # plot main time series
+    fig = PlotMainTimeSeries.plot_main_time_series(df, granularity, quantity, start_date, end_date)
 
     jsonified_df = df.to_json(orient='split')
 
-    return fig, jsonified_df, f"Data last updated at {result[1]}."
+    return fig, jsonified_df, f"Data last updated at {last_updated}."
 
 
 @app.callback(
@@ -137,7 +110,7 @@ def interval_thing(n):
 
 
 @cache.memoize(timeout=3600)  # refresh every hour
-def update_data():
+def update_data() -> dict:
 
     print("Fetching data...")
     raw_data = FetchData.scan_save_all_records()
@@ -146,7 +119,7 @@ def update_data():
     cleaned_dataframes = CleanData.clean_save_raw_data(raw_data)
 
     print("Done!")
-    return cleaned_dataframes, datetime.now().strftime('%H:%M:%S')
+    return {"dataframes":cleaned_dataframes, "last_updated_time":datetime.now().strftime('%H:%M:%S')}
 
 
 # running the app
