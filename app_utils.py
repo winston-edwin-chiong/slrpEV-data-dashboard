@@ -206,3 +206,56 @@ class PlotDailySessionEnergyBreakdown:
             title_text=f'Total Energy Delivered Today: {df["cumEnergy_Wh"].sum(axis=0)} kWh',
         )
         return fig
+
+# Class to plot cumulative energy delivered
+class PlotCumulativeEnergyDelivered:
+
+    @classmethod
+    def plot_cumulative_energy_delivered(cls, df, start_date, end_date) -> go.Figure():
+
+        df = df.sort_values(by="finishChargeTime")
+        # necessary for some reason, even though 'finishChargeTime' is already cast to datetime during cleaning
+        df["finishChargeTime"] = pd.to_datetime(df["finishChargeTime"])
+        df = cls.__query_date_df(df, start_date, end_date, "finishChargeTime")
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Scatter(
+                x=df["finishChargeTime"],
+                # calculate cumulative sum in kWh
+                y=df["cumEnergy_Wh"].cumsum(axis=0) / 1000,
+                fill="tozeroy"
+            )
+        )
+
+        fig.update_layout(
+            title="Cumulative Energy Delivered",
+            xaxis_title="Time",
+            yaxis_title="Energy Delivered (kWh)",
+            template="plotly",
+        )
+
+        return fig
+
+    @staticmethod
+    def __query_date_df(df, start_date, end_date, col) -> pd.DataFrame:
+        """
+        Function querys a dataframe based on a specified start date and end date. If any argument is None, 
+        function will ignore those bounds. Start and end dates are also assumed to be in the form 'yyyy-mm-dd'.
+        ~~~
+        Parameters:
+        df : Dataframe to be queried.
+        start_date : Inclusive start date in 'yyyy-mm-dd' format.
+        end_date : Inclusive end date in 'yyyy-mm-dd' format.
+        col : Column to query date on.  
+        """
+
+        if start_date is None and end_date is None:
+            return df
+        elif start_date is not None and end_date is None:
+            return df.loc[(df[col] >= start_date)]
+        elif start_date is None and end_date is not None:
+            return df.loc[(df[col] <= end_date)]
+        else:
+            return df.loc[(df[col] >= start_date) & (df[col] <= end_date)]

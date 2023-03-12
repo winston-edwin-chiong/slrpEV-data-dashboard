@@ -4,7 +4,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
 from app_utils import PlotMainTimeSeries
-from app_utils import get_last_days_datetime, PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown
+from app_utils import get_last_days_datetime, PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered
 from layout.tab_one import tab_one_layout
 from layout.tab_two import tab_two_layout
 from datacleaning.FetchData import FetchData
@@ -70,12 +70,25 @@ def display_vehicle_pie_chart(signal):
     return fig
 
 
+@app.callback(
+    Output("cumulative_energy_delivered", "figure"),
+    Input("date_picker", "start_date"),
+    Input("date_picker", "end_date"),
+    Input("signal", "data")
+)
+def display_cumulative_energy_figure(start_date, end_date, signal):
+    # load data
+    data = update_data().get("dataframes")
+    data = data.get("raw_data")
+    # plot figure
+    fig = PlotCumulativeEnergyDelivered.plot_cumulative_energy_delivered(
+        data, start_date, end_date)
 
+    return fig
 
 
 @app.callback(
     Output("time_series_plot", "figure"),
-    Output("current_df", "data"),
     Output("last_updated_timer", "children"),
     Input("dataframe_picker", "value"),
     Input("quantity_picker", "value"),
@@ -87,16 +100,15 @@ def display_vehicle_pie_chart(signal):
 def display_main_figure(granularity, quantity, start_date, end_date, predictions, signal):
     # load data
     data = update_data().get("dataframes")
-    df = data.get(granularity)
+    data = data.get(granularity)
 
     last_updated = update_data().get('last_updated_time')
 
     # plot main time series
-    fig = PlotMainTimeSeries.plot_main_time_series(df, granularity, quantity, start_date, end_date)
+    fig = PlotMainTimeSeries.plot_main_time_series(
+        data, granularity, quantity, start_date, end_date)
 
-    jsonified_df = df.to_json(orient='split')
-
-    return fig, jsonified_df, f"Data last updated at {last_updated}."
+    return fig, f"Data last updated at {last_updated}."
 
 
 @app.callback(
@@ -119,7 +131,7 @@ def update_data() -> dict:
     cleaned_dataframes = CleanData.clean_save_raw_data(raw_data)
 
     print("Done!")
-    return {"dataframes":cleaned_dataframes, "last_updated_time":datetime.now().strftime('%H:%M:%S')}
+    return {"dataframes": cleaned_dataframes, "last_updated_time": datetime.now().strftime('%H:%M:%S')}
 
 
 # running the app

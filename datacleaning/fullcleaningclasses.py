@@ -43,10 +43,11 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X["connectTime"] = pd.to_datetime(X["connectTime"])
         X["startChargeTime"] = pd.to_datetime(X["startChargeTime"])
         X["Deadline"] = pd.to_datetime(X["Deadline"])
-        X["lastUpdate"] = (pd.to_datetime(X["lastUpdate"]))
+        X["lastUpdate"] = pd.to_datetime(X["lastUpdate"])
 
         X["finishChargeTime"] = (
             X["startChargeTime"] + pd.to_timedelta(X['reqChargeTime_h'], unit='hours').round("s"))
+        X["finishChargeTime"] = pd.to_datetime(X["finishChargeTime"])
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
         X = X.loc[X["reqChargeTime_h"] < 24]

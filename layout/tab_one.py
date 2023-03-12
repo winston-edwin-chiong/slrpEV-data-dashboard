@@ -63,7 +63,6 @@ def tab_one_layout():
                         }
                     )
                 ]),
-                dcc.Store(id='current_df'),  # stores current dataframe
                 dcc.Store(id="signal"),
                 html.Div([
                     dcc.Interval(
@@ -73,6 +72,15 @@ def tab_one_layout():
                     ),
                     html.Div(
                         id="last_updated_timer"
+                    ),
+                ]),
+                html.Div([
+                    "Cumulative Energy Delivered",
+                    dcc.Graph(
+                        id="cumulative_energy_delivered",
+                        config={
+                            "displaylogo": False
+                        }
                     ),
                 ])
             ]

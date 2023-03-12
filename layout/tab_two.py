@@ -1,9 +1,8 @@
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from dash.dependencies import Output, Input, State
 import dash_daq as daq
-from app_utils import get_last_days_datetime
+
 
 def tab_two_layout():
     layout = \
@@ -18,6 +17,10 @@ def tab_two_layout():
                             "displaylogo": False,
                             "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                         }
+                    ),
+                    "User Information",
+                    dcc.Graph(
+                        id="user_graph_hover"
                     ),
                     "Energy Breakdown",
                     dcc.Graph(
