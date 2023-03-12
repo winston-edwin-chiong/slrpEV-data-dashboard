@@ -46,7 +46,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X["finishChargeTime"] = (X["startChargeTime"] + pd.to_timedelta(X['reqChargeTime_h'], unit='hours').round("s"))
         
-        X = X[X["finishChargeTime"] >= (datetime.now() - timedelta(days=1)).strftime("%D")].copy()
+        X = X[X["finishChargeTime"] >= datetime.now().strftime("%D")].copy()
         
         X = X.loc[X["reqChargeTime_h"] < 24].copy() # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
 
@@ -78,7 +78,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
         X = X.explode(["time_vals", "power_vals"])
         X.rename(columns={"time_vals":"Time", "power_vals":"Power (W)"}, inplace=True)
 
-        X = X[(X["Time"] >= (datetime.now() - timedelta(days=1)).strftime("%D"))].copy() # keep sessions within today
+        X = X[(X["Time"] >= datetime.now().strftime("%D"))].copy() # keep sessions within today
         return X
 
     def __create_ts(self, session):

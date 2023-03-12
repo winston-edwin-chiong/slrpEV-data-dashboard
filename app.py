@@ -65,7 +65,7 @@ def display_daily_time_series(quantity, signal):
         return go.Figure()
     
     fig = px.bar(data, x=data["Time"], y=data["Power (W)"], color=data["userId"], hover_data=["vehicle_model"], 
-                 range_x=[(datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d"), datetime.now().strftime("%Y-%m-%d")])
+                 range_x=[datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")])
 
     fig.update_yaxes(showgrid=False)
     return fig 
