@@ -19,14 +19,14 @@ def tab_two_layout():
                         }
                     ),
                     "User Information",
-                    dcc.Graph(
-                        id="user_graph_hover"
+                    html.Div(
+                        id='user-information'
                     ),
                     "Energy Breakdown",
                     dcc.Graph(
                         id="vehicle_pie_chart"
                     )
                 ]),
-            ]
+            ],
         )
     return layout

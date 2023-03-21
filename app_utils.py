@@ -66,16 +66,16 @@ def add_training_end_vline(self, start_date, end_date):
 class PlotMainTimeSeries:
     other_columns = {
         'fivemindemand': {
-            "other_cols": ["day"]
+            "hoverdata": ["day"]
         },
         'hourlydemand': {
-            "other_cols": ["day"]
+            "hoverdata": ["day"]
         },
         'dailydemand': {
-            "other_cols": ["day"]
+            "hoverdata": ["day"]
         },
         'monthlydemand': {
-            "other_cols": ["month"]
+            "hoverdata": ["month"]
         }
     }
     plot_layout_key = {
@@ -103,7 +103,10 @@ class PlotMainTimeSeries:
         df = cls.__query_df(df, granularity, quantity, start_date, end_date)
 
         plot_layout = cls.plot_layout_key[quantity]
-        hover_column = cls.other_columns[granularity].get("other_cols")
+
+        hover_column = cls.other_columns[granularity].get("hoverdata")
+        hoverdata = df[hover_column]
+        hoverdata["units"] = plot_layout["units_measurement"]
 
         fig = go.Figure()
 
@@ -111,17 +114,18 @@ class PlotMainTimeSeries:
             go.Scatter(
                 x=df.index,
                 y=df[plot_layout["column_name"]],
-                name=plot_layout["cleaned_quantity"] +
-                " " + plot_layout["units_measurement"],
-                hovertext=df[hover_column].stack(),
+                name=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
+                customdata=hoverdata,
+                hovertemplate="<extra></extra>"+
+                    "%{customdata[0]}, %{x}" +
+                    "<br>%{y} %{customdata[1]}",
                 fill="tozeroy",
             )
         )
         fig.update_layout(
             title=plot_layout["cleaned_quantity"],
             xaxis_title="Time",
-            yaxis_title=plot_layout["cleaned_quantity"] +
-            " " + plot_layout["units_measurement"],
+            yaxis_title=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
             template="plotly",
         )
 
@@ -130,8 +134,8 @@ class PlotMainTimeSeries:
     @classmethod
     def __query_df(cls, df, granularity, quantity, start_date, end_date) -> pd.DataFrame:
         # get relevant columns
-        other_cols = cls.other_columns.get(granularity).get("other_cols")
-        df = df[[quantity] + other_cols]
+        hoverdata = cls.other_columns.get(granularity).get("hoverdata")
+        df = df[[quantity] + hoverdata]
         # query df by date
         df = cls.__query_date_df(df, start_date, end_date)
         return df
@@ -170,16 +174,25 @@ class PlotDailySessionTimeSeries:
 
         for dcosId in df["dcosId"].unique():
             fig.add_trace(
-                go.Bar(
+                go.Bar( 
                     x=df[df["dcosId"] == dcosId]["Time"],
                     y=df[df["dcosId"] == dcosId]["Power (W)"],
-                    hovertext=df[df["dcosId"] == dcosId]["vehicle_model"],
-                    name="User ID: " + df[df["dcosId"]
-                                          == dcosId]["userId"].iloc[0]
+                    customdata=df[df["dcosId"] == dcosId][["vehicle_model", "choice"]], 
+                    name="User ID: " + df[df["dcosId"] == dcosId]["userId"].iloc[0],
+                    offsetgroup=1,
+                    hovertemplate="<br>Date: %{x}" +
+                        "<br>Power: %{y} Watts" +
+                        "<br>Vehicle Model: %{customdata[0]}" +
+                        "<br>Choice: %{customdata[1]}"
                 )
             )
         fig.update_layout(
             {
+                "title": "Today's Sessions",
+                "xaxis_title": "Time",
+                "yaxis_title": "Power (W)",
+                "barmode": "stack",
+                "showlegend": True,
                 "xaxis_range": [datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
             }
         )
@@ -196,16 +209,22 @@ class PlotDailySessionEnergyBreakdown:
 
         df = df[["dcosId", "cumEnergy_Wh", "vehicle_model"]
                 ].groupby("dcosId").first().copy()
-        df["percentage_energy"] = df["cumEnergy_Wh"] / \
-            df["cumEnergy_Wh"].sum(axis=0)
 
-        fig = go.Figure(data=[go.Pie(labels=df["vehicle_model"],
-                        values=df["percentage_energy"], hole=0.6)])
+        fig = go.Figure(data=[go.Pie(
+                                labels=df["vehicle_model"],
+                                values=df["cumEnergy_Wh"], 
+                                hole=0.6,
+                                hovertemplate="<extra></extra>" +
+                                    "Vehicle Model: %{label}" +
+                                    "<br>Energy Consumed Today: %{value} kWh")
+                            ]                   
+                        )   
 
         fig.update_layout(
             title_text=f'Total Energy Delivered Today: {df["cumEnergy_Wh"].sum(axis=0)} kWh',
         )
         return fig
+
 
 # Class to plot cumulative energy delivered
 class PlotCumulativeEnergyDelivered:
@@ -259,3 +278,4 @@ class PlotCumulativeEnergyDelivered:
             return df.loc[(df[col] <= end_date)]
         else:
             return df.loc[(df[col] >= start_date) & (df[col] <= end_date)]
+        

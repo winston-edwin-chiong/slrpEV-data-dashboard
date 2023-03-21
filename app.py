@@ -83,7 +83,6 @@ def display_cumulative_energy_figure(start_date, end_date, signal):
     # plot figure
     fig = PlotCumulativeEnergyDelivered.plot_cumulative_energy_delivered(
         data, start_date, end_date)
-
     return fig
 
 
@@ -110,13 +109,24 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
 
     return fig, f"Data last updated at {last_updated}."
 
-
 @app.callback(
+    Output("user-information", "children"),
+    Input("daily_time_series", "hoverData"),
+    prevent_initial_callback=True
+)
+def display_user_hover(hoverData):
+    print(hoverData)
+    if hoverData is None:
+        return
+    userId = hoverData["points"][0]["value"]
+    return userId
+
+@app.callback( 
     Output("signal", "data"),
     Input("interval_component", "n_intervals"),
     prevent_initial_callback=True
 )
-def interval_thing(n):
+def interval(n):
     update_data()  # expensive process
     return n
 
