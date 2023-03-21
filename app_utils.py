@@ -90,7 +90,7 @@ class PlotMainTimeSeries:
             "cleaned_quantity": "Average Power Demand"
         },
         "peak_power_W": {
-            "column_name": "peak_power_W",
+            "column_name": "true_peak_power_W",
             "units_measurement": "(W)",
             "cleaned_quantity": "Peak Power Demand"
         },
