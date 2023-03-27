@@ -179,5 +179,8 @@ dmypy.json
 # CMake
 cmake-build-*/
 
-# flash-caching
+# flask-caching
 cache/
+
+# data
+data/
