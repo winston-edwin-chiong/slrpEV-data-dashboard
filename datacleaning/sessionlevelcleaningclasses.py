@@ -45,17 +45,18 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    @staticmethod
-    def transform(X) -> pd.DataFrame:
+    @classmethod
+    def transform(cls, X) -> pd.DataFrame:
         X["reqChargeTime_h"] = X["cumEnergy_Wh"] / X["peakPower_W"]
 
-        X["finishChargeTime"] = (
-            X["startChargeTime"] + pd.to_timedelta(X['reqChargeTime_h'], unit='hours').round("s"))
+        X["finishChargeTime"] = X.apply(cls.__get_finishChargeTime, axis=1)
+        X["trueDurationHrs"] = X.apply(cls.__get_duration, axis=1)
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
         X = X[X["finishChargeTime"] >= datetime.now().strftime("%D")].copy()
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
-        X = X.loc[X["reqChargeTime_h"] < 24].copy()
+        X = X.loc[X["trueDurationHrs"] <= 24].copy()
 
         X['temp_0'] = pd.Timedelta(days=0, seconds=0)
         X['Overstay'] = X["lastUpdate"] - X['Deadline']
@@ -64,6 +65,20 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X.drop(columns=['temp_0'], inplace=True)
 
         return X
+    
+    @staticmethod
+    def __get_duration(row):
+        if row["regular"] == 1:
+            return round(((row["lastUpdate"] - row["startChargeTime"]).seconds/3600), 3)
+        else: 
+            return round(((row["Deadline"] - row["startChargeTime"]).seconds/3600), 3)
+        
+    @staticmethod
+    def __get_finishChargeTime(row):
+        if row["regular"] == 1:
+            return row["lastUpdate"]
+        else:
+            return row["Deadline"]
 
 
 class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
@@ -95,7 +110,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
 
         date_range = pd.date_range(start=session["startChargeTime"].round(
             "5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min").to_list()
-        power_vals = np.ones(len(date_range)) * session["peakPower_W"]
+        power_vals = np.ones(len(date_range)) * session["true_peakPower_W"]
 
         temp_df = pd.DataFrame({"power": power_vals}, index=date_range)
 

@@ -4,7 +4,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
 from app_utils import PlotMainTimeSeries
-from app_utils import get_last_days_datetime, PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered
+from app_utils import get_last_days_datetime, PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData
 from layout.tab_one import tab_one_layout
 from layout.tab_two import tab_two_layout
 from datacleaning.FetchData import FetchData
@@ -109,19 +109,30 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
 
     return fig, f"Data last updated at {last_updated}."
 
+
 @app.callback(
-    Output("user-information", "children"),
+    Output("num_sessions_user", "children"),
+    Output("avg_duration_user", "children"),
+    Output("freq_connect_time_user", "children"),
     Input("daily_time_series", "hoverData"),
     prevent_initial_callback=True
 )
 def display_user_hover(hoverData):
-    print(hoverData)
+    # place holder for no hover
     if hoverData is None:
-        return
-    userId = hoverData["points"][0]["value"]
-    return userId
+        return "# of Sessions by User", "Avg. Stay Duration", "Frequent Connect Time"
+    # load data
+    data = update_data().get("dataframes").get("raw_data")
+    # get user ID
+    userId = int(hoverData["points"][0]["customdata"][2])
+    # get user hover data
+    num_sessions, avg_duration, freq_connect = GetUserHoverData.get_user_hover_data(
+        data, userId)
 
-@app.callback( 
+    return num_sessions, avg_duration, freq_connect
+
+
+@app.callback(
     Output("signal", "data"),
     Input("interval_component", "n_intervals"),
     prevent_initial_callback=True

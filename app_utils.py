@@ -114,18 +114,20 @@ class PlotMainTimeSeries:
             go.Scatter(
                 x=df.index,
                 y=df[plot_layout["column_name"]],
-                name=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
+                name=plot_layout["cleaned_quantity"] +
+                " " + plot_layout["units_measurement"],
                 customdata=hoverdata,
-                hovertemplate="<extra></extra>"+
-                    "%{customdata[0]}, %{x}" +
-                    "<br>%{y} %{customdata[1]}",
+                hovertemplate="<extra></extra>" +
+                "%{customdata[0]}, %{x}" +
+                "<br>%{y} %{customdata[1]}",
                 fill="tozeroy",
             )
         )
         fig.update_layout(
             title=plot_layout["cleaned_quantity"],
             xaxis_title="Time",
-            yaxis_title=plot_layout["cleaned_quantity"] + " " + plot_layout["units_measurement"],
+            yaxis_title=plot_layout["cleaned_quantity"] +
+            " " + plot_layout["units_measurement"],
             template="plotly",
         )
 
@@ -174,16 +176,18 @@ class PlotDailySessionTimeSeries:
 
         for dcosId in df["dcosId"].unique():
             fig.add_trace(
-                go.Bar( 
+                go.Bar(
                     x=df[df["dcosId"] == dcosId]["Time"],
                     y=df[df["dcosId"] == dcosId]["Power (W)"],
-                    customdata=df[df["dcosId"] == dcosId][["vehicle_model", "choice"]], 
-                    name="User ID: " + df[df["dcosId"] == dcosId]["userId"].iloc[0],
+                    customdata=df[df["dcosId"] == dcosId][[
+                        "vehicle_model", "choice", "userId"]],
+                    name="User ID: " + df[df["dcosId"]
+                                          == dcosId]["userId"].iloc[0],
                     offsetgroup=1,
                     hovertemplate="<br>Date: %{x}" +
-                        "<br>Power: %{y} Watts" +
-                        "<br>Vehicle Model: %{customdata[0]}" +
-                        "<br>Choice: %{customdata[1]}"
+                    "<br>Power: %{y} Watts" +
+                    "<br>Vehicle Model: %{customdata[0]}" +
+                    "<br>Choice: %{customdata[1]}"
                 )
             )
         fig.update_layout(
@@ -211,14 +215,14 @@ class PlotDailySessionEnergyBreakdown:
                 ].groupby("dcosId").first().copy()
 
         fig = go.Figure(data=[go.Pie(
-                                labels=df["vehicle_model"],
-                                values=df["cumEnergy_Wh"], 
-                                hole=0.6,
-                                hovertemplate="<extra></extra>" +
-                                    "Vehicle Model: %{label}" +
-                                    "<br>Energy Consumed Today: %{value} kWh")
-                            ]                   
-                        )   
+            labels=df["vehicle_model"],
+            values=df["cumEnergy_Wh"],
+            hole=0.6,
+            hovertemplate="<extra></extra>" +
+            "Vehicle Model: %{label}" +
+            "<br>Energy Consumed Today: %{value} kWh")
+        ]
+        )
 
         fig.update_layout(
             title_text=f'Total Energy Delivered Today: {df["cumEnergy_Wh"].sum(axis=0)} kWh',
@@ -278,4 +282,27 @@ class PlotCumulativeEnergyDelivered:
             return df.loc[(df[col] <= end_date)]
         else:
             return df.loc[(df[col] >= start_date) & (df[col] <= end_date)]
+
+
+class GetUserHoverData:
+
+    @classmethod
+    def get_user_hover_data(cls, df: pd.DataFrame, userId: int) -> tuple:
+
+        subset = df[df["userId"] == userId]
+
+        num_sessions = len(df)
+        average_duration = subset["trueDurationHrs"].mean()
+        freq_connect_time = subset["connectTime"].dt.hour.apply(cls.__get_connect).value_counts().index[0]
+
+        return num_sessions, average_duration, freq_connect_time
         
+    def __get_connect(hour: int) -> str:
+        if 6 <= hour <= 10:
+            return "Morning! 🐦"  
+        elif 10 < hour <= 16:
+            return "Afternoon! ☀️"
+        elif 16 < hour <= 22:
+            return "Evening! 🌙"
+        else:
+            return "Really late at night! 🦉" 
