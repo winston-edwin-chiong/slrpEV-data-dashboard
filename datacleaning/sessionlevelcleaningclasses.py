@@ -51,7 +51,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X["finishChargeTime"] = X.apply(cls.__get_finishChargeTime, axis=1)
         X["trueDurationHrs"] = X.apply(cls.__get_duration, axis=1)
-        X["true_peakPower_W"] = X["cumEnergy_Wh"] / X["trueDurationHrs"]
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
         X = X[X["finishChargeTime"] >= datetime.now().strftime("%D")].copy()
 
