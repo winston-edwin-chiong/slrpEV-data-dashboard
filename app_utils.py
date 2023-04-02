@@ -236,9 +236,9 @@ class PlotCumulativeEnergyDelivered:
     @classmethod
     def plot_cumulative_energy_delivered(cls, df, start_date, end_date) -> go.Figure():
 
-        df = df.sort_values(by="finishChargeTime")
         # necessary for some reason, even though 'finishChargeTime' is already cast to datetime during cleaning
         df["finishChargeTime"] = pd.to_datetime(df["finishChargeTime"])
+        df = df.sort_values(by="finishChargeTime")
         df = cls.__query_date_df(df, start_date, end_date, "finishChargeTime")
 
         fig = go.Figure()
@@ -289,10 +289,12 @@ class GetUserHoverData:
     @classmethod
     def get_user_hover_data(cls, df: pd.DataFrame, userId: int) -> tuple:
 
-        subset = df[df["userId"] == userId]
+        subset = df[df["userId"] == userId].copy()
 
-        num_sessions = len(df)
+        num_sessions = len(subset)
         average_duration = subset["trueDurationHrs"].mean()
+         
+        subset["connectTime"] = pd.to_datetime(subset["connectTime"])
         freq_connect_time = subset["connectTime"].dt.hour.apply(cls.__get_connect).value_counts().index[0]
 
         return num_sessions, average_duration, freq_connect_time
@@ -306,3 +308,9 @@ class GetUserHoverData:
             return "Evening! 🌙"
         else:
             return "Really late at night! 🦉" 
+
+
+class PlotHourlyForecasts:
+
+    def plot():
+        return 

@@ -47,7 +47,6 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
     @classmethod
     def transform(cls, X) -> pd.DataFrame:
-        X["reqChargeTime_h"] = X["cumEnergy_Wh"] / X["peakPower_W"]
 
         X["finishChargeTime"] = X.apply(cls.__get_finishChargeTime, axis=1)
         X["trueDurationHrs"] = X.apply(cls.__get_duration, axis=1)

@@ -48,9 +48,9 @@ def tab_one_layout():
                     ),
                     html.Button("Today", id="jump_to_present_btn"),
                     daq.ToggleSwitch(
-                        label="Toggle Predictions",
+                        label="Toggle Forecasts",
                         value=False,
-                        id="toggle_predictions",
+                        id="toggle_forecasts",
                         disabled=True,
                     )
                 ]),
@@ -63,15 +63,23 @@ def tab_one_layout():
                         }
                     )
                 ]),
-                dcc.Store(id="signal"),
+                dcc.Store(id="data_refresh_signal"),
                 html.Div([
                     dcc.Interval(
-                        id="interval_component",
-                        interval=20 * 60 * 1000,  # update every 20 minutes
+                        id="data_refresh_interval_component",
+                        interval=60 * 60 * 1000,  # update every 60 minutes
                         n_intervals=0
                     ),
                     html.Div(
                         id="last_updated_timer"
+                    ),
+                ]),
+                dcc.Store(id="CV_signal"),
+                html.Div([
+                    dcc.Interval(
+                        id="CV_interval_component",
+                        interval=20160 * 60 * 1000,  # update every two weeks
+                        n_intervals=0
                     ),
                 ]),
                 html.Div([
