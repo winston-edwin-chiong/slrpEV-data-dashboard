@@ -81,6 +81,9 @@ def tab_one_layout():
                         interval=20160 * 60 * 1000,  # update every two weeks
                         n_intervals=0
                     ),
+                    html.Div(
+                        id="last_validated_timer"
+                    )
                 ]),
                 html.Div([
                     "Cumulative Energy Delivered",

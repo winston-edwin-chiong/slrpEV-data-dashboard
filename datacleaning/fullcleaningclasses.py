@@ -45,7 +45,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X["finishChargeTime"] = X.apply(cls.__get_finishChargeTime, axis=1)
         X["trueDurationHrs"] = X.apply(cls.__get_duration, axis=1)
-        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0) # "cumEnergy_Wh" is seen as a column of truth
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
         X = X.loc[X["trueDurationHrs"] <= 24].copy()

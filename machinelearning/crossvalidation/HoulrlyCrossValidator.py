@@ -41,6 +41,7 @@ class kNNCrossValidator:
         self.max_depth = max_depth
         self.col_name = col_name
 
+
     def cross_validate_one(self, df) -> dict:
         # create features
         df = self.__create_all_lag_features(df)
@@ -53,8 +54,8 @@ class kNNCrossValidator:
 
         # create parameter grid
         params = {
-            "estimator__n_neighbors": np.arange(1, self.max_neighbors+1),
-            "subset_features__num_lags": np.arange(1, self.max_depth+1)
+            "estimator__n_neighbors": np.arange(10, self.max_neighbors+1), # start searching at 10 neighbors
+            "subset_features__num_lags": np.arange(40, self.max_depth+1) # start searching at 40 lags as features
         }
 
         # split data into train, validation, and test
@@ -115,23 +116,22 @@ class kNNCrossValidator:
 ## Pipeline Classes
 class CreateLagFeatures(BaseEstimator, TransformerMixin):
 
-    def __init__(self, num_lag_depths, col_name, num_pts_per_day=24):
+    def __init__(self, num_lag_depths, col_name):
         super().__init__()
         self.num_lags_depths = num_lag_depths
         self.col_name = col_name
-        self.num_pts_per_day = num_pts_per_day
 
     def fit(self, X, y=None):
         return self 
     
     def transform(self, X):
-        return self.__create_lag_features(X, self.num_lags_depths, self.num_pts_per_day, self.col_name)
+        return self.__create_lag_features(X, self.num_lags_depths, self.col_name)
     
     @staticmethod
-    def __create_lag_features(df, num_lag_depths, num_pts_per_day, col_name):
+    def __create_lag_features(df, num_lag_depths, col_name):
         df_with_lags = df.copy(deep=True)
         for lag_depth in np.arange(1,num_lag_depths+1):
-            column = df_with_lags[col_name].shift(num_pts_per_day*lag_depth)
+            column = df_with_lags[col_name].shift(24*lag_depth)
             df_with_lags = pd.concat([df_with_lags, column.rename("lag" + f"{lag_depth}")], axis=1)
         return df_with_lags.dropna()
 

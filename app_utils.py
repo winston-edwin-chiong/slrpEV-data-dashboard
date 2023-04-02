@@ -297,7 +297,9 @@ class GetUserHoverData:
         subset["connectTime"] = pd.to_datetime(subset["connectTime"])
         freq_connect_time = subset["connectTime"].dt.hour.apply(cls.__get_connect).value_counts().index[0]
 
-        return num_sessions, average_duration, freq_connect_time
+        total_nrg_consumed = subset["cumEnergy_Wh"].sum()
+
+        return num_sessions, average_duration, freq_connect_time, total_nrg_consumed
         
     def __get_connect(hour: int) -> str:
         if 6 <= hour <= 10:

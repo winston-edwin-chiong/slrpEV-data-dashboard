@@ -22,7 +22,8 @@ def tab_two_layout():
                     html.Div([
                         html.Li("# of Sessions by User", id="num_sessions_user"),
                         html.Li("Avg. Stay Duration", id="avg_duration_user"),
-                        html.Li("Frequent Connect Time", id="freq_connect_time_user")
+                        html.Li("Frequent Connect Time", id="freq_connect_time_user"),
+                        html.Li("Total Energy Consumed", id="total_nrg_consumed_user")
                     ],
                         id='user-information',
                     ),

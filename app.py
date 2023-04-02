@@ -20,7 +20,7 @@ server = app.server
 CACHE_CONFIG = {
     'CACHE_TYPE': 'FileSystemCache',
     'CACHE_DIR': "cache/",
-    'CACHE_THRESHOLD': 15
+    'CACHE_THRESHOLD': 20
 }
 cache = Cache()
 cache.init_app(app.server, config=CACHE_CONFIG)
@@ -93,10 +93,10 @@ def display_cumulative_energy_figure(start_date, end_date, signal):
     Input("quantity_picker", "value"),
     Input("date_picker", "start_date"),
     Input("date_picker", "end_date"),
-    Input("toggle_predictions", "value"),
+    Input("toggle_forecasts", "value"),
     Input("data_refresh_signal", "data"),
 )
-def display_main_figure(granularity, quantity, start_date, end_date, predictions, signal):
+def display_main_figure(granularity, quantity, start_date, end_date, forecasts, signal):
     # load data
     data = update_data().get("dataframes")
     data = data.get(granularity)
@@ -107,43 +107,42 @@ def display_main_figure(granularity, quantity, start_date, end_date, predictions
     # plot main time series
     fig = PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
-
-    if predictions:
-        # plot predictions
-        pass
-
+    
+    # plot predictions
+    if forecasts:
+        return 
 
     return fig, f"Data last updated at {last_updated}."
 
 
 @app.callback(
-    Input("toggle_predictions", "value"),
-    Input("CV_signal", "data")
-)
-def add_forecasts(predictions):
-    if predictions:
-        pass
-
-@app.callback(
     Output("num_sessions_user", "children"),
     Output("avg_duration_user", "children"),
     Output("freq_connect_time_user", "children"),
+    Output("total_nrg_consumed_user", "children"),
     Input("daily_time_series", "hoverData"),
     prevent_initial_callback=True
 )
 def display_user_hover(hoverData):
     # place holder for no hover
     if hoverData is None:
-        return "# of Sessions by User", "Avg. Stay Duration", "Frequent Connect Time"
+        return "# of Sessions by User", "Avg. Stay Duration", "Frequent Connect Time", "Total Energy Consumed by User"
     # load data
     data = update_data().get("dataframes").get("raw_data")
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
     # get user hover data
-    num_sessions, avg_duration, freq_connect = GetUserHoverData.get_user_hover_data(
+    num_sessions, avg_duration, freq_connect, total_nrg = GetUserHoverData.get_user_hover_data(
         data, userId)
+    
+    text = (
+        f"User has been here {num_sessions} times!", 
+        f"User charges on average {avg_duration} hours!", 
+        f"User usually charges: {freq_connect}", 
+        f"User has consumed {total_nrg} kWh to date!"
+    )
 
-    return f"User has been here {num_sessions} times!", f"User charges on average {avg_duration} hours!", f"User usually charges: {freq_connect}"
+    return text
 
 
 @app.callback(
@@ -157,11 +156,12 @@ def data_refresh_interval(n):
 
 @app.callback(
     Output("CV_signal", "data"),
+    Output("last_validated_timer", "children"),
     Input("CV_interval_component", "n_intervals"),
 )
 def CV_interval(n):
-    update_ml_parameters()
-    return n
+    params = update_ml_parameters()
+    return n, f"Parameters last validated {params['last_validated_time']}"
 
 
 @cache.memoize(timeout=3600)  # refresh every hour
@@ -182,9 +182,9 @@ def update_ml_parameters() -> dict:
     # load data 
     data = update_data().get("dataframes").get("hourlydemand")
     # get kNN parameters
-    best_params = HourlyCrossValidator(30, 20).cross_validate(data) 
+    best_params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data) 
     print(best_params)
-    return best_params
+    return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
 
 
 # running the app
