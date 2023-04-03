@@ -24,7 +24,7 @@ class HourlyCrossValidator:
             params = kNNCrossValidator(self.max_neighbors, self.max_depth, column).cross_validate_one(df)
             best_params[column] = params
 
-        best_params["avg_power_demand_W"] = best_params["energy_demand_kWh"] # same data, different units
+        best_params["avg_power_demand_W"] = best_params["energy_demand_kWh"] # same data, different units, so same parameters
 
         return best_params
 

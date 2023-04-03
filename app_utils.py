@@ -32,14 +32,6 @@ def empty_session_figure():
     return fig
 
 
-def get_last_days_datetime(n=7):
-    """
-    """
-    current_time = pd.to_datetime("today") - timedelta(days=n)
-    current_time = current_time.strftime("%m/%d/%Y")
-    return current_time
-
-
 def add_training_end_vline(self, start_date, end_date):
     """
     """
@@ -97,7 +89,7 @@ class PlotMainTimeSeries:
     }
 
     @classmethod
-    def plot_main_time_series(cls, df, granularity, quantity, start_date, end_date) -> go.Figure:
+    def plot_main_time_series(cls, df: pd.DataFrame, granularity: str, quantity: str, start_date: str, end_date: str) -> go.Figure:
 
         # prepare df for plotting
         df = cls.__query_df(df, granularity, quantity, start_date, end_date)
@@ -134,7 +126,7 @@ class PlotMainTimeSeries:
         return fig
 
     @classmethod
-    def __query_df(cls, df, granularity, quantity, start_date, end_date) -> pd.DataFrame:
+    def __query_df(cls, df: pd.DataFrame, granularity: str, quantity: str, start_date: str, end_date: str) -> pd.DataFrame:
         # get relevant columns
         hoverdata = cls.other_columns.get(granularity).get("hoverdata")
         df = df[[quantity] + hoverdata]
@@ -143,7 +135,7 @@ class PlotMainTimeSeries:
         return df
 
     @staticmethod
-    def __query_date_df(df, start_date, end_date) -> pd.DataFrame:
+    def __query_date_df(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Function querys a dataframe based on a specified start date and end date. If any argument is None, 
         function will ignore those bounds Assumes dataframe has a datetime-like index. Start and end dates are 
@@ -167,7 +159,7 @@ class PlotMainTimeSeries:
 # Class to plot daily session time series
 class PlotDailySessionTimeSeries:
 
-    def plot_daily_time_series(df) -> go.Figure:
+    def plot_daily_time_series(df: pd.DataFrame) -> go.Figure:
 
         if len(df) == 0:
             return empty_session_figure()
@@ -206,7 +198,7 @@ class PlotDailySessionTimeSeries:
 # Class to plot vehicle donut chart
 class PlotDailySessionEnergyBreakdown:
 
-    def plot_daily_energy_breakdown(df) -> go.Figure:
+    def plot_daily_energy_breakdown(df: pd.DataFrame) -> go.Figure:
 
         if len(df) == 0:
             return empty_session_figure()
@@ -234,7 +226,7 @@ class PlotDailySessionEnergyBreakdown:
 class PlotCumulativeEnergyDelivered:
 
     @classmethod
-    def plot_cumulative_energy_delivered(cls, df, start_date, end_date) -> go.Figure():
+    def plot_cumulative_energy_delivered(cls, df: pd.DataFrame, start_date: str, end_date: str) -> go.Figure():
 
         # necessary for some reason, even though 'finishChargeTime' is already cast to datetime during cleaning
         df["finishChargeTime"] = pd.to_datetime(df["finishChargeTime"])
@@ -262,7 +254,7 @@ class PlotCumulativeEnergyDelivered:
         return fig
 
     @staticmethod
-    def __query_date_df(df, start_date, end_date, col) -> pd.DataFrame:
+    def __query_date_df(df: pd.DataFrame, start_date: str, end_date: str, col:str) -> pd.DataFrame:
         """
         Function querys a dataframe based on a specified start date and end date. If any argument is None, 
         function will ignore those bounds. Start and end dates are also assumed to be in the form 'yyyy-mm-dd'.
@@ -312,7 +304,21 @@ class GetUserHoverData:
             return "Really late at night! 🦉" 
 
 
-class PlotHourlyForecasts:
+class PlotForecasts:
 
-    def plot():
-        return 
+    plot_layout = {}
+
+    @classmethod
+    def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str):
+
+        plot_layout = cls.plot_layout
+
+        fig.add_trace(
+            go.Scatter(
+                x=forecasts.index,
+                y=forecasts[plot_layout["column_name"]],
+                name=plot_layout["cleaned_quantity"] +
+                " " + plot_layout["units_measurement"],
+                fill="tozeroy",
+            )
+        )

@@ -3,12 +3,14 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
-from app_utils import get_last_days_datetime, PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData
+import pandas as pd 
+from app_utils import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData
 from layout.tab_one import tab_one_layout
 from layout.tab_two import tab_two_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
+from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
 from flask_caching import Cache
 
 
@@ -100,17 +102,16 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     # load data
     data = update_data().get("dataframes")
     data = data.get(granularity)
-
     # update refresh timestamp
     last_updated = update_data().get('last_updated_time')
-
     # plot main time series
     fig = PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
     
     # plot predictions
     if forecasts:
-        return 
+        forecasts = get_forecast(granularity)
+
 
     return fig, f"Data last updated at {last_updated}."
 
@@ -161,9 +162,10 @@ def data_refresh_interval(n):
 )
 def CV_interval(n):
     params = update_ml_parameters()
-    return n, f"Parameters last validated {params['last_validated_time']}"
+    return n, f"Parameters last validated {params['last_validated_time']}."
 
 
+## Cached functions 
 @cache.memoize(timeout=3600)  # refresh every hour
 def update_data() -> dict:
 
@@ -185,6 +187,33 @@ def update_ml_parameters() -> dict:
     best_params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data) 
     print(best_params)
     return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
+
+
+@cache.memoize()
+def update_hourly_forecasts():
+    # load data 
+    data = update_data().get("dataframes").get("hourlydemand")
+    # get optimal parameters
+    params = update_ml_parameters().get("best_params")
+    # get hourly forecast 
+    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, params)
+    return forecasts
+
+
+
+## Helper Functions
+def get_forecast(granularity):
+    if granularity == "hourlydemand":
+        forecasts = update_hourly_forecasts()
+    elif granularity == "dailydemand":
+        pass
+    elif granularity == "monthlydemand":
+        pass
+
+def get_last_days_datetime(n=7):
+    current_time = pd.to_datetime("today") - timedelta(days=n)
+    current_time = current_time.strftime("%m/%d/%Y")
+    return current_time
 
 
 # running the app
