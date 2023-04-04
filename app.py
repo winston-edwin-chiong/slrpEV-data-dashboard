@@ -117,7 +117,7 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
 
 
 @app.callback(
-    Output("num_sessions_user", "children"),
+    Output("num_sessions_user", "children", allow_duplicate=True),
     Output("avg_duration_user", "children"),
     Output("freq_connect_time_user", "children"),
     Output("total_nrg_consumed_user", "children"),
@@ -162,7 +162,16 @@ def data_refresh_interval(n):
 )
 def CV_interval(n):
     params = update_ml_parameters()
-    return n, f"Parameters last validated {params['last_validated_time']}."
+    # calculate new models with ML parameters
+    return n, f"Parameters last validated {params['last_validated_time']}." #, new_models dict
+
+
+@app.callback(
+        Output(),
+        Input("CV_signal", "data")
+)
+def recreate_models():
+    pass
 
 
 ## Cached functions 

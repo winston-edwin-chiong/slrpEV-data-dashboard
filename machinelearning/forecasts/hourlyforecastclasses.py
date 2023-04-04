@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-class HourlyForecast(BaseEstimator, TransformerMixin):
+class kNNPredict(BaseEstimator, TransformerMixin):
 
     columns = ["avg_power_demand_W", "energy_demand_kWh", "peak_power_W"]
 
@@ -42,7 +42,7 @@ class HourlyForecast(BaseEstimator, TransformerMixin):
             regressor.fit(X_train, y_train)
             forecasts[column + "_predictions"] = regressor.predict(X_test).reshape(-1)
 
-        return forecasts
+        return forecasts 
 
 
     @staticmethod

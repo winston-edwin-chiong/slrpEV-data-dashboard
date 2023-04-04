@@ -1,5 +1,5 @@
 from sklearn.pipeline import Pipeline
-from hourlyforecastclasses import HourlyForecast
+from hourlyforecastclasses import kNNPredict
 
 class CreateHourlyForecasts:
 
@@ -10,7 +10,7 @@ class CreateHourlyForecasts:
     def run_hourly_forecast(df, best_params: dict):
 
         hourly_forecast_pipeline = Pipeline([
-            ("estimator", HourlyForecast(best_params=best_params))
+            ("estimator", kNNPredict(best_params=best_params))
         ])
         forecasts = hourly_forecast_pipeline.fit_transform(df)
 

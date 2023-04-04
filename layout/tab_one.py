@@ -3,7 +3,8 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 import dash_daq as daq
-from app_utils import get_last_days_datetime
+import pandas as pd
+from datetime import timedelta
 
 
 def tab_one_layout():
@@ -97,3 +98,8 @@ def tab_one_layout():
             ]
         )
     return layout
+
+def get_last_days_datetime(n=7):
+    current_time = pd.to_datetime("today") - timedelta(days=n)
+    current_time = current_time.strftime("%m/%d/%Y")
+    return current_time
