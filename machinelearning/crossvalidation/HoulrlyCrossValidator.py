@@ -27,8 +27,7 @@ class HourlyCrossValidator:
         best_params["avg_power_demand_W"] = best_params["energy_demand_kWh"] # same data, different units, so same parameters
 
         return best_params
-
-
+    
 
 ## Helper Class
 class kNNCrossValidator:

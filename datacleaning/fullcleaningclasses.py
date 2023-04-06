@@ -1,5 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
+from datetime import datetime
 
 
 class SortDropCast(BaseEstimator, TransformerMixin):
@@ -104,6 +105,31 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         self.rows.append(temp_df)
 
 
+
+class ImputeZero(BaseEstimator, TransformerMixin):
+    """
+    The way the data is pulled means data is only updated when there is a session ongoing. This class imputes zero 
+    to makes the data feel more like real time. 
+    """
+    
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X) -> pd.DataFrame:
+        # get start and end dates
+        start = X.index[-1]
+        end = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        end = pd.to_datetime(end).floor("5T").strftime('%Y-%m-%d %H:%M:%S')
+
+        if str(start) == end: # data up to date 
+            return X 
+        
+        # "missing chunk"
+        missing_dates = pd.date_range(start=X.index[-1], end=end, freq="5MIN", inclusive="right")
+        missing = pd.DataFrame(index=missing_dates, columns=["avg_power_demand_W"], data=0) # impute zero 
+        return pd.concat([X, missing], axis=0)
+
+
 class FeatureCreation(BaseEstimator, TransformerMixin):
     """
     This pipeline step will create an "energy_demand_kWh" and "peak_power_W" column. 
@@ -124,7 +150,7 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
         X["day"] = X.index.day_name()
         X["month"] = X.index.month_name()
         return X
-
+    
 
 class SaveToCsv(BaseEstimator, TransformerMixin):
     """

@@ -240,7 +240,8 @@ class PlotCumulativeEnergyDelivered:
                 x=df["finishChargeTime"],
                 # calculate cumulative sum in kWh
                 y=df["cumEnergy_Wh"].cumsum(axis=0) / 1000,
-                fill="tozeroy"
+                fill="tozeroy",
+                mode="lines"
             )
         )
 

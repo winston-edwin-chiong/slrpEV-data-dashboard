@@ -21,6 +21,7 @@ class CleanData:
                 ("sort_drop_cast", fcc.SortDropCast()),
                 ("create_helpers", fcc.HelperFeatureCreation()),
                 ("create_session_TS", fcc.CreateSessionTimeSeries()),
+                ("impute_zero", fcc.ImputeZero()),
                 ("create_features", fcc.FeatureCreation()),
                 ("save_to_csv", fcc.SaveToCsv()),
             ]
