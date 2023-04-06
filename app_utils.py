@@ -231,6 +231,7 @@ class PlotCumulativeEnergyDelivered:
         # necessary for some reason, even though 'finishChargeTime' is already cast to datetime during cleaning
         df["finishChargeTime"] = pd.to_datetime(df["finishChargeTime"])
         df = df.sort_values(by="finishChargeTime")
+        # df["cum_sum_kWh"] = df["cumEnergy_Wh"].cumsum(axis=0) / 1000
         df = cls.__query_date_df(df, start_date, end_date, "finishChargeTime")
 
         fig = go.Figure()
@@ -249,6 +250,7 @@ class PlotCumulativeEnergyDelivered:
             title="Cumulative Energy Delivered",
             xaxis_title="Time",
             yaxis_title="Energy Delivered (kWh)",
+            # yaxis = dict(range=[df["cum_sum_kWh"].min(), df["cum_sum_kWh"].max()]),
             template="plotly",
         )
 

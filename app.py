@@ -110,7 +110,7 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     
     # plot predictions
     if forecasts:
-        forecasts = get_forecast(granularity)
+        pass
 
 
     return fig, f"Data last updated at {last_updated}."
@@ -147,6 +147,17 @@ def display_user_hover(hoverData):
 
 
 @app.callback(
+    Output("last_updated_timer", "children", allow_duplicate=True),
+    Input("refresh_data_btn", "n_clicks"),
+    prevent_initial_call=True
+)
+def force_refresh_data(button_press):
+    cache.delete_memoized(update_data)
+    update_data()
+    return f"Data last updated at {datetime.now().strftime('%H:%M:%S')}."
+
+
+@app.callback(
     Output("data_refresh_signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
 )
@@ -161,17 +172,21 @@ def data_refresh_interval(n):
     Input("CV_interval_component", "n_intervals"),
 )
 def CV_interval(n):
-    params = update_ml_parameters()
+    params = update_ml_parameters() # expensive process
     # calculate new models with ML parameters
     return n, f"Parameters last validated {params['last_validated_time']}." #, new_models dict
 
 
 # @app.callback(
-#         Output(),
-#         Input("CV_signal", "data")
+#     Output(),
+#     Input("hourly_forecast_interval_component", "n_intervals")
 # )
-# def recreate_models():
-#     pass
+def hourly_forecasts():
+    data = update_data().get("dataframes").get("hourlydemand")
+    params = update_ml_parameters().get("best_params")
+    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, params)
+    forecasts.to_csv("forecastdata/temp.csv")
+    return forecasts
 
 
 ## Cached functions 
@@ -198,27 +213,7 @@ def update_ml_parameters() -> dict:
     return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
 
 
-@cache.memoize() # run this every time we pull data
-def update_hourly_forecasts():
-    # load data 
-    data = update_data().get("dataframes").get("hourlydemand")
-    # get optimal parameters
-    params = update_ml_parameters().get("best_params")
-    # get hourly forecast 
-    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, params)
-    return forecasts
-
-
-
 ## Helper Functions
-def get_forecast(granularity):
-    if granularity == "hourlydemand":
-        forecasts = update_hourly_forecasts()
-    elif granularity == "dailydemand":
-        pass
-    elif granularity == "monthlydemand":
-        pass
-
 def get_last_days_datetime(n=7):
     current_time = pd.to_datetime("today") - timedelta(days=n)
     current_time = current_time.strftime("%m/%d/%Y")
@@ -227,5 +222,5 @@ def get_last_days_datetime(n=7):
 
 # running the app
 if __name__ == '__main__':
-    cache.delete_memoized(update_data)
+    print(hourly_forecasts())
     app.run(debug=True)

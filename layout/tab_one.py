@@ -48,6 +48,7 @@ def tab_one_layout():
                         searchable=False
                     ),
                     html.Button("Today", id="jump_to_present_btn"),
+                    html.Button("Refresh Data", id="refresh_data_btn", disabled=True),
                     daq.ToggleSwitch(
                         label="Toggle Forecasts",
                         value=False,
@@ -86,6 +87,11 @@ def tab_one_layout():
                         id="last_validated_timer"
                     )
                 ]),
+                dcc.Interval(
+                        id="hourly_forecast_interval_component",
+                        interval=60 * 60 * 1000,  # update every 60 minutes
+                        n_intervals=0                    
+                ),
                 html.Div([
                     "Cumulative Energy Delivered",
                     dcc.Graph(
