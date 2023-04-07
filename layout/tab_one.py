@@ -48,7 +48,7 @@ def tab_one_layout():
                         searchable=False
                     ),
                     html.Button("Today", id="jump_to_present_btn"),
-                    html.Button("Refresh Data", id="refresh_data_btn", disabled=True),
+                    html.Button("Refresh Data", id="refresh_data_btn"),
                     daq.ToggleSwitch(
                         label="Toggle Forecasts",
                         value=False,

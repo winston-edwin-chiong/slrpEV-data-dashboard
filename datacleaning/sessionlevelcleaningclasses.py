@@ -60,7 +60,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X['temp_0'] = pd.Timedelta(days=0, seconds=0)
         X['Overstay'] = X["lastUpdate"] - X['Deadline']
         X["Overstay"] = X[["Overstay", "temp_0"]].max(axis=1)
-        X['Overstay_h'] = X['Overstay'].dt.seconds / 3600
+        X['Overstay_h'] = X['Overstay'].dt.seconds / 3600   
         X.drop(columns=['temp_0'], inplace=True)
 
         return X
@@ -103,6 +103,11 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
 
         X = X[(X["Time"] >= datetime.now().strftime("%D"))
               ].copy()  # keep sessions within today
+        
+        # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        now = pd.to_datetime(now).floor("5T").strftime('%Y-%m-%d %H:%M:%S')
+        X = X[X["Time"] <= now].copy()
         return X
 
     def __create_ts(self, session):

@@ -222,5 +222,6 @@ def get_last_days_datetime(n=7):
 
 # running the app
 if __name__ == '__main__':
+    print(update_ml_parameters())
     print(hourly_forecasts())
     app.run(debug=True)

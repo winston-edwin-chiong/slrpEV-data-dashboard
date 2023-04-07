@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
 
+# Plot empty figure if no sessions
 def empty_session_figure():
     fig = go.Figure()
     fig.update_layout(
@@ -179,7 +180,8 @@ class PlotDailySessionTimeSeries:
                     hovertemplate="<br>Date: %{x}" +
                     "<br>Power: %{y} Watts" +
                     "<br>Vehicle Model: %{customdata[0]}" +
-                    "<br>Choice: %{customdata[1]}"
+                    "<br>Choice: %{customdata[1]}",
+                    hoverlabel={"font":{"size":10}}
                 )
             )
         fig.update_layout(
@@ -279,6 +281,7 @@ class PlotCumulativeEnergyDelivered:
             return df.loc[(df[col] >= start_date) & (df[col] <= end_date)]
 
 
+# Class to update user hover data
 class GetUserHoverData:
 
     @classmethod
@@ -287,7 +290,7 @@ class GetUserHoverData:
         subset = df[df["userId"] == userId].copy()
 
         num_sessions = len(subset)
-        average_duration = subset["trueDurationHrs"].mean()
+        average_duration = round(subset["trueDurationHrs"].mean(), 2)
          
         subset["connectTime"] = pd.to_datetime(subset["connectTime"])
         freq_connect_time = subset["connectTime"].dt.hour.apply(cls.__get_connect).value_counts().index[0]
@@ -307,6 +310,7 @@ class GetUserHoverData:
             return "Really late at night! 🦉" 
 
 
+# Class to plot forecasts 
 class PlotForecasts:
 
     plot_layout = {}
