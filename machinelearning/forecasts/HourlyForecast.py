@@ -16,9 +16,19 @@ class CreateHourlyForecasts:
         hourly_forecast_pipeline = Pipeline([
             ("estimator", kNNPredict(best_params=best_params))
         ])
-        forecasts = hourly_forecast_pipeline.fit_transform(df)
+        new_forecasts = hourly_forecast_pipeline.fit_transform(df)
+        existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)
+
+        forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1H").last() # get more recent forecast
+        forecasts.to_csv("forecastdata/hourlyforecasts.csv")
 
         return forecasts
+    
+    @staticmethod
+    def save_empty_prediction_df():
+        empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
+        empty_df.to_csv("forecastdata/hourlyforecasts.csv")
+        return empty_df
     
 
 class kNNPredict(BaseEstimator, TransformerMixin):
@@ -87,3 +97,7 @@ class kNNPredict(BaseEstimator, TransformerMixin):
             shuffle=False
         )
         return X_train, X_test, y_train, y_test
+    
+if __name__ == "__main__":
+        empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
+        empty_df.to_csv("forecastdata/hourlyforecasts.csv")

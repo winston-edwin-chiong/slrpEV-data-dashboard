@@ -4,7 +4,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
 import pandas as pd 
-from app_utils import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData
+from app_utils import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts
 from layout.tab_one import tab_one_layout
 from layout.tab_two import tab_two_layout
 from datacleaning.FetchData import FetchData
@@ -97,8 +97,9 @@ def display_cumulative_energy_figure(start_date, end_date, signal):
     Input("date_picker", "end_date"),
     Input("toggle_forecasts", "value"),
     Input("data_refresh_signal", "data"),
+    Input("hourly_forecast_signal", "data"),
 )
-def display_main_figure(granularity, quantity, start_date, end_date, forecasts, signal):
+def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, hourly_forecast_signal):
     # load data
     data = update_data().get("dataframes")
     data = data.get(granularity)
@@ -110,8 +111,8 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     
     # plot predictions
     if forecasts:
-        pass
-
+        forecast_df = prediction_to_run(granularity)
+        fig = PlotForecasts.plot_forecasts(fig, forecast_df, quantity, granularity)
 
     return fig, f"Data last updated at {last_updated}."
 
@@ -147,17 +148,6 @@ def display_user_hover(hoverData):
 
 
 @app.callback(
-    Output("last_updated_timer", "children", allow_duplicate=True),
-    Input("refresh_data_btn", "n_clicks"),
-    prevent_initial_call=True
-)
-def force_refresh_data(button_press):
-    cache.delete_memoized(update_data)
-    update_data()
-    return f"Data last updated at {datetime.now().strftime('%H:%M:%S')}."
-
-
-@app.callback(
     Output("data_refresh_signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
 )
@@ -177,16 +167,13 @@ def CV_interval(n):
     return n, f"Parameters last validated {params['last_validated_time']}." #, new_models dict
 
 
-# @app.callback(
-#     Output(),
-#     Input("hourly_forecast_interval_component", "n_intervals")
-# )
-def hourly_forecasts():
-    data = update_data().get("dataframes").get("hourlydemand")
-    params = update_ml_parameters().get("best_params")
-    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, params)
-    forecasts.to_csv("forecastdata/temp.csv")
-    return forecasts
+@app.callback(
+    Output("hourly_forecast_signal", "data"),
+    Input("hourly_forecast_interval_component", "n_intervals")
+)
+def hourly_forecast_interval(n):
+    forecast_hourly()
+    return n
 
 
 ## Cached functions 
@@ -210,7 +197,22 @@ def update_ml_parameters() -> dict:
     # get kNN parameters
     best_params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data) 
     print(best_params)
+    # clear predictions
+    CreateHourlyForecasts.save_empty_prediction_df()
     return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
+
+
+@cache.memoize(timeout=3600) #refresh every hour
+def forecast_hourly():
+    data = update_data().get("dataframes").get("hourlydemand")
+    params = update_ml_parameters().get("best_params")
+    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, params)
+    return forecasts   
+
+
+@cache.memoize(timeout=86400) #refresh every day 
+def forecast_daily():
+    data = update_data().get("dataframes").get("hourlydemand")
 
 
 ## Helper Functions
@@ -220,8 +222,17 @@ def get_last_days_datetime(n=7):
     return current_time
 
 
+def prediction_to_run(granularity):
+    if granularity == "fivemindemand":
+        pass
+    elif granularity == "hourlydemand":
+        return forecast_hourly()
+    elif granularity == "dailydemand":
+        pass
+    elif granularity == "monthlydemand":
+        pass 
+
+
 # running the app
 if __name__ == '__main__':
-    print(update_ml_parameters())
-    print(hourly_forecasts())
     app.run(debug=True)

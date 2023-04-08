@@ -53,7 +53,6 @@ def tab_one_layout():
                         label="Toggle Forecasts",
                         value=False,
                         id="toggle_forecasts",
-                        disabled=True,
                     )
                 ]),
                 html.Div([
@@ -92,6 +91,7 @@ def tab_one_layout():
                         interval=60 * 60 * 1000,  # update every 60 minutes
                         n_intervals=0                    
                 ),
+                dcc.Store(id="hourly_forecast_signal"),
                 html.Div([
                     "Cumulative Energy Delivered",
                     dcc.Graph(

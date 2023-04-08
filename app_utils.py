@@ -313,19 +313,33 @@ class GetUserHoverData:
 # Class to plot forecasts 
 class PlotForecasts:
 
-    plot_layout = {}
+    plot_layout = {
+        "fivemindemand":{},
+        "hourlydemand":{}
+    }
+
 
     @classmethod
-    def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str):
+    def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str, granularity: str):
+        if granularity == "fivemindemand":
+            pass
+        elif granularity == "hourlydemand":
+            return cls.plot_hourly_forecasts(fig, forecasts, quantity)
+        elif granularity == "dailydemand":
+            pass
+        elif granularity == "monthlydemand":
+            pass
 
-        plot_layout = cls.plot_layout
+    @classmethod
+    def plot_hourly_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str):
 
         fig.add_trace(
             go.Scatter(
                 x=forecasts.index,
-                y=forecasts[plot_layout["column_name"]],
-                name=plot_layout["cleaned_quantity"] +
-                " " + plot_layout["units_measurement"],
+                y=forecasts[quantity+"_predictions"],
+                name="Predictions", 
                 fill="tozeroy",
             )
         )
+
+        return fig
