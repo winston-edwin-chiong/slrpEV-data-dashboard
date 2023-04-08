@@ -14,7 +14,7 @@ class CreateHourlyForecasts:
     def run_hourly_forecast(df, best_params: dict):
 
         hourly_forecast_pipeline = Pipeline([
-            ("estimator", kNNPredict(best_params=best_params))
+            ("estimator", kNNPredict(best_params=best_params.get("hourlydemand")))
         ])
         new_forecasts = hourly_forecast_pipeline.fit_transform(df)
         existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)

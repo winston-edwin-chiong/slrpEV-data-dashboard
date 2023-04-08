@@ -79,7 +79,7 @@ def tab_one_layout():
                 html.Div([
                     dcc.Interval(
                         id="CV_interval_component",
-                        interval=20160 * 60 * 1000,  # update every two weeks
+                        interval=14 * 24 * 60 * 60 * 1000,  # update every two weeks
                         n_intervals=0
                     ),
                     html.Div(
@@ -92,6 +92,12 @@ def tab_one_layout():
                         n_intervals=0                    
                 ),
                 dcc.Store(id="hourly_forecast_signal"),
+                dcc.Interval(
+                        id="daily_forecast_interval_component",
+                        interval=24 * 60 * 60 * 1000, # update every day 
+                        n_intervals=0
+                ),
+                dcc.Store(id="daily_forecast_signal"),
                 html.Div([
                     "Cumulative Energy Delivered",
                     dcc.Graph(

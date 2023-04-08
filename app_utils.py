@@ -326,7 +326,7 @@ class PlotForecasts:
         elif granularity == "hourlydemand":
             return cls.plot_hourly_forecasts(fig, forecasts, quantity)
         elif granularity == "dailydemand":
-            pass
+            return cls.plot_daily_forecasts(fig, forecasts, quantity)
         elif granularity == "monthlydemand":
             pass
 
@@ -337,9 +337,22 @@ class PlotForecasts:
             go.Scatter(
                 x=forecasts.index,
                 y=forecasts[quantity+"_predictions"],
-                name="Predictions", 
+                name="Forecasts", 
                 fill="tozeroy",
             )
         )
+        return fig
+    
 
+    @classmethod
+    def plot_daily_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str):
+
+        fig.add_trace(
+            go.Scatter(
+                x=forecasts.index,
+                y=forecasts[quantity+"_predictions"],
+                name="Forecasts", 
+                fill="tozeroy",
+            )
+        )
         return fig

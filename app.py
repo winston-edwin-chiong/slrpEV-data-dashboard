@@ -10,7 +10,9 @@ from layout.tab_two import tab_two_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
+from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValidator
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
+from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
 from flask_caching import Cache
 
 
@@ -98,8 +100,9 @@ def display_cumulative_energy_figure(start_date, end_date, signal):
     Input("toggle_forecasts", "value"),
     Input("data_refresh_signal", "data"),
     Input("hourly_forecast_signal", "data"),
+    Input("daily_forecast_signal", "data"),
 )
-def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, hourly_forecast_signal):
+def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, hourly_forecast_signal, daily_forecast_signal):
     # load data
     data = update_data().get("dataframes")
     data = data.get(granularity)
@@ -164,7 +167,7 @@ def data_refresh_interval(n):
 def CV_interval(n):
     params = update_ml_parameters() # expensive process
     # calculate new models with ML parameters
-    return n, f"Parameters last validated {params['last_validated_time']}." #, new_models dict
+    return n, f"Parameters last validated {params['last_validated_time']}." 
 
 
 @app.callback(
@@ -173,6 +176,15 @@ def CV_interval(n):
 )
 def hourly_forecast_interval(n):
     forecast_hourly()
+    return n
+
+
+@app.callback(
+    Output("daily_forecast_signal", "data"),
+    Input("daily_forecast_interval_component", "n_intervals")
+)
+def daily_forecast_interval(n):
+    forecast_daily()
     return n
 
 
@@ -195,11 +207,24 @@ def update_ml_parameters() -> dict:
     # load data 
     data = update_data().get("dataframes").get("hourlydemand")
     # get kNN parameters
-    best_params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data) 
+    best_params = {}
+    best_params["hourlydemand"] = update_hourly_parameters(data)
+    best_params["dailydemand"] = update_daily_parameters(data)
     print(best_params)
     # clear predictions
     CreateHourlyForecasts.save_empty_prediction_df()
+    CreateDailyForecasts.save_empty_prediction_df()
     return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
+
+
+@cache.memoize(timeout=1209600)
+def update_hourly_parameters(data):
+    return HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data) 
+
+
+@cache.memoize(timeout=1209600)
+def update_daily_parameters(data):
+    return DailyCrossValidator.cross_validate(data)
 
 
 @cache.memoize(timeout=3600) #refresh every hour
@@ -212,7 +237,11 @@ def forecast_hourly():
 
 @cache.memoize(timeout=86400) #refresh every day 
 def forecast_daily():
-    data = update_data().get("dataframes").get("hourlydemand")
+    data = update_data().get("dataframes").get("dailydemand")
+    params = update_ml_parameters().get("best_params")
+    print(params)
+    forecasts = CreateDailyForecasts.run_daily_forecast(data, params)
+    return forecasts
 
 
 ## Helper Functions
@@ -224,15 +253,18 @@ def get_last_days_datetime(n=7):
 
 def prediction_to_run(granularity):
     if granularity == "fivemindemand":
-        pass
+        pass # not yet supported 
     elif granularity == "hourlydemand":
         return forecast_hourly()
     elif granularity == "dailydemand":
-        pass
+        return forecast_daily()
     elif granularity == "monthlydemand":
-        pass 
+        pass # not yet supported 
 
 
 # running the app
 if __name__ == '__main__':
-    app.run(debug=True)
+    data = update_data().get("dataframes").get("dailydemand")
+    params = update_ml_parameters().get("best_params")
+    params["dailydemand"] = update_daily_parameters(data)
+    app.run_server(debug=True)
