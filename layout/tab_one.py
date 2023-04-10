@@ -23,7 +23,8 @@ def tab_one_layout():
                             end_date_placeholder_text="mm/dd/yyyy",
                             with_portal=False
                         ),
-                    ]),
+                    ],
+                        className="calendar"),
                     html.Div([
                         dcc.Dropdown(
                             id="dataframe_picker",
@@ -40,11 +41,12 @@ def tab_one_layout():
                         dcc.Dropdown(
                             id="quantity_picker",
                             options=[
-                                {'label': 'Energy Demand', 'value': 'energy_demand_kWh'},
+                                {'label': 'Energy Demand',
+                                    'value': 'energy_demand_kWh'},
                                 {'label': 'Average Power Demand',
-                                'value': 'avg_power_demand_W'},
+                                 'value': 'avg_power_demand_W'},
                                 {'label': 'Peak Power Demand',
-                                'value': 'peak_power_W'}
+                                 'value': 'peak_power_W'}
                             ],
                             value='energy_demand_kWh',  # default value
                             clearable=False,
@@ -91,17 +93,17 @@ def tab_one_layout():
                 ),
                 html.Div([
                     dcc.Interval(
-                            id="hourly_forecast_interval_component",
-                            interval=60 * 60 * 1000,  # update every 60 minutes
-                            n_intervals=0                    
+                        id="hourly_forecast_interval_component",
+                        interval=60 * 60 * 1000,  # update every 60 minutes
+                        n_intervals=0
                     ),
                     dcc.Store(id="hourly_forecast_signal"),
                 ]),
                 html.Div([
                     dcc.Interval(
-                            id="daily_forecast_interval_component",
-                            interval=24 * 60 * 60 * 1000, # update every day 
-                            n_intervals=0
+                        id="daily_forecast_interval_component",
+                        interval=24 * 60 * 60 * 1000,  # update every day
+                        n_intervals=0
                     ),
                     dcc.Store(id="daily_forecast_signal"),
                 ]),
@@ -117,6 +119,7 @@ def tab_one_layout():
             ]
         )
     return layout
+
 
 def get_last_days_datetime(n=7):
     current_time = pd.to_datetime("today") - timedelta(days=n)

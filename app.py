@@ -224,9 +224,11 @@ def update_ml_parameters() -> dict:
     best_params = {}
     best_params["hourlydemand"] = hard_coded_params_hourly
     best_params["dailydemand"] = hard_coded_params_daily
+
     # clear predictions
     CreateHourlyForecasts.save_empty_prediction_df()
     CreateDailyForecasts.save_empty_prediction_df()
+    
     return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
 
 
