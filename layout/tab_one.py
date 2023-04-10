@@ -13,42 +13,45 @@ def tab_one_layout():
             label="All Time",
             children=[
                 html.Div([
-                    dcc.DatePickerRange(
-                        id="date_picker",
-                        clearable=True,
-                        start_date=get_last_days_datetime(7),
-                        end_date=get_last_days_datetime(0),
-                        start_date_placeholder_text="mm/dd/yyyy",
-                        end_date_placeholder_text="mm/dd/yyyy",
-                        with_portal=False
-                    ),
-                    dcc.Dropdown(
-                        id="dataframe_picker",
-                        options=[
-                            {'label': '5-Min', 'value': 'fivemindemand'},
-                            {'label': 'Hourly', 'value': 'hourlydemand'},
-                            {'label': 'Daily', 'value': "dailydemand"},
-                            {'label': 'Monthly', 'value': 'monthlydemand'}
-                        ],
-                        value='hourlydemand',  # default value
-                        clearable=False,
-                        searchable=False
-                    ),
-                    dcc.Dropdown(
-                        id="quantity_picker",
-                        options=[
-                            {'label': 'Energy Demand', 'value': 'energy_demand_kWh'},
-                            {'label': 'Average Power Demand',
-                             'value': 'avg_power_demand_W'},
-                            {'label': 'Peak Power Demand',
-                             'value': 'peak_power_W'}
-                        ],
-                        value='energy_demand_kWh',  # default value
-                        clearable=False,
-                        searchable=False
-                    ),
+                    html.Div([
+                        dcc.DatePickerRange(
+                            id="date_picker",
+                            clearable=True,
+                            start_date=get_last_days_datetime(7),
+                            end_date=get_last_days_datetime(0),
+                            start_date_placeholder_text="mm/dd/yyyy",
+                            end_date_placeholder_text="mm/dd/yyyy",
+                            with_portal=False
+                        ),
+                    ]),
+                    html.Div([
+                        dcc.Dropdown(
+                            id="dataframe_picker",
+                            options=[
+                                {'label': '5-Min', 'value': 'fivemindemand'},
+                                {'label': 'Hourly', 'value': 'hourlydemand'},
+                                {'label': 'Daily', 'value': "dailydemand"},
+                                {'label': 'Monthly', 'value': 'monthlydemand'}
+                            ],
+                            value='hourlydemand',  # default value
+                            clearable=False,
+                            searchable=False
+                        ),
+                        dcc.Dropdown(
+                            id="quantity_picker",
+                            options=[
+                                {'label': 'Energy Demand', 'value': 'energy_demand_kWh'},
+                                {'label': 'Average Power Demand',
+                                'value': 'avg_power_demand_W'},
+                                {'label': 'Peak Power Demand',
+                                'value': 'peak_power_W'}
+                            ],
+                            value='energy_demand_kWh',  # default value
+                            clearable=False,
+                            searchable=False
+                        ),
+                    ]),
                     html.Button("Today", id="jump_to_present_btn"),
-                    html.Button("Refresh Data", id="refresh_data_btn"),
                     daq.ToggleSwitch(
                         label="Toggle Forecasts",
                         value=False,
@@ -64,40 +67,44 @@ def tab_one_layout():
                         }
                     )
                 ]),
-                dcc.Store(id="data_refresh_signal"),
                 html.Div([
                     dcc.Interval(
                         id="data_refresh_interval_component",
                         interval=60 * 60 * 1000,  # update every 60 minutes
                         n_intervals=0
                     ),
-                    html.Div(
-                        id="last_updated_timer"
-                    ),
+                    dcc.Store(id="data_refresh_signal"),
                 ]),
-                dcc.Store(id="CV_signal"),
+                html.Div(
+                    id="last_updated_timer"
+                ),
                 html.Div([
                     dcc.Interval(
                         id="CV_interval_component",
                         interval=14 * 24 * 60 * 60 * 1000,  # update every two weeks
                         n_intervals=0
                     ),
-                    html.Div(
-                        id="last_validated_timer"
-                    )
+                    dcc.Store(id="CV_signal"),
                 ]),
-                dcc.Interval(
-                        id="hourly_forecast_interval_component",
-                        interval=60 * 60 * 1000,  # update every 60 minutes
-                        n_intervals=0                    
+                html.Div(
+                    id="last_validated_timer"
                 ),
-                dcc.Store(id="hourly_forecast_signal"),
-                dcc.Interval(
-                        id="daily_forecast_interval_component",
-                        interval=24 * 60 * 60 * 1000, # update every day 
-                        n_intervals=0
-                ),
-                dcc.Store(id="daily_forecast_signal"),
+                html.Div([
+                    dcc.Interval(
+                            id="hourly_forecast_interval_component",
+                            interval=60 * 60 * 1000,  # update every 60 minutes
+                            n_intervals=0                    
+                    ),
+                    dcc.Store(id="hourly_forecast_signal"),
+                ]),
+                html.Div([
+                    dcc.Interval(
+                            id="daily_forecast_interval_component",
+                            interval=24 * 60 * 60 * 1000, # update every day 
+                            n_intervals=0
+                    ),
+                    dcc.Store(id="daily_forecast_signal"),
+                ]),
                 html.Div([
                     "Cumulative Energy Delivered",
                     dcc.Graph(

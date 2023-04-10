@@ -10,14 +10,16 @@ def tab_two_layout():
             label="Today's Sessions",
             children=[
                 html.Div([
-                    "Today's Sessions",
-                    dcc.Graph(
-                        id="daily_time_series",
-                        config={
-                            "displaylogo": False,
-                            "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                        }
-                    ),
+                    html.Div([
+                        "Today's Sessions",
+                        dcc.Graph(
+                            id="daily_time_series",
+                            config={
+                                "displaylogo": False,
+                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                            }
+                        ),
+                    ]),
                     "User Information",
                     html.Div([
                         html.Li("# of Sessions by User", id="num_sessions_user"),
@@ -27,10 +29,12 @@ def tab_two_layout():
                     ],
                         id='user-information',
                     ),
-                    "Energy Breakdown",
-                    dcc.Graph(
-                        id="vehicle_pie_chart"
-                    )
+                    html.Div([
+                        "Energy Breakdown",
+                        dcc.Graph(
+                            id="vehicle_pie_chart"
+                        )
+                    ]),
                 ]),
             ],
         )

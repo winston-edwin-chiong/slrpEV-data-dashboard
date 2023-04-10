@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
@@ -313,46 +314,37 @@ class GetUserHoverData:
 # Class to plot forecasts 
 class PlotForecasts:
 
-    plot_layout = {
-        "fivemindemand":{},
-        "hourlydemand":{}
+    plot_layout_key = {
+        "energy_demand_kWh": {
+            "units_measurement": "(kWh)",
+            "cleaned_quantity": "Energy Demand"
+        },
+        "avg_power_demand_W": {
+            "units_measurement": "(W)",
+            "cleaned_quantity": "Average Power Demand"
+        },
+        "peak_power_W": {
+            "units_measurement": "(W)",
+            "cleaned_quantity": "Peak Power Demand"
+        },
     }
 
 
     @classmethod
     def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str, granularity: str):
-        if granularity == "fivemindemand":
-            pass
-        elif granularity == "hourlydemand":
-            return cls.plot_hourly_forecasts(fig, forecasts, quantity)
-        elif granularity == "dailydemand":
-            return cls.plot_daily_forecasts(fig, forecasts, quantity)
-        elif granularity == "monthlydemand":
-            pass
 
-    @classmethod
-    def plot_hourly_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str):
+        plot_layout = cls.plot_layout_key[quantity]
 
         fig.add_trace(
             go.Scatter(
                 x=forecasts.index,
                 y=forecasts[quantity+"_predictions"],
-                name="Forecasts", 
+                customdata=np.vstack(np.repeat([plot_layout["units_measurement"]], len(forecasts))),
+                name=f"{plot_layout['cleaned_quantity']} Forecasts", 
+                hovertemplate="<extra></extra>" +
+                    "%{x}" +
+                    "<br><i>%{y} %{customdata[0]}</i>",
                 fill="tozeroy",
             )
         )
-        return fig
-    
-
-    @classmethod
-    def plot_daily_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str):
-
-        fig.add_trace(
-            go.Scatter(
-                x=forecasts.index,
-                y=forecasts[quantity+"_predictions"],
-                name="Forecasts", 
-                fill="tozeroy",
-            )
-        )
-        return fig
+        return fig        

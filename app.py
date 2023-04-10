@@ -172,18 +172,20 @@ def CV_interval(n):
 
 @app.callback(
     Output("hourly_forecast_signal", "data"),
-    Input("hourly_forecast_interval_component", "n_intervals")
+    Input("hourly_forecast_interval_component", "n_intervals"),
+    Input("data_refresh_signal", "data"),
 )
-def hourly_forecast_interval(n):
+def hourly_forecast_interval(n, signal):
     forecast_hourly()
     return n
 
 
 @app.callback(
     Output("daily_forecast_signal", "data"),
-    Input("daily_forecast_interval_component", "n_intervals")
+    Input("daily_forecast_interval_component", "n_intervals"),
+    Input("data_refresh_signal", "data"),
 )
-def daily_forecast_interval(n):
+def daily_forecast_interval(n, signal):
     forecast_daily()
     return n
 
@@ -204,19 +206,31 @@ def update_data() -> dict:
 
 @cache.memoize(timeout=1209600) # retrain every two weeks
 def update_ml_parameters() -> dict:
-    # load data 
-    data = update_data().get("dataframes").get("hourlydemand")
-    # get kNN parameters
+    # get parameters
+    hard_coded_params_hourly = {'energy_demand_kWh': 
+                                    {'best_depth': 57, 'best_n_neighbors': 25},
+                                'peak_power_W': 
+                                    {'best_depth': 57, 'best_n_neighbors': 23},
+                                'avg_power_demand_W': 
+                                    {'best_depth': 57, 'best_n_neighbors': 25}
+                                }
+    hard_coded_params_daily = {'energy_demand_kWh': 
+                                    {'order': (2, 0, 1), 'seasonal_order': (0, 1, 2, 7)},
+                                'peak_power_W': 
+                                    {'order': (1, 0, 0), 'seasonal_order': (0, 1, 2, 7)},
+                                'avg_power_demand_W': 
+                                    {'order': (2, 0, 1), 'seasonal_order': (0, 1, 2, 7)}
+                                }
     best_params = {}
-    best_params["hourlydemand"] = update_hourly_parameters(data)
-    best_params["dailydemand"] = update_daily_parameters(data)
-    print(best_params)
+    best_params["hourlydemand"] = hard_coded_params_hourly
+    best_params["dailydemand"] = hard_coded_params_daily
     # clear predictions
     CreateHourlyForecasts.save_empty_prediction_df()
     CreateDailyForecasts.save_empty_prediction_df()
     return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
 
 
+### --> NOT USED RIGHT NOW BECAUSE IDK HOW TO SCHEDULE IT IN THE BACKGROUND <-- ###
 @cache.memoize(timeout=1209600)
 def update_hourly_parameters(data):
     return HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data) 
@@ -225,6 +239,7 @@ def update_hourly_parameters(data):
 @cache.memoize(timeout=1209600)
 def update_daily_parameters(data):
     return DailyCrossValidator.cross_validate(data)
+### --> NOT USED RIGHT NOW BECAUSE IDK HOW TO SCHEDULE IT IN THE BACKGROUND <-- ###
 
 
 @cache.memoize(timeout=3600) #refresh every hour
@@ -239,7 +254,6 @@ def forecast_hourly():
 def forecast_daily():
     data = update_data().get("dataframes").get("dailydemand")
     params = update_ml_parameters().get("best_params")
-    print(params)
     forecasts = CreateDailyForecasts.run_daily_forecast(data, params)
     return forecasts
 
@@ -264,7 +278,4 @@ def prediction_to_run(granularity):
 
 # running the app
 if __name__ == '__main__':
-    data = update_data().get("dataframes").get("dailydemand")
-    params = update_ml_parameters().get("best_params")
-    params["dailydemand"] = update_daily_parameters(data)
     app.run_server(debug=True)
