@@ -12,6 +12,12 @@ def tab_two_layout():
                 html.Div([
                     html.Div([
                         "Today's Sessions",
+                                    html.Div([
+                daq.ToggleSwitch(
+                    label="Toggle Yesterday",
+                    value=False,
+                    id="toggle_yesterday"),
+            ]),
                         dcc.Graph(
                             id="daily_time_series",
                             config={

@@ -196,6 +196,50 @@ class PlotDailySessionTimeSeries:
             }
         )
         return fig
+    
+    
+    @classmethod
+    def plot_yesterday(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
+        # query dataframe
+        start_date = datetime.strftime(datetime.now() - timedelta(1), "%Y-%m-%d")
+        end_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
+        df = cls.__query_date_df(df, start_date, end_date)
+        df.index = df.index + pd.Timedelta('1 day')
+
+        fig.add_trace(
+            go.Scatter(
+                x=df.index,
+                y=df["avg_power_demand_W"],
+                mode='lines',
+                hoverinfo='skip',
+                line_color='rgba(0, 0, 0, 0.35)',
+                name = "Yesterday's Load Curve"
+            )
+        )
+
+        return fig 
+        
+
+    @staticmethod
+    def __query_date_df(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
+        """
+        Function querys a dataframe based on a specified start date and end date. If any argument is None, 
+        function will ignore those bounds. Start and end dates are also assumed to be in the form 'yyyy-mm-dd'.
+        ~~~
+        Parameters:
+        df : Dataframe to be queried.
+        start_date : Inclusive start date in 'yyyy-mm-dd' format.
+        end_date : Inclusive end date in 'yyyy-mm-dd' format.  
+        """
+
+        if start_date is None and end_date is None:
+            return df
+        elif start_date is not None and end_date is None:
+            return df.loc[(df.index >= start_date)]
+        elif start_date is None and end_date is not None:
+            return df.loc[(df.index <= end_date)]
+        else:
+            return df.loc[(df.index >= start_date) & (df.index <= end_date)]
 
 
 # Class to plot vehicle donut chart
@@ -224,7 +268,7 @@ class PlotDailySessionEnergyBreakdown:
         )
         return fig
 
-
+    
 # Class to plot cumulative energy delivered
 class PlotCumulativeEnergyDelivered:
 

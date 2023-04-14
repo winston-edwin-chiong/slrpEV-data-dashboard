@@ -50,15 +50,18 @@ def jump_to_present(button_press):
 
 @app.callback(
     Output("daily_time_series", "figure"),
-    Input("quantity_picker", "value"),
     Input("data_refresh_signal", "data"),
+    Input("toggle_yesterday", "value"),
 )
-def display_daily_time_series(quantity, signal):
+def display_daily_time_series(signal, yesterday):
     # load data
     data = update_data().get("dataframes")
     data = data.get("todays_sessions")
     # plot figure
     fig = PlotDailySessionTimeSeries.plot_daily_time_series(data)
+    # plot yesterday's time series
+    if yesterday:
+        fig = PlotDailySessionTimeSeries.plot_yesterday(fig, update_data().get("dataframes").get("fivemindemand"))
     return fig
 
 
