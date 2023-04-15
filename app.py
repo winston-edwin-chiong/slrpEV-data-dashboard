@@ -7,6 +7,7 @@ import pandas as pd
 from app_utils import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts
 from layout.tab_one import tab_one_layout
 from layout.tab_two import tab_two_layout
+from layout.tab_three import tab_three_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
@@ -18,6 +19,7 @@ from flask_caching import Cache
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+app.title = "slrpEV Dashboard"
 server = app.server
 
 # cache
@@ -33,7 +35,8 @@ cache.init_app(app.server, config=CACHE_CONFIG)
 app.layout = html.Div([
     dcc.Tabs([
         tab_one_layout(),
-        tab_two_layout()
+        tab_two_layout(),
+        tab_three_layout(),
     ])
 ])
 
@@ -42,7 +45,7 @@ app.layout = html.Div([
 @app.callback(
     Output("date_picker", "start_date"),
     Output("date_picker", "end_date"),
-    Input("jump_to_present_btn", "n_clicks")
+    Input("jump_to_present_btn", "n_clicks"),
 )
 def jump_to_present(button_press):
     return get_last_days_datetime(7), get_last_days_datetime(-1)
@@ -61,7 +64,8 @@ def display_daily_time_series(signal, yesterday):
     fig = PlotDailySessionTimeSeries.plot_daily_time_series(data)
     # plot yesterday's time series
     if yesterday:
-        fig = PlotDailySessionTimeSeries.plot_yesterday(fig, update_data().get("dataframes").get("fivemindemand"))
+        fivemindemand = update_data().get("dataframes").get("fivemindemand")
+        fig = PlotDailySessionTimeSeries.plot_yesterday(fig, fivemindemand)
     return fig
 
 
@@ -124,6 +128,31 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
 
 
 @app.callback(
+    Output("daily_session_tooltip", "show"),
+    Output("daily_session_tooltip", "bbox"),
+    Output("daily_session_tooltip", "children"),
+    Input("daily_time_series", "hoverData"),
+    prevent_initial_callback=True
+)
+def update_daily_sessions_tooltip(hoverData):
+    if not hoverData:
+        return False, dash.no_update, dash.no_update
+    
+    point = hoverData["points"][0]
+    bbox = point["bbox"]
+
+    text = html.Div([
+        html.P(f"UserID: {point['customdata'][2]}"),
+        html.P(f"Date: {point['label']}"), 
+        html.P(f"Power: {point['y']}"), 
+        html.P(f"Vehicle Model: {point['customdata'][0]}"), 
+        html.P(f"Choice: {point['customdata'][1]}")
+    ])
+
+    return True, bbox, text
+
+
+@app.callback(
     Output("num_sessions_user", "children"),
     Output("avg_duration_user", "children"),
     Output("freq_connect_time_user", "children"),
@@ -134,7 +163,7 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
 def display_user_hover(hoverData):
     # place holder for no hover
     if hoverData is None:
-        return "# of Sessions by User", "Avg. Stay Duration", "Frequent Connect Time", "Total Energy Consumed by User"
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
     data = update_data().get("dataframes").get("raw_data")
     # get user ID

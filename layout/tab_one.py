@@ -10,7 +10,7 @@ from datetime import timedelta
 def tab_one_layout():
     layout = \
         dcc.Tab(
-            label="All Time",
+            label="All Time Usage",
             children=[
                 html.Div([
                     html.Div([

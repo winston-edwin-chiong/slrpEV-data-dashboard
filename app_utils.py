@@ -178,11 +178,12 @@ class PlotDailySessionTimeSeries:
                     name="User ID: " + df[df["dcosId"]
                                           == dcosId]["userId"].iloc[0],
                     offsetgroup=1,
-                    hovertemplate="<br>Date: %{x}" +
-                    "<br>Power: %{y} Watts" +
-                    "<br>Vehicle Model: %{customdata[0]}" +
-                    "<br>Choice: %{customdata[1]}",
-                    hoverlabel={"font":{"size":10}}
+                    # hovertemplate="<br>Date: %{x}" +
+                    # "<br>Power: %{y} Watts" +
+                    # "<br>Vehicle Model: %{customdata[0]}" +
+                    # "<br>Choice: %{customdata[1]}",
+                    # hoverlabel={"font":{"size":10}},
+                    hoverinfo="none",
                 )
             )
         fig.update_layout(
@@ -197,7 +198,7 @@ class PlotDailySessionTimeSeries:
         )
         return fig
     
-    
+
     @classmethod
     def plot_yesterday(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query dataframe
