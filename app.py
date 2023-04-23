@@ -5,9 +5,6 @@ from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
 import pandas as pd 
 from app_utils import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts
-from layout.tab_one import tab_one_layout
-from layout.tab_two import tab_two_layout
-from layout.tab_three import tab_three_layout
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
@@ -18,7 +15,7 @@ from flask_caching import Cache
 
 
 # app instantiation
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], suppress_callback_exceptions=True, use_pages=True)
 app.title = "slrpEV Dashboard"
 server = app.server
 
@@ -33,11 +30,20 @@ cache.init_app(app.server, config=CACHE_CONFIG)
 
 # app layout
 app.layout = html.Div([
-    dcc.Tabs([
-        tab_one_layout(),
-        tab_two_layout(),
-        tab_three_layout(),
-    ])
+	html.H1('Multi-page app with Dash Pages'),
+
+    html.Div(
+        [
+            html.Div(
+                dcc.Link(
+                    f"{page['name']} - {page['path']}", href=page["relative_path"]
+                )
+            )
+            for page in dash.page_registry.values()
+        ]
+    ),
+
+	dash.page_container
 ])
 
 
