@@ -25,9 +25,6 @@ def tab_two_layout():
                                 "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                             },
                         ),
-                        dcc.Tooltip(
-                            id="daily_session_tooltip",
-                        )
                     ]),
                     "User Information",
                     html.Div([

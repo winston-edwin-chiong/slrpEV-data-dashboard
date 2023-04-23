@@ -128,31 +128,6 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
 
 
 @app.callback(
-    Output("daily_session_tooltip", "show"),
-    Output("daily_session_tooltip", "bbox"),
-    Output("daily_session_tooltip", "children"),
-    Input("daily_time_series", "hoverData"),
-    prevent_initial_callback=True
-)
-def update_daily_sessions_tooltip(hoverData):
-    if not hoverData:
-        return False, dash.no_update, dash.no_update
-    
-    point = hoverData["points"][0]
-    bbox = point["bbox"]
-
-    text = html.Div([
-        html.P(f"UserID: {point['customdata'][2]}"),
-        html.P(f"Date: {point['label']}"), 
-        html.P(f"Power: {point['y']}"), 
-        html.P(f"Vehicle Model: {point['customdata'][0]}"), 
-        html.P(f"Choice: {point['customdata'][1]}")
-    ])
-
-    return True, bbox, text
-
-
-@app.callback(
     Output("num_sessions_user", "children"),
     Output("avg_duration_user", "children"),
     Output("freq_connect_time_user", "children"),
