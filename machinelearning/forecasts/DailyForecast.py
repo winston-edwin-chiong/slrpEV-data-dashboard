@@ -28,6 +28,7 @@ class CreateDailyForecasts:
 
         # append new forecasts existing set of forecasts
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0)
+        forecasts.to_csv("forecastdata/dailyforecasts.csv")
 
         return forecasts
 
