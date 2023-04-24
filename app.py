@@ -63,6 +63,7 @@ def jump_to_present(button_press):
     Input("toggle_yesterday", "value"),
 )
 def display_daily_time_series(signal, yesterday):
+    print("daily_callback")
     # load data
     data = update_data().get("dataframes")
     data = data.get("todays_sessions")
@@ -80,6 +81,7 @@ def display_daily_time_series(signal, yesterday):
     Input("data_refresh_signal", "data"),
 )
 def display_vehicle_pie_chart(signal):
+    print("vehicle_callback")
     # load data
     data = update_data().get("dataframes")
     data = data.get("todays_sessions")
@@ -168,7 +170,7 @@ def display_user_hover(hoverData):
     Input("data_refresh_interval_component", "n_intervals"),
 )
 def data_refresh_interval(n):
-    update_data()  # expensive process
+    update_data() # expensive process
     return n
 
 
