@@ -7,7 +7,14 @@ dash.register_page(__name__)
 
 layout = \
     html.Div([
-        dcc.Store(id="data_refresh_signal"),
+        html.Div([
+            dcc.Interval(
+                id="data_refresh_interval_component",
+                interval=60 * 60 * 1000,  # update every 60 minutes
+                n_intervals=0
+            ),
+            dcc.Store(id="data_refresh_signal"),
+        ]),
         html.Div([
             html.Div([
                 "Today's Sessions",

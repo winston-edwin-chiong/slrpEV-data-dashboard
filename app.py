@@ -60,7 +60,7 @@ def jump_to_present(button_press):
 @app.callback(
     Output("daily_time_series", "figure"),
     Input("data_refresh_signal", "data"),
-    Input("toggle_yesterday", "value"),
+    Input("toggle_yesterday", "value")
 )
 def display_daily_time_series(signal, yesterday):
     print("daily_callback")
