@@ -30,13 +30,13 @@ cache.init_app(app.server, config=CACHE_CONFIG)
 
 # app layout
 app.layout = html.Div([
-	html.H1('Multi-page app with Dash Pages'),
+	html.H1("slrpEV Analytics Dashboard"),
 
     html.Div(
         [
             html.Div(
                 dcc.Link(
-                    f"{page['name']} - {page['path']}", href=page["relative_path"]
+                    f"{page['name']}", href=page["relative_path"]
                 )
             )
             for page in dash.page_registry.values()
@@ -63,7 +63,6 @@ def jump_to_present(button_press):
     Input("toggle_yesterday", "value")
 )
 def display_daily_time_series(signal, yesterday):
-    print("daily_callback")
     # load data
     data = update_data().get("dataframes")
     data = data.get("todays_sessions")
@@ -81,7 +80,6 @@ def display_daily_time_series(signal, yesterday):
     Input("data_refresh_signal", "data"),
 )
 def display_vehicle_pie_chart(signal):
-    print("vehicle_callback")
     # load data
     data = update_data().get("dataframes")
     data = data.get("todays_sessions")
@@ -107,7 +105,6 @@ def display_cumulative_energy_figure(start_date, end_date, signal):
 
 @app.callback(
     Output("time_series_plot", "figure"),
-    Output("last_updated_timer", "children"),
     Input("dataframe_picker", "value"),
     Input("quantity_picker", "value"),
     Input("date_picker", "start_date"),
@@ -121,18 +118,17 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     # load data
     data = update_data().get("dataframes")
     data = data.get(granularity)
-    # update refresh timestamp
-    last_updated = update_data().get('last_updated_time')
+    
     # plot main time series
     fig = PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
     
-    # plot predictions
-    if forecasts:
+    # plot predictions (if supported)
+    if forecasts and granularity != "fivemindemand" and granularity != "monthlydemand":
         forecast_df = prediction_to_run(granularity)
         fig = PlotForecasts.plot_forecasts(fig, forecast_df, quantity, granularity)
 
-    return fig, f"Data last updated at {last_updated}."
+    return fig
 
 
 @app.callback(
@@ -167,11 +163,14 @@ def display_user_hover(hoverData):
 
 @app.callback(
     Output("data_refresh_signal", "data"),
+    Output("last_updated_timer", "children"),
     Input("data_refresh_interval_component", "n_intervals"),
 )
 def data_refresh_interval(n):
     update_data() # expensive process
-    return n
+    # update refresh timestamp
+    last_updated = update_data().get('last_updated_time')
+    return n, f"Data last updated at {last_updated}."
 
 
 @app.callback(

@@ -7,7 +7,8 @@ import pandas as pd
 from datetime import timedelta
 
 
-dash.register_page(__name__, path="/ballsacksports")
+dash.register_page(__name__, path="/alltime")
+
 
 def get_last_days_datetime(n=7):
     current_time = pd.to_datetime("today") - timedelta(days=n)
@@ -75,50 +76,52 @@ layout = \
             )
         ]),
         html.Div([
-            dcc.Interval(
-                id="data_refresh_interval_component",
-                interval=60 * 60 * 1000,  # update every 60 minutes
-                n_intervals=0
-            ),
-            dcc.Store(id="data_refresh_signal"),
-        ]),
-        html.Div(
-            id="last_updated_timer"
-        ),
-        html.Div([
-            dcc.Interval(
-                id="CV_interval_component",
-                interval=14 * 24 * 60 * 60 * 1000,  # update every two weeks
-                n_intervals=0
-            ),
-            dcc.Store(id="CV_signal"),
-        ]),
-        html.Div(
-            id="last_validated_timer"
-        ),
-        html.Div([
-            dcc.Interval(
-                id="hourly_forecast_interval_component",
-                interval=60 * 60 * 1000,  # update every 60 minutes
-                n_intervals=0
-            ),
-            dcc.Store(id="hourly_forecast_signal"),
-        ]),
-        html.Div([
-            dcc.Interval(
-                id="daily_forecast_interval_component",
-                interval=24 * 60 * 60 * 1000,  # update every day
-                n_intervals=0
-            ),
-            dcc.Store(id="daily_forecast_signal"),
-        ]),
-        html.Div([
-            "Cumulative Energy Delivered",
             dcc.Graph(
                 id="cumulative_energy_delivered",
                 config={
                     "displaylogo": False
                 }
             ),
+        ]),
+        # Interval components, refresh/validation timestamps
+        html.Div([
+            html.Div([
+                dcc.Interval(
+                    id="data_refresh_interval_component",
+                    interval=60 * 60 * 1000,  # update every 60 minutes
+                    n_intervals=0
+                ),
+                dcc.Store(id="data_refresh_signal"),
+            ]),
+            html.Div(
+                id="last_updated_timer"
+            ),
+            html.Div([
+                dcc.Interval(
+                    id="CV_interval_component",
+                    interval=14 * 24 * 60 * 60 * 1000,  # update every two weeks
+                    n_intervals=0
+                ),
+                dcc.Store(id="CV_signal"),
+            ]),
+            html.Div(
+                id="last_validated_timer"
+            ),
+            html.Div([
+                dcc.Interval(
+                    id="hourly_forecast_interval_component",
+                    interval=60 * 60 * 1000,  # update every 60 minutes
+                    n_intervals=0
+                ),
+                dcc.Store(id="hourly_forecast_signal"),
+            ]),
+            html.Div([
+                dcc.Interval(
+                    id="daily_forecast_interval_component",
+                    interval=24 * 60 * 60 * 1000,  # update every day
+                    n_intervals=0
+                ),
+                dcc.Store(id="daily_forecast_signal"),
+            ]),
         ])
     ])

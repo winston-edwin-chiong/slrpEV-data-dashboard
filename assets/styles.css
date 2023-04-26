@@ -11,31 +11,8 @@
     margin: 5px;
 }
 
-:root {
-    --tooltip-color: #cdcdcd;
-}
-
-
-.dcc-tooltip-bounding-box {
-    transition: 0.3s;
-    animation-timing-function: cubic-bezier()
-}
-
-.dcc-tooltip-bounding-box .hover::after {
-    border-color: transparent var(--tooltip-color) transparent transparent !important;
-}
-
-#daily_session_tooltip {
-    color: #222;
-    font-size: 0.5rem;
-    background-color: var(--tooltip-color) !important;
-    border: 0px solid red !important;
-    height: 6rem !important;
-    width: 15rem !important;
-    box-shadow: 0 0 20px rgba(0,0,0,0.08) !important;
-}
-
-#daily_session_tooltip * {
-    padding: 0 !important;
-    margin: 0 !important;
+.Mac {
+    height: auto;
+    width: auto;
+    max-height: 450px;
 }

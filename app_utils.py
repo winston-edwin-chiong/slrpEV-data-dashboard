@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 
 # Plot empty figure if no sessions
-def empty_session_figure():
+def empty_session_figure() -> go.Figure:
     fig = go.Figure()
     fig.update_layout(
         {
@@ -273,7 +273,7 @@ class PlotDailySessionEnergyBreakdown:
 class PlotCumulativeEnergyDelivered:
 
     @classmethod
-    def plot_cumulative_energy_delivered(cls, df: pd.DataFrame, start_date: str, end_date: str) -> go.Figure():
+    def plot_cumulative_energy_delivered(cls, df: pd.DataFrame, start_date: str, end_date: str) -> go.Figure:
 
         # necessary for some reason, even though 'finishChargeTime' is already cast to datetime during cleaning
         df["finishChargeTime"] = pd.to_datetime(df["finishChargeTime"])
@@ -375,7 +375,7 @@ class PlotForecasts:
 
 
     @classmethod
-    def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str, granularity: str):
+    def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str, granularity: str) -> go.Figure:
 
         plot_layout = cls.plot_layout_key[quantity]
 
