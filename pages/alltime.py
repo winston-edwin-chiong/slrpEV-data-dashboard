@@ -27,7 +27,7 @@ layout = \
                     end_date=get_last_days_datetime(0),
                     start_date_placeholder_text="mm/dd/yyyy",
                     end_date_placeholder_text="mm/dd/yyyy",
-                    with_portal=False
+                    with_portal=False,
                 ),
             ],
                 className="calendar"),
@@ -42,7 +42,7 @@ layout = \
                     ],
                     value='hourlydemand',  # default value
                     clearable=False,
-                    searchable=False
+                    searchable=False,
                 ),
                 dcc.Dropdown(
                     id="quantity_picker",
@@ -56,7 +56,7 @@ layout = \
                     ],
                     value='energy_demand_kWh',  # default value
                     clearable=False,
-                    searchable=False
+                    searchable=False,
                 ),
             ]),
             html.Button("Today", id="jump_to_present_btn"),
@@ -72,7 +72,7 @@ layout = \
                 config={
                     "displaylogo": False,
                     "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                }
+                },
             )
         ]),
         html.Div([

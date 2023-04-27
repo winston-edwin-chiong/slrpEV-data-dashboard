@@ -4,7 +4,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
 import pandas as pd 
-from app_utils import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts
+from plotting import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
@@ -13,7 +13,6 @@ from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
 from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
 from flask_caching import Cache
 
-
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], suppress_callback_exceptions=True, use_pages=True)
 app.title = "slrpEV Dashboard"
@@ -21,12 +20,10 @@ server = app.server
 
 # cache
 CACHE_CONFIG = {
-    'CACHE_TYPE': 'FileSystemCache',
-    'CACHE_DIR': "cache/",
-    'CACHE_THRESHOLD': 20
+    'CACHE_TYPE': 'redis',
+    'CACHE_REDIS_URL': "redis://localhost:6360"
 }
-cache = Cache()
-cache.init_app(app.server, config=CACHE_CONFIG)
+cache = Cache(app.server, config=CACHE_CONFIG)
 
 # app layout
 app.layout = html.Div([
@@ -118,7 +115,6 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     # load data
     data = update_data().get("dataframes")
     data = data.get(granularity)
-    
     # plot main time series
     fig = PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
@@ -283,13 +279,13 @@ def get_last_days_datetime(n=7):
 
 def prediction_to_run(granularity):
     if granularity == "fivemindemand":
-        pass # not yet supported 
+        return # not yet supported 
     elif granularity == "hourlydemand":
         return forecast_hourly()
     elif granularity == "dailydemand":
         return forecast_daily()
     elif granularity == "monthlydemand":
-        pass # not yet supported 
+        return # not yet supported 
 
 
 # running the app
