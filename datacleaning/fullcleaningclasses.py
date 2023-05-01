@@ -182,8 +182,8 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
     def transform(self, X) -> dict:
         # create new granularities
         hourlydemand = X.resample("1H").agg(self.agg_key)
-        dailydemand = X.resample("24H").agg(self.agg_key)
-        monthlydemand = X.resample("1M").agg(self.agg_key)
+        dailydemand = X.resample("1D").agg(self.agg_key)
+        monthlydemand = X.resample("M").agg(self.agg_key)
 
         new_dataframes = {
             "fivemindemand": X,

@@ -73,7 +73,21 @@ layout = \
                     "displaylogo": False,
                     "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                 },
-            )
+            ),
+            html.Div([
+                dcc.Graph(
+                    id="hour_histogram",
+                    config = {
+                        "displaylogo": False
+                    }   
+                ),
+                dcc.Graph(
+                    id="day_histogram",
+                    config = {
+                        "displaylogo": False
+                    }   
+                )
+            ], style={'display': 'inline-block', 'width': '33%', 'height': '10%'}),
         ]),
         html.Div([
             dcc.Graph(

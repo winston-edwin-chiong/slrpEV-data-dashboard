@@ -4,7 +4,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
 import pandas as pd 
-from plotting import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts
+from plotting import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts, PlotHoverHistogram
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
@@ -128,12 +128,45 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
 
 
 @app.callback(
+    Output("day_histogram", "figure"),
+    Output("hour_histogram", "figure"),
+    Input("time_series_plot", "hoverData"),
+    State("quantity_picker", "value"),
+    State("dataframe_picker", "value"),
+    prevent_initial_call=True
+)
+def display_histogram_hover(hoverData, quantity, granularity):
+    # load data
+    data = update_data().get("dataframes")
+    hourlydemand = data.get("hourlydemand")
+    dailydemand = data.get("dailydemand")
+    day = hoverData["points"][0]["customdata"][0] 
+    hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
+
+    # place holder for no hover
+    if hoverData is None:
+        return dash.no_update, dash.no_update
+    
+    elif granularity == "dailydemand":
+        day_hist = PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
+        return day_hist, PlotHoverHistogram.empty_histogram_figure()
+    
+    elif granularity == "monthlydemand":
+        return PlotHoverHistogram.empty_histogram_figure(), PlotHoverHistogram.empty_histogram_figure()
+    
+    else:
+        day_hist = PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
+        hour_hist = PlotHoverHistogram.plot_hour_hover_histogram(hourlydemand, quantity, hour)
+        return day_hist, hour_hist
+
+
+@app.callback(
     Output("num_sessions_user", "children"),
     Output("avg_duration_user", "children"),
     Output("freq_connect_time_user", "children"),
     Output("total_nrg_consumed_user", "children"),
     Input("daily_time_series", "hoverData"),
-    prevent_initial_callback=True
+    prevent_initial_call=True
 )
 def display_user_hover(hoverData):
     # place holder for no hover
