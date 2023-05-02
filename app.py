@@ -12,11 +12,14 @@ from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValida
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
 from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
 from flask_caching import Cache
+from celery import Celery
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], suppress_callback_exceptions=True, use_pages=True)
 app.title = "slrpEV Dashboard"
 server = app.server
+
+# Celery process 
 
 # cache
 CACHE_CONFIG = {

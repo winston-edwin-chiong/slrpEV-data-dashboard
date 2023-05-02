@@ -361,7 +361,7 @@ class PlotHoverHistogram:
         fig.update_layout(
             title=f"Distribution on {day}",
             xaxis_title=cls.cleaned_column_names[quantity]["col_name"],
-            yaxis_title="Count"
+            yaxis_title="Count",
         )          
 
         return fig 
@@ -378,8 +378,7 @@ class PlotHoverHistogram:
         fig.update_layout(
             title=f"Distribution at Hour {hour}",
             xaxis_title=cls.cleaned_column_names[quantity]["col_name"],
-            yaxis_title="Count"
-
+            yaxis_title="Count",
         )         
 
         return fig 

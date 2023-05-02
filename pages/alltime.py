@@ -67,27 +67,31 @@ layout = \
             )
         ]),
         html.Div([
-            dcc.Graph(
-                id="time_series_plot",
-                config={
-                    "displaylogo": False,
-                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                },
-            ),
-            html.Div([
-                dcc.Graph(
-                    id="hour_histogram",
-                    config = {
-                        "displaylogo": False
-                    }   
-                ),
-                dcc.Graph(
-                    id="day_histogram",
-                    config = {
-                        "displaylogo": False
-                    }   
-                )
-            ], style={'display': 'inline-block', 'width': '33%', 'height': '10%'}),
+            dbc.Row([
+                dbc.Col(
+                    dcc.Graph(
+                        id="time_series_plot",
+                        config={
+                            "displaylogo": False,
+                            "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                        },
+                    ),                    
+                width=9),
+                dbc.Col([
+                        dcc.Graph(
+                        id="hour_histogram",
+                        config = {
+                            "displaylogo": False
+                        },
+                    ),
+                    dcc.Graph(
+                        id="day_histogram",
+                        config = {
+                            "displaylogo": False
+                        },
+                    )
+                ], width=3)                    
+            ])
         ]),
         html.Div([
             dcc.Graph(
