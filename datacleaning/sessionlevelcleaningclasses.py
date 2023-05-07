@@ -15,8 +15,7 @@ class SortDropCastSessions(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    @staticmethod
-    def transform(X) -> pd.DataFrame:
+    def transform(self, X) -> pd.DataFrame:
 
         X["cumEnergy_Wh"] = X["cumEnergy_Wh"].astype(float)
         X["peakPower_W"] = X["peakPower_W"].astype(float)
@@ -45,11 +44,10 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    @classmethod
-    def transform(cls, X) -> pd.DataFrame:
+    def transform(self, X) -> pd.DataFrame:
 
-        X["finishChargeTime"] = X.apply(cls.__get_finishChargeTime, axis=1)
-        X["trueDurationHrs"] = X.apply(cls.__get_duration, axis=1)
+        X["finishChargeTime"] = X.apply(self.__get_finishChargeTime, axis=1)
+        X["trueDurationHrs"] = X.apply(self.__get_duration, axis=1)
         X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
         X = X[X["finishChargeTime"] >= datetime.now().strftime("%D")].copy()

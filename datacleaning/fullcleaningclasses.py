@@ -13,8 +13,7 @@ class SortDropCast(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    @staticmethod
-    def transform(X) -> pd.DataFrame:
+    def transform(self, X) -> pd.DataFrame:
         X = X.sort_values(by="connectTime").drop(
             columns=["user_email", "slrpPaymentId"]).reset_index(drop=True)
         X["cumEnergy_Wh"] = X["cumEnergy_Wh"].astype(float)
@@ -34,8 +33,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    @classmethod
-    def transform(cls, X) -> pd.DataFrame:
+    def transform(self, X) -> pd.DataFrame:
         X = X.loc[(X["peakPower_W"] != 0) & (
             X["cumEnergy_Wh"] != 0)].copy(deep=True)
 
@@ -44,8 +42,8 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X["Deadline"] = pd.to_datetime(X["Deadline"])
         X["lastUpdate"] = pd.to_datetime(X["lastUpdate"])
 
-        X["finishChargeTime"] = X.apply(cls.__get_finishChargeTime, axis=1)
-        X["trueDurationHrs"] = X.apply(cls.__get_duration, axis=1)
+        X["finishChargeTime"] = X.apply(self.__get_finishChargeTime, axis=1)
+        X["trueDurationHrs"] = X.apply(self.__get_duration, axis=1)
         X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0) # "cumEnergy_Wh" is seen as a column of truth
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
@@ -142,8 +140,8 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    @ staticmethod
-    def transform(X) -> pd.DataFrame:
+
+    def transform(self, X) -> pd.DataFrame:
         X["energy_demand_kWh"] = (X["avg_power_demand_W"]/1000)/12
         # for the highest granularity, peak power is equal to the power demand
         # (different for different granularities though)
