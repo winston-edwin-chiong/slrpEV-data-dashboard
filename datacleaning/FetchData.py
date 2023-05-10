@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+from dotenv import load_dotenv
 
 
 class FetchData:
@@ -10,13 +11,18 @@ class FetchData:
     def __init__(self):
         pass
 
+    @staticmethod
+    def __configure():
+        load_dotenv()
+
     # TODO: Could be in __init__; does the table ever change? Don't need to call this every time?
     @classmethod
     def __get_table(cls, table_id):
+        cls.__configure() # load environment variables
         dynamodb = boto3.resource(
             "dynamodb",
-            aws_access_key_id=os.environ["access_key_id"],
-            aws_secret_access_key=os.environ["secret_access_key"],
+            aws_access_key_id=os.getenv("access_key_id"),
+            aws_secret_access_key=os.getenv("secret_access_key"),
             region_name="us-east-2",
         )
         return dynamodb.Table(table_id)

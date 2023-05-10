@@ -11,22 +11,14 @@ from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossVal
 from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValidator
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
 from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
-from flask_caching import Cache
-from celery import Celery
+from tasks.schedule import redis_client 
+import pickle
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], suppress_callback_exceptions=True, use_pages=True)
 app.title = "slrpEV Dashboard"
 server = app.server
 
-# Celery process 
-
-# cache
-CACHE_CONFIG = {
-    'CACHE_TYPE': 'redis',
-    'CACHE_REDIS_URL': "redis://localhost:6360"
-}
-cache = Cache(app.server, config=CACHE_CONFIG)
 
 # app layout
 app.layout = html.Div([
@@ -64,13 +56,12 @@ def jump_to_present(button_press):
 )
 def display_daily_time_series(signal, yesterday):
     # load data
-    data = update_data().get("dataframes")
-    data = data.get("todays_sessions")
+    data = pickle.loads(redis_client.get("todays_sessions"))
     # plot figure
     fig = PlotDailySessionTimeSeries.plot_daily_time_series(data)
     # plot yesterday's time series
     if yesterday:
-        fivemindemand = update_data().get("dataframes").get("fivemindemand")
+        fivemindemand = pickle.loads(redis_client.get("fivemindemand"))
         fig = PlotDailySessionTimeSeries.plot_yesterday(fig, fivemindemand)
     return fig
 
@@ -81,8 +72,7 @@ def display_daily_time_series(signal, yesterday):
 )
 def display_vehicle_pie_chart(signal):
     # load data
-    data = update_data().get("dataframes")
-    data = data.get("todays_sessions")
+    data = pickle.loads(redis_client.get("todays_sessions"))
     # plot figure
     fig = PlotDailySessionEnergyBreakdown.plot_daily_energy_breakdown(data)
     return fig
@@ -96,7 +86,7 @@ def display_vehicle_pie_chart(signal):
 )
 def display_cumulative_energy_figure(start_date, end_date, signal):
     # load data
-    data = update_data().get("dataframes").get("raw_data")
+    data = pickle.loads(redis_client.get("raw_data"))
     # plot figure
     fig = PlotCumulativeEnergyDelivered.plot_cumulative_energy_delivered(
         data, start_date, end_date)
@@ -111,13 +101,10 @@ def display_cumulative_energy_figure(start_date, end_date, signal):
     Input("date_picker", "end_date"),
     Input("toggle_forecasts", "value"),
     Input("data_refresh_signal", "data"),
-    Input("hourly_forecast_signal", "data"),
-    Input("daily_forecast_signal", "data"),
 )
-def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, hourly_forecast_signal, daily_forecast_signal):
+def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal,):
     # load data
-    data = update_data().get("dataframes")
-    data = data.get(granularity)
+    data = pickle.loads(redis_client.get(granularity))
     # plot main time series
     fig = PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
@@ -139,18 +126,25 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     prevent_initial_call=True
 )
 def display_histogram_hover(hoverData, quantity, granularity):
-    # load data
-    data = update_data().get("dataframes")
-    hourlydemand = data.get("hourlydemand")
-    dailydemand = data.get("dailydemand")
-    day = hoverData["points"][0]["customdata"][0] 
-    hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
 
     # place holder for no hover
     if hoverData is None:
         return dash.no_update, dash.no_update
+
+    # load data
+    hourlydemand = pickle.loads(redis_client.get("hourlydemand"))
+    dailydemand = pickle.loads(redis_client.get("dailydemand"))
+
+    # extract hour and day 
+    if hoverData["points"][0]["curveNumber"] == 0:
+        day = hoverData["points"][0]["customdata"][0] 
+        hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
+    elif hoverData["points"][0]["curveNumber"] == 1:
+        day = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
+        hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
     
-    elif granularity == "dailydemand":
+    # create hover histograms
+    if granularity == "dailydemand":
         day_hist = PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
         return day_hist, PlotHoverHistogram.empty_histogram_figure()
     
@@ -176,7 +170,7 @@ def display_user_hover(hoverData):
     if hoverData is None:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
-    data = update_data().get("dataframes").get("raw_data")
+    data = pickle.loads(redis_client.get("raw_data"))
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
     # get user hover data
@@ -199,9 +193,11 @@ def display_user_hover(hoverData):
     Input("data_refresh_interval_component", "n_intervals"),
 )
 def data_refresh_interval(n):
-    update_data() # expensive process
-    # update refresh timestamp
-    last_updated = update_data().get('last_updated_time')
+    '''
+    This callback polls the Redis database at regular intervals. 
+    '''
+    # update data refresh timestamp
+    last_updated = redis_client.get('last_updated_time').decode("utf-8")
     return n, f"Data last updated at {last_updated}."
 
 
@@ -211,99 +207,12 @@ def data_refresh_interval(n):
     Input("CV_interval_component", "n_intervals"),
 )
 def CV_interval(n):
-    params = update_ml_parameters() # expensive process
-    # calculate new models with ML parameters
-    return n, f"Parameters last validated {params['last_validated_time']}." 
-
-
-@app.callback(
-    Output("hourly_forecast_signal", "data"),
-    Input("hourly_forecast_interval_component", "n_intervals"),
-    Input("data_refresh_signal", "data"),
-)
-def hourly_forecast_interval(n, signal):
-    forecast_hourly()
-    return n
-
-
-@app.callback(
-    Output("daily_forecast_signal", "data"),
-    Input("daily_forecast_interval_component", "n_intervals"),
-    Input("data_refresh_signal", "data"),
-)
-def daily_forecast_interval(n, signal):
-    forecast_daily()
-    return n
-
-
-## Cached functions 
-@cache.memoize(timeout=3600)  # refresh every hour
-def update_data() -> dict:
-
-    print("Fetching data...")
-    raw_data = FetchData.scan_save_all_records()
-
-    print("Cleaning data...")
-    cleaned_dataframes = CleanData.clean_save_raw_data(raw_data)
-
-    print("Done!")
-    return {"dataframes": cleaned_dataframes, "last_updated_time": datetime.now().strftime('%H:%M:%S')}
-
-
-@cache.memoize(timeout=1209600) # retrain every two weeks
-def update_ml_parameters() -> dict:
-    # get parameters
-    hard_coded_params_hourly = {'energy_demand_kWh': 
-                                    {'best_depth': 57, 'best_n_neighbors': 25},
-                                'peak_power_W': 
-                                    {'best_depth': 57, 'best_n_neighbors': 23},
-                                'avg_power_demand_W': 
-                                    {'best_depth': 57, 'best_n_neighbors': 25}
-                                }
-    hard_coded_params_daily = {'energy_demand_kWh': 
-                                    {'order': (2, 0, 1), 'seasonal_order': (0, 1, 2, 7)},
-                                'peak_power_W': 
-                                    {'order': (1, 0, 0), 'seasonal_order': (0, 1, 2, 7)},
-                                'avg_power_demand_W': 
-                                    {'order': (2, 0, 1), 'seasonal_order': (0, 1, 2, 7)}
-                                }
-    best_params = {}
-    best_params["hourlydemand"] = hard_coded_params_hourly
-    best_params["dailydemand"] = hard_coded_params_daily
-
-    # clear predictions
-    CreateHourlyForecasts.save_empty_prediction_df()
-    CreateDailyForecasts.save_empty_prediction_df()
-    
-    return {"best_params": best_params, "last_validated_time": datetime.now().strftime('%m/%d/%y %H:%M:%S')}
-
-
-### --> NOT USED RIGHT NOW BECAUSE IDK HOW TO SCHEDULE IT IN THE BACKGROUND <-- ###
-@cache.memoize(timeout=1209600)
-def update_hourly_parameters(data):
-    return HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data) 
-
-
-@cache.memoize(timeout=1209600)
-def update_daily_parameters(data):
-    return DailyCrossValidator.cross_validate(data)
-### --> NOT USED RIGHT NOW BECAUSE IDK HOW TO SCHEDULE IT IN THE BACKGROUND <-- ###
-
-
-@cache.memoize(timeout=3600) #refresh every hour
-def forecast_hourly():
-    data = update_data().get("dataframes").get("hourlydemand")
-    params = update_ml_parameters().get("best_params")
-    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, params)
-    return forecasts   
-
-
-@cache.memoize(timeout=86400) #refresh every day 
-def forecast_daily():
-    data = update_data().get("dataframes").get("dailydemand")
-    params = update_ml_parameters().get("best_params")
-    forecasts = CreateDailyForecasts.run_daily_forecast(data, params)
-    return forecasts
+    '''
+    This callback polls the Redis database at regular intervals. 
+    '''
+    # update CV timestamp 
+    last_validated = redis_client.get("last_validated_time").decode("utf-8")
+    return n, f"Parameters last validated {last_validated}." 
 
 
 ## Helper Functions
@@ -317,9 +226,9 @@ def prediction_to_run(granularity):
     if granularity == "fivemindemand":
         return # not yet supported 
     elif granularity == "hourlydemand":
-        return forecast_hourly()
+        return pickle.loads(redis_client.get("hourly_forecasts"))
     elif granularity == "dailydemand":
-        return forecast_daily()
+        return pickle.loads(redis_client.get("daily_forecasts"))
     elif granularity == "monthlydemand":
         return # not yet supported 
 

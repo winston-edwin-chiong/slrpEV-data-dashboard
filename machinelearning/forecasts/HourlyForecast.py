@@ -4,30 +4,37 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
+import pickle
+import redis
 
 class CreateHourlyForecasts:
+
+    # connect to Redis
+    redis_client = redis.Redis(host='localhost', port=6360)
 
     def __init__():
         pass 
     
-    @staticmethod
-    def run_hourly_forecast(df, best_params: dict):
-
+    @classmethod
+    def run_hourly_forecast(cls, df, best_params: dict):
+        
         hourly_forecast_pipeline = Pipeline([
-            ("estimator", kNNPredict(best_params=best_params.get("hourlydemand")))
+            ("estimator", kNNPredict(best_params=best_params))
         ])
         new_forecasts = hourly_forecast_pipeline.fit_transform(df)
-        existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)
+        # existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)
+        existing_forecasts = pickle.loads(cls.redis_client.get("hourly_forecasts"))
 
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1H").last() # get more recent forecast
         forecasts.to_csv("forecastdata/hourlyforecasts.csv")
 
         return forecasts
     
-    @staticmethod
-    def save_empty_prediction_df():
+    @classmethod
+    def save_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
         empty_df.to_csv("forecastdata/hourlyforecasts.csv")
+        cls.redis_client.set("hourly_forecasts", pickle.dumps(empty_df))
         return empty_df
     
 

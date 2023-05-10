@@ -106,7 +106,7 @@ layout = \
             html.Div([
                 dcc.Interval(
                     id="data_refresh_interval_component",
-                    interval=60 * 60 * 1000,  # update every 60 minutes
+                    interval=30 * 60 * 1000,  # update every 30 minutes
                     n_intervals=0
                 ),
                 dcc.Store(id="data_refresh_signal"),
@@ -117,7 +117,7 @@ layout = \
             html.Div([
                 dcc.Interval(
                     id="CV_interval_component",
-                    interval=14 * 24 * 60 * 60 * 1000,  # update every two weeks
+                    interval=2 * 24 * 60 * 60 * 1000,  # update every two days
                     n_intervals=0
                 ),
                 dcc.Store(id="CV_signal"),
@@ -125,21 +125,5 @@ layout = \
             html.Div(
                 id="last_validated_timer"
             ),
-            html.Div([
-                dcc.Interval(
-                    id="hourly_forecast_interval_component",
-                    interval=60 * 60 * 1000,  # update every 60 minutes
-                    n_intervals=0
-                ),
-                dcc.Store(id="hourly_forecast_signal"),
-            ]),
-            html.Div([
-                dcc.Interval(
-                    id="daily_forecast_interval_component",
-                    interval=24 * 60 * 60 * 1000,  # update every day
-                    n_intervals=0
-                ),
-                dcc.Store(id="daily_forecast_signal"),
-            ]),
         ])
     ])

@@ -50,7 +50,7 @@ layout = \
         html.Div([
             dcc.Interval(
                 id="data_refresh_interval_component",
-                interval=60 * 60 * 1000,  # update every 60 minutes
+                interval=30 * 60 * 1000,  # update every two days
                 n_intervals=0
             ),
             dcc.Store(id="data_refresh_signal"),

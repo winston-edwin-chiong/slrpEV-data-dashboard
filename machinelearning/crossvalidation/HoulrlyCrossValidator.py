@@ -65,7 +65,6 @@ class kNNCrossValidator:
             estimator=validation_pipeline,
             param_grid=params,
             scoring="neg_mean_squared_error",
-            n_jobs=8,
             verbose=4,
             cv=[(np.arange(0, len(X_train)), np.arange(len(X_train), len(X_train_validation)))]
         )

@@ -185,3 +185,9 @@ cache/
 # data
 data/
 forecastdata/
+
+# Celery 
+.bak
+.dat
+.dir 
+.rdb

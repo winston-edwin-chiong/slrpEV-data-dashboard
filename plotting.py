@@ -403,7 +403,7 @@ class PlotHoverHistogram:
                 },
                 "annotations": [
                     {
-                        "text": "No distribution available!",
+                        "text": "No distribution<br>available!",
                         "xref": "paper",
                         "yref": "paper",
                         "showarrow": False,
@@ -467,6 +467,9 @@ class PlotForecasts:
 
     @classmethod
     def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str, granularity: str) -> go.Figure:
+
+        if len(forecasts) == 0:
+            return fig 
 
         plot_layout = cls.plot_layout_key[quantity]
 
