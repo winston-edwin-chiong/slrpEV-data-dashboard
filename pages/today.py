@@ -26,12 +26,12 @@ layout = \
             ]),
             "User Information",
             html.Div([
-                html.Li("# of Sessions by User",
+                html.Li("User has been here ",
                         id="num_sessions_user"),
-                html.Li("Avg. Stay Duration", id="avg_duration_user"),
-                html.Li("Frequent Connect Time",
+                html.Li("User charges on average", id="avg_duration_user"),
+                html.Li("User usually charges",
                         id="freq_connect_time_user"),
-                html.Li("Total Energy Consumed",
+                html.Li("User has consumed",
                         id="total_nrg_consumed_user")
             ],
                 id='user-information',

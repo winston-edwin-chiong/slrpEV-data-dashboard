@@ -1,24 +1,17 @@
 import dash
 import dash_bootstrap_components as dbc
+import pandas as pd 
+import pickle
+from plotting import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts, PlotHoverHistogram
+from tasks.schedule import redis_client 
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
-import pandas as pd 
-from plotting import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts, PlotHoverHistogram
-from datacleaning.FetchData import FetchData
-from datacleaning.CleanData import CleanData
-from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
-from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValidator
-from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
-from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
-from tasks.schedule import redis_client 
-import pickle
+
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], suppress_callback_exceptions=True, use_pages=True)
 app.title = "slrpEV Dashboard"
-server = app.server
-
 
 # app layout
 app.layout = html.Div([
