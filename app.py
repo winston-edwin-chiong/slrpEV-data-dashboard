@@ -179,6 +179,26 @@ def display_user_hover(hoverData):
 
     return text
 
+@app.callback(
+    Output("homepage_kwh", "children"),
+    Output("homepage_users", "children"),
+    Output("homepage_peak_power", "children"),
+    Input("data_refresh_signal", "data"),
+)
+def update_homepage_cards(n):
+    # load data
+    today = pickle.loads(redis_client.get("todays_sessions"))
+    monthlydemand = pickle.loads(redis_client.get("monthlydemand"))
+    monthlydemand = monthlydemand.loc[monthlydemand.index >= datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
+
+    if len(today) == 0:
+        return 0, 0, str(monthlydemand["peak_power_W"][0]) + " W"
+    else:
+        today = today[["dcosId", "cumEnergy_Wh", "vehicle_model"]].groupby("dcosId").first().copy()
+        kwh_today = today["cumEnergy_Wh"].sum(axis=0) / 1000
+        num_users = len(today)
+        return str(kwh_today) + " kWh", num_users, str(monthlydemand["peak_power_W"][0]) + " W"  
+
 
 @app.callback(
     Output("data_refresh_signal", "data"),

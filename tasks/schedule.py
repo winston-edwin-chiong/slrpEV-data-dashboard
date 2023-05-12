@@ -24,7 +24,8 @@ app.conf.beat_schedule = {
     },
     "forecast-daily": {
         "task": "forecast-daily",
-        "schedule": crontab(minute=30, hour=23)  # update at 23:30 every day
+        # update at 7:30 and 23:30 every day
+        "schedule": crontab(minute=44, hour="*")
     },
     "forecast-hourly": {
         "task": "forecast-hourly",
@@ -33,12 +34,12 @@ app.conf.beat_schedule = {
     },
     "update-daily-params": {
         "task": "update-daily-params",
-        # update at Sunday 03:15 every two weeks
+        # update at Sunday 03:15 on the 1st and 15th every month
         "schedule": crontab(minute=15, hour=3, day_of_month="1,15")
     },
     "update-hourly-params": {
         "task": "update-hourly-params",
-        # update at Sunday 03:20 every two weeks
+        # update at Sunday 03:20 on the 1st and 15th every month
         "schedule": crontab(minute=20, hour=3, day_of_month="1,15")
     }
 }
