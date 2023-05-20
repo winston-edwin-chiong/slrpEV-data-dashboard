@@ -1,7 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
-from dash import html, dcc
 import dash_daq as daq
+from dash import html, dcc
 
 dash.register_page(__name__, path="/today")
 

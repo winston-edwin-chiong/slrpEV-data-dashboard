@@ -33,3 +33,7 @@
     height: 700px;
     margin-right: 0px;
 }
+
+#last_updated_timer {
+    display: none
+}

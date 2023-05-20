@@ -1,11 +1,11 @@
-from sklearn.pipeline import Pipeline
-from sklearn.base import TransformerMixin, BaseEstimator
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
 import pickle
 import redis
+from sklearn.pipeline import Pipeline
+from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.model_selection import train_test_split
 
 class CreateHourlyForecasts:
 

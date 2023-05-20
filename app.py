@@ -2,11 +2,12 @@ import dash
 import dash_bootstrap_components as dbc
 import pandas as pd 
 import pickle
-from plotting import PlotMainTimeSeries, PlotDailySessionTimeSeries, PlotDailySessionEnergyBreakdown, PlotCumulativeEnergyDelivered, GetUserHoverData, PlotForecasts, PlotHoverHistogram
+from plotting import plottingfunctions as pltf
 from tasks.schedule import redis_client 
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from datetime import datetime, timedelta
+from components.Navbar import navbar
 
 
 # app instantiation
@@ -15,20 +16,19 @@ app.title = "slrpEV Dashboard"
 
 # app layout
 app.layout = html.Div([
-	html.H1("slrpEV Analytics Dashboard"),
-
-    html.Div(
-        [
-            html.Div(
-                dcc.Link(
-                    f"{page['name']}", href=page["relative_path"]
-                )
-            )
-            for page in dash.page_registry.values()
-        ]
+    dbc.NavbarSimple([
+        dbc.Nav([
+            dbc.NavItem([dbc.NavLink(f"{page['name']}", href=page["relative_path"])]) for page in dash.page_registry.values()
+        ])
+    ],
+    brand="slrpEV Dashboard",
+    brand_href="/",
+    brand_external_link=True,
+    fluid=True,
+    sticky="top",
+    expand="lg"
     ),
-
-	dash.page_container
+	dash.page_container,
 ])
 
 
@@ -51,11 +51,11 @@ def display_daily_time_series(signal, yesterday):
     # load data
     data = pickle.loads(redis_client.get("todays_sessions"))
     # plot figure
-    fig = PlotDailySessionTimeSeries.plot_daily_time_series(data)
+    fig = pltf.PlotDailySessionTimeSeries.plot_daily_time_series(data)
     # plot yesterday's time series
     if yesterday:
         fivemindemand = pickle.loads(redis_client.get("fivemindemand"))
-        fig = PlotDailySessionTimeSeries.plot_yesterday(fig, fivemindemand)
+        fig = pltf.PlotDailySessionTimeSeries.plot_yesterday(fig, fivemindemand)
     return fig
 
 
@@ -67,7 +67,7 @@ def display_vehicle_pie_chart(signal):
     # load data
     data = pickle.loads(redis_client.get("todays_sessions"))
     # plot figure
-    fig = PlotDailySessionEnergyBreakdown.plot_daily_energy_breakdown(data)
+    fig = pltf.PlotDailySessionEnergyBreakdown.plot_daily_energy_breakdown(data)
     return fig
 
 
@@ -81,7 +81,7 @@ def display_cumulative_energy_figure(start_date, end_date, signal):
     # load data
     data = pickle.loads(redis_client.get("raw_data"))
     # plot figure
-    fig = PlotCumulativeEnergyDelivered.plot_cumulative_energy_delivered(
+    fig = pltf.PlotCumulativeEnergyDelivered.plot_cumulative_energy_delivered(
         data, start_date, end_date)
     return fig
 
@@ -99,13 +99,13 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     # load data
     data = pickle.loads(redis_client.get(granularity))
     # plot main time series
-    fig = PlotMainTimeSeries.plot_main_time_series(
+    fig = pltf.PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
     
     # plot predictions (if supported)
     if forecasts and granularity != "fivemindemand" and granularity != "monthlydemand":
         forecast_df = prediction_to_run(granularity)
-        fig = PlotForecasts.plot_forecasts(fig, forecast_df, quantity, granularity)
+        fig = pltf.PlotForecasts.plot_forecasts(fig, forecast_df, quantity, granularity)
 
     return fig
 
@@ -138,15 +138,15 @@ def display_histogram_hover(hoverData, quantity, granularity):
     
     # create hover histograms
     if granularity == "dailydemand":
-        day_hist = PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
-        return day_hist, PlotHoverHistogram.empty_histogram_figure()
+        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
+        return day_hist, pltf.PlotHoverHistogram.empty_histogram_figure()
     
     elif granularity == "monthlydemand":
-        return PlotHoverHistogram.empty_histogram_figure(), PlotHoverHistogram.empty_histogram_figure()
+        return pltf.PlotHoverHistogram.empty_histogram_figure(), pltf.PlotHoverHistogram.empty_histogram_figure()
     
     else:
-        day_hist = PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
-        hour_hist = PlotHoverHistogram.plot_hour_hover_histogram(hourlydemand, quantity, hour)
+        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
+        hour_hist = pltf.PlotHoverHistogram.plot_hour_hover_histogram(hourlydemand, quantity, hour)
         return day_hist, hour_hist
 
 
@@ -167,7 +167,7 @@ def display_user_hover(hoverData):
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
     # get user hover data
-    num_sessions, avg_duration, freq_connect, total_nrg = GetUserHoverData.get_user_hover_data(
+    num_sessions, avg_duration, freq_connect, total_nrg = pltf.GetUserHoverData.get_user_hover_data(
         data, userId)
     
     text = (
@@ -180,25 +180,45 @@ def display_user_hover(hoverData):
     return text
 
 @app.callback(
-    Output("homepage_kwh", "children"),
-    Output("homepage_users", "children"),
-    Output("homepage_peak_power", "children"),
+    Output("homepage-kwh", "children"),
+    Output("homepage-users", "children"),
+    Output("homepage-peak-power", "children"),
     Input("data_refresh_signal", "data"),
 )
-def update_homepage_cards(n):
+def update_today_homepage_cards(n):
     # load data
     today = pickle.loads(redis_client.get("todays_sessions"))
     monthlydemand = pickle.loads(redis_client.get("monthlydemand"))
+    # filter data to just this month
     monthlydemand = monthlydemand.loc[monthlydemand.index >= datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
+    # extract peak power 
+    peak_power = str(monthlydemand["peak_power_W"][0]) + " W"
 
     if len(today) == 0:
-        return 0, 0, str(monthlydemand["peak_power_W"][0]) + " W"
+        return 0, 0, peak_power
     else:
         today = today[["dcosId", "cumEnergy_Wh", "vehicle_model"]].groupby("dcosId").first().copy()
-        kwh_today = today["cumEnergy_Wh"].sum(axis=0) / 1000
+        kwh_today = str(today["cumEnergy_Wh"].sum(axis=0) / 1000) + " kWh"
         num_users = len(today)
-        return str(kwh_today) + " kWh", num_users, str(monthlydemand["peak_power_W"][0]) + " W"  
+        return kwh_today, num_users, peak_power
 
+
+@app.callback(
+    Output("homepage-cum-kwh", "children"),
+    Output("homepage-cum-sessions", "children"),
+    Output("homepage-cum-emiles", "children"),
+    Input("data_refresh_signal", "data")
+)
+def update_cum_homepage_cards(n):
+    # load data
+    raw_data = pickle.loads(redis_client.get("raw_data"))
+    num_sessions = len(raw_data)
+    cum_energy_delivered = str(round(raw_data["cumEnergy_Wh"].sum() / 1000, 1)) + " kWh"
+    cum_emiles_delivered = str(round(raw_data["cumEnergy_Wh"].sum() / 290, 0)) + " Mi"
+    return cum_energy_delivered, num_sessions, cum_emiles_delivered
+
+
+### --- Interval Components --- ###
 
 @app.callback(
     Output("data_refresh_signal", "data"),
@@ -227,8 +247,11 @@ def CV_interval(n):
     last_validated = redis_client.get("last_validated_time").decode("utf-8")
     return n, f"Parameters last validated {last_validated}." 
 
+### --------------------------- ###
 
-## Helper Functions
+
+### ---   Helper Functions  --- ###
+
 def get_last_days_datetime(n=7):
     current_time = pd.to_datetime("today") - timedelta(days=n)
     current_time = current_time.strftime("%m/%d/%Y")
@@ -244,6 +267,8 @@ def prediction_to_run(granularity):
         return pickle.loads(redis_client.get("daily_forecasts"))
     elif granularity == "monthlydemand":
         return # not yet supported 
+
+### --------------------------- ###
 
 
 # running the app
