@@ -187,7 +187,7 @@ data/
 forecastdata/
 
 # Celery 
-.bak
-.dat
-.dir 
-.rdb
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir
+dump.rdb
