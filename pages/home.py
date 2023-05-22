@@ -40,21 +40,21 @@ def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_dat
     return (
         [
             html.I(
-                className="bi bi-arrow-up me-1" if kwh_change > 0 else ("bi bi-arrow-down" if kwh_change else "bi bi-arrow-right"), 
+                className="bi bi-arrow-up me-1" if kwh_change > 0 else ("bi bi-arrow-down me-1" if kwh_change else "bi bi-arrow-right me-1"), 
                 style={"color": "#58c21e" if kwh_change > 0 else ("#c21e58" if kwh_change else "#55595c")}
                 ), 
             f"{kwh_change:+} since yesterday!" if kwh_change else "No change since yesterday!"
         ],
         [
             html.I(
-                className="bi bi-arrow-up me-1" if num_users_change > 0 else ("bi bi-arrow-down" if num_users_change else "bi bi-arrow-right"), 
+                className="bi bi-arrow-up me-1" if num_users_change > 0 else ("bi bi-arrow-down me-1" if num_users_change else "bi bi-arrow-right me-1"), 
                 style={"color": "#58c21e" if num_users_change > 0 else ("#c21e58" if num_users_change else "#55595c")}
                 ), 
             f"{num_users_change:+} users since yesterday!" if num_users_change else "No change since yesterday!"
         ],
         [
             html.I(
-                className="bi bi-arrow-up me-1" if peak_power_change > 0 else ("bi bi-arrow-down" if peak_power_change else "bi bi-arrow-right"), 
+                className="bi bi-arrow-up me-1" if peak_power_change > 0 else ("bi bi-arrow-down me-1" if peak_power_change else "bi bi-arrow-right me-1"), 
                 style={"color": "#58c21e" if peak_power_change > 0 else ("#c21e58" if peak_power_change else "#55595c")}
                 ), 
             f"{round(peak_power_change, 2):+} % since last month!" if peak_power_change else "No change since last month!"
@@ -67,94 +67,97 @@ def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_dat
 dash.register_page(__name__, path="/")
 
 layout = \
-    dbc.Container([
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader([
-                        html.H5("Cumulative Energy Delivered", className="card-title"),
-                    ]),
-                    dbc.CardBody([
-                        html.H2(id="homepage-cum-kwh"),
-                        html.Div(className="my-3", id="homepage-cum-kwh-stats")
-                    ])
-                ], className="h-100 rounded shadow"),
-            ], md=6, sm=12),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader([
-                        html.H5("Energy Delivered Today", className="card-title"),
-                    ]),
-                    dbc.CardBody([
-                        html.H2(id="homepage-kwh"),
-                        html.Div(className="my-3", id="homepage-kwh-change")
-                    ])
-                ], className="h-100 rounded shadow"),                
-            ], md=6, sm=12),
-        ], className="my-4"),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader([
-                        html.H5("Cumulative E-Miles Delivered", className="card-title"),
-                    ]),
-                    dbc.CardBody([
-                        html.H2(id="homepage-cum-emiles"),
-                        html.Div(className="my-3", id="homepage-cum-emiles-stats")
-                    ])
-                ], className="h-100 rounded shadow"),
-            ], md=6, sm=12),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader([
-                        html.H5("Users Today", className="card-title"),
-                    ]),
-                    dbc.CardBody([
-                        html.H2(id="homepage-users"),
-                        html.Div(className="my-3", id="homepage-users-change")
-                    ])
-                ], className="h-100 rounded shadow"),
-            ], md=6, sm=12),
-        ], className="my-4"),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader([
-                        html.H5("Cumulative Number of Sessions", className="card-title"),
-                    ]),
-                    dbc.CardBody([
-                        html.H2(id="homepage-cum-sessions"),
-                        html.Div(className="my-3", id="homepage-cum-sessions-stats")
-                    ])
-                ], className="h-100 rounded shadow"),
-            ], md=6, sm=12),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader([
-                        html.H5("Peak Power This Month", className="card-title"),
-                    ]),
-                    dbc.CardBody([
-                        html.H2(id="homepage-peak-power"),
-                        html.Div(className="my-3", id="homepage-peak-power-change")
-                    ])
-                ], className="h-100 rounded shadow"),
-            ], md=6, sm=12),
-        ], className="my-4"),
-        # Interval components 
-        html.Div([
-            dcc.Interval(
-                id="data_refresh_interval_component",
-                interval=30 * 60 * 1000,  # update every 30 minutes
-                n_intervals=0
-            ),
-            dcc.Store(id="data_refresh_signal"),
-        ]),
-        html.Div(
-            id="last_updated_timer"
+    html.Div([
+        html.H1(datetime.now().strftime("%A, %B %d, %Y"), className="d-flex justify-content-center my-3"),
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Cumulative Energy Delivered", className="card-title"),
+                        ]),
+                        dbc.CardBody([
+                            html.H2(id="homepage-cum-kwh"),
+                            html.Div(className="my-3", id="homepage-cum-kwh-stats")
+                        ])
+                    ], className="h-100 rounded shadow"),
+                ], md=6, sm=12),
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Energy Delivered Today", className="card-title"),
+                        ]),
+                        dbc.CardBody([
+                            html.H2(id="homepage-kwh"),
+                            html.Div(className="my-3", id="homepage-kwh-change")
+                        ])
+                    ], className="h-100 rounded shadow"),                
+                ], md=6, sm=12),
+            ], className="my-4"),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Cumulative E-Miles Delivered", className="card-title"),
+                        ]),
+                        dbc.CardBody([
+                            html.H2(id="homepage-cum-emiles"),
+                            html.Div(className="my-3", id="homepage-cum-emiles-stats")
+                        ])
+                    ], className="h-100 rounded shadow"),
+                ], md=6, sm=12),
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Users Today", className="card-title"),
+                        ]),
+                        dbc.CardBody([
+                            html.H2(id="homepage-users"),
+                            html.Div(className="my-3", id="homepage-users-change")
+                        ])
+                    ], className="h-100 rounded shadow"),
+                ], md=6, sm=12),
+            ], className="my-4"),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Cumulative Number of Sessions", className="card-title"),
+                        ]),
+                        dbc.CardBody([
+                            html.H2(id="homepage-cum-sessions"),
+                            html.Div(className="my-3", id="homepage-cum-sessions-stats")
+                        ])
+                    ], className="h-100 rounded shadow"),
+                ], md=6, sm=12),
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader([
+                            html.H5("Peak Power This Month", className="card-title"),
+                        ]),
+                        dbc.CardBody([
+                            html.H2(id="homepage-peak-power"),
+                            html.Div(className="my-3", id="homepage-peak-power-change")
+                        ])
+                    ], className="h-100 rounded shadow"),
+                ], md=6, sm=12),
+            ], className="my-4"),
+            # Interval components 
+            html.Div([
+                dcc.Interval(
+                    id="data_refresh_interval_component",
+                    interval=30 * 60 * 1000,  # update every 30 minutes
+                    n_intervals=0
+                ),
+                dcc.Store(id="data_refresh_signal"),
+            ]),
+            html.Div(
+                id="last_updated_timer"
+            )
+        ],
+        fluid=True
         )
-    ],
-    fluid=True
-    )
+    ])
 
 
 # update daily and monthly stats homepage cards 
