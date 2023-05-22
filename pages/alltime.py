@@ -21,13 +21,13 @@ def get_last_days_datetime(n=7):
 
 def prediction_to_run(granularity):
     if granularity == "fivemindemand":
-        return # not yet supported 
+        return  # not yet supported
     elif granularity == "hourlydemand":
         return pickle.loads(redis_client.get("hourly_forecasts"))
     elif granularity == "dailydemand":
         return pickle.loads(redis_client.get("daily_forecasts"))
     elif granularity == "monthlydemand":
-        return # not yet supported 
+        return  # not yet supported
 
 
 layout = \
@@ -44,8 +44,7 @@ layout = \
                         end_date_placeholder_text="mm/dd/yyyy",
                         with_portal=False,
                     ),
-                ],
-                    className="calendar"),
+                ], className="calendar"),
                 html.Div([
                     dcc.Dropdown(
                         id="dataframe_picker",
@@ -93,7 +92,8 @@ layout = \
                                     "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                                 },
                             ),                    
-                        width=9,),                    dbc.Col([
+                        width=9,),                    
+                        dbc.Col([
                                 dcc.Graph(
                                 id="hour_histogram",
                                 config = {
@@ -147,19 +147,21 @@ layout = \
     ])
 
 
+# TODO: Remove this
 @dash.callback(
-    Output('hour_histogram', 'style'), 
-    Output('day_histogram', 'style'), 
-    Input('hide-histogram-btn','n_clicks'),
+    Output('hour_histogram', 'style'),
+    Output('day_histogram', 'style'),
+    Input('hide-histogram-btn', 'n_clicks'),
     prevent_initial_call=True
 )
 def hide_graph(n):
     if n % 2 != 0:
-        return {'display':'none'}, {'display':'none'}
+        return {'display': 'none'}, {'display': 'none'}
     else:
-        return {'display':'block'}, {'display':'block'}
+        return {'display': 'block'}, {'display': 'block'}
 
 
+# update main time series callback
 @dash.callback(
     Output("time_series_plot", "figure"),
     Input("dataframe_picker", "value"),
@@ -175,13 +177,17 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     # plot main time series
     fig = pltf.PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
-    
+
     # plot predictions (if supported)
     if forecasts and granularity != "fivemindemand" and granularity != "monthlydemand":
         forecast_df = prediction_to_run(granularity)
-        fig = pltf.PlotForecasts.plot_forecasts(fig, forecast_df, quantity, granularity)
+        fig = pltf.PlotForecasts.plot_forecasts(
+            fig, forecast_df, quantity, granularity)
 
     return fig
+
+# update histograms callback
+
 
 @dash.callback(
     Output("day_histogram", "figure"),
@@ -201,25 +207,28 @@ def display_histogram_hover(hoverData, quantity, granularity):
     hourlydemand = pickle.loads(redis_client.get("hourlydemand"))
     dailydemand = pickle.loads(redis_client.get("dailydemand"))
 
-    # extract hour and day 
+    # extract hour and day
     if hoverData["points"][0]["curveNumber"] == 0:
-        day = hoverData["points"][0]["customdata"][0] 
+        day = hoverData["points"][0]["customdata"][0]
         hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
     elif hoverData["points"][0]["curveNumber"] == 1:
         day = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
         hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
-    
+
     # create hover histograms
     if granularity == "dailydemand":
-        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
+        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
+            dailydemand, quantity, day)
         return day_hist, pltf.PlotHoverHistogram.empty_histogram_figure()
-    
+
     elif granularity == "monthlydemand":
         return pltf.PlotHoverHistogram.empty_histogram_figure(), pltf.PlotHoverHistogram.empty_histogram_figure()
-    
+
     else:
-        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(dailydemand, quantity, day)
-        hour_hist = pltf.PlotHoverHistogram.plot_hour_hover_histogram(hourlydemand, quantity, hour)
+        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
+            dailydemand, quantity, day)
+        hour_hist = pltf.PlotHoverHistogram.plot_hour_hover_histogram(
+            hourlydemand, quantity, hour)
         return day_hist, hour_hist
 
 
