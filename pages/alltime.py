@@ -29,8 +29,7 @@ def prediction_to_run(granularity):
     elif granularity == "monthlydemand":
         return  # not yet supported
 
-
-layout = \
+content = \
     dbc.Container([
         html.Div([
             html.Div([
@@ -80,7 +79,6 @@ layout = \
                     id="toggle_forecasts",
                 )
             ]),
-            html.Button("Hide Histograms", id="hide-histogram-btn"),
             html.Div([
                 dbc.Container([
                     dbc.Row([
@@ -146,19 +144,11 @@ layout = \
         ])
     ])
 
-
-# TODO: Remove this
-@dash.callback(
-    Output('hour_histogram', 'style'),
-    Output('day_histogram', 'style'),
-    Input('hide-histogram-btn', 'n_clicks'),
-    prevent_initial_call=True
-)
-def hide_graph(n):
-    if n % 2 != 0:
-        return {'display': 'none'}, {'display': 'none'}
-    else:
-        return {'display': 'block'}, {'display': 'block'}
+layout = \
+    dbc.Tabs([
+        dbc.Tab(content, label="ABC"),
+        dbc.Tab(html.Div("monkey"), label="CDE")
+    ])
 
 
 # update main time series callback

@@ -81,7 +81,7 @@ layout = \
                             html.Div(className="my-3", id="homepage-cum-kwh-stats")
                         ])
                     ], className="h-100 rounded shadow"),
-                ], md=6, sm=12),
+                ], className="col-md-6 col-sm-12"),
                 dbc.Col([
                     dbc.Card([
                         dbc.CardHeader([
@@ -93,7 +93,7 @@ layout = \
                         ])
                     ], className="h-100 rounded shadow"),                
                 ], md=6, sm=12),
-            ], className="my-4"),
+            ], className="my-4 ms-3 me-3"),
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
@@ -116,8 +116,8 @@ layout = \
                             html.Div(className="my-3", id="homepage-users-change")
                         ])
                     ], className="h-100 rounded shadow"),
-                ], md=6, sm=12),
-            ], className="my-4"),
+                ], className="col-md-6 col-sm-12"),
+            ], className="my-4 ms-3 me-3"),
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
@@ -140,8 +140,8 @@ layout = \
                             html.Div(className="my-3", id="homepage-peak-power-change")
                         ])
                     ], className="h-100 rounded shadow"),
-                ], md=6, sm=12),
-            ], className="my-4"),
+                ], className="col-md-6 col-sm-12"),
+            ], className="my-4 ms-3 me-3"),
             # Interval components 
             html.Div([
                 dcc.Interval(
@@ -154,9 +154,7 @@ layout = \
             html.Div(
                 id="last_updated_timer"
             )
-        ],
-        fluid=True
-        )
+        ], fluid=True)
     ])
 
 
