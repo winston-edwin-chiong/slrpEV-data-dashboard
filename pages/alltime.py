@@ -1,6 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
-import dash_daq as daq
+import dash_mantine_components as dmc
 import pandas as pd
 import pickle
 from plotting import plottingfunctions as pltf
@@ -29,13 +29,11 @@ def prediction_to_run(granularity):
     elif granularity == "monthlydemand":
         return  # not yet supported
 
-content = \
-    dbc.Container([
+tab_one_content = \
         html.Div([
-            html.Div([
-                html.Div([
+            html.Div([ # control options div
                     dcc.DatePickerRange(
-                        id="date_picker",
+                        id="ts_date_picker",
                         clearable=True,
                         start_date=get_last_days_datetime(7),
                         end_date=get_last_days_datetime(0),
@@ -43,8 +41,6 @@ content = \
                         end_date_placeholder_text="mm/dd/yyyy",
                         with_portal=False,
                     ),
-                ], className="calendar"),
-                html.Div([
                     dcc.Dropdown(
                         id="dataframe_picker",
                         options=[
@@ -71,20 +67,21 @@ content = \
                         clearable=False,
                         searchable=False,
                     ),
-                ]),
-                html.Button("Today", className="btn btn-primary", id="jump_to_present_btn"),
-                daq.ToggleSwitch(
-                    label="Toggle Forecasts",
-                    value=False,
+                html.Button("Today", className="btn btn-primary py-1", id="jump_to_present_btn"),
+                dmc.Switch(
+                    size="lg",
+                    radius="lg",
+                    checked=False,
                     id="toggle_forecasts",
                 )
-            ]),
+            ], className="d-flex justify-content-center my-5"),
             html.Div([
                 dbc.Container([
                     dbc.Row([
                         dbc.Col(
                             dcc.Graph(
                                 id="time_series_plot",
+                                style={"height": "700px"},
                                 config={
                                     "displaylogo": False,
                                     "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
@@ -94,12 +91,14 @@ content = \
                         dbc.Col([
                                 dcc.Graph(
                                 id="hour_histogram",
+                                style={"height": "350px"},
                                 config = {
                                     "displaylogo": False
                                 },
                             ),
                             dcc.Graph(
                                 id="day_histogram",
+                                style={"height": "350px"},                                
                                 config = {
                                     "displaylogo": False
                                 },
@@ -108,46 +107,38 @@ content = \
                     ])
                 ], fluid=True),
             ]),
-            html.Div([
-                dcc.Graph(
-                    id="cumulative_energy_delivered",
-                    config={
-                        "displaylogo": False
-                    }
-                ),
-            ]),
-            # Interval components, refresh/validation timestamps
-            html.Div([
-                html.Div([
-                    dcc.Interval(
-                        id="data_refresh_interval_component",
-                        interval=30 * 60 * 1000,  # update every 30 minutes
-                        n_intervals=0
-                    ),
-                    dcc.Store(id="data_refresh_signal"),
-                ]),
-                html.Div(
-                    id="last_updated_timer"
-                ),
-                html.Div([
-                    dcc.Interval(
-                        id="CV_interval_component",
-                        interval=2 * 24 * 60 * 60 * 1000,  # update every two days
-                        n_intervals=0
-                    ),
-                    dcc.Store(id="CV_signal"),
-                ]),
-                html.Div(
-                    id="last_validated_timer"
-                ),
-            ])
         ])
+
+tab_two_content = \
+    html.Div([
+        dcc.DatePickerRange(
+            id="cumulative_date_picker",
+            clearable=True,
+            start_date=get_last_days_datetime(7),
+            end_date=get_last_days_datetime(0),
+            start_date_placeholder_text="mm/dd/yyyy",
+            end_date_placeholder_text="mm/dd/yyyy",
+            with_portal=False,
+        ),
+        dcc.Graph(
+            id="cumulative_energy_delivered",
+            style={"height": "700px"},            
+            config={
+                "displaylogo": False
+            }
+        ),
+    ])
+
+tab_three_content = \
+    html.Div([
+        "Monki"
     ])
 
 layout = \
     dbc.Tabs([
-        dbc.Tab(content, label="ABC"),
-        dbc.Tab(html.Div("monkey"), label="CDE")
+        dbc.Tab(tab_one_content, label="Power & Energy Demand Analytics"),
+        dbc.Tab(tab_two_content, label="Cumulative Demand"),
+        dbc.Tab(tab_three_content, label="Choice Analytics")
     ])
 
 
@@ -156,9 +147,9 @@ layout = \
     Output("time_series_plot", "figure"),
     Input("dataframe_picker", "value"),
     Input("quantity_picker", "value"),
-    Input("date_picker", "start_date"),
-    Input("date_picker", "end_date"),
-    Input("toggle_forecasts", "value"),
+    Input("ts_date_picker", "start_date"),
+    Input("ts_date_picker", "end_date"),
+    Input("toggle_forecasts", "checked"),
     Input("data_refresh_signal", "data"),
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal,):
@@ -199,16 +190,17 @@ def display_histogram_hover(hoverData, quantity, granularity):
 
     # extract hour and day
     if hoverData["points"][0]["curveNumber"] == 0:
-        day = hoverData["points"][0]["customdata"][0]
-        hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
+        day_name = hoverData["points"][0]["customdata"][0]
     elif hoverData["points"][0]["curveNumber"] == 1:
-        day = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
-        hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
+        day_name = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
+
+    hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
+    point = hoverData["points"][0]["y"]
 
     # create hover histograms
     if granularity == "dailydemand":
         day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
-            dailydemand, quantity, day)
+            dailydemand, quantity, day_name, point)
         return day_hist, pltf.PlotHoverHistogram.empty_histogram_figure()
 
     elif granularity == "monthlydemand":
@@ -216,16 +208,16 @@ def display_histogram_hover(hoverData, quantity, granularity):
 
     else:
         day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
-            dailydemand, quantity, day)
+            dailydemand, quantity, day_name)
         hour_hist = pltf.PlotHoverHistogram.plot_hour_hover_histogram(
-            hourlydemand, quantity, hour)
+            hourlydemand, quantity, hour, point)
         return day_hist, hour_hist
 
 
 # jump to present button
 @dash.callback(
-    Output("date_picker", "start_date"),
-    Output("date_picker", "end_date"),
+    Output("ts_date_picker", "start_date"),
+    Output("ts_date_picker", "end_date"),
     Input("jump_to_present_btn", "n_clicks"),
 )
 def jump_to_present(button_press):
@@ -234,8 +226,8 @@ def jump_to_present(button_press):
 
 @dash.callback(
     Output("cumulative_energy_delivered", "figure"),
-    Input("date_picker", "start_date"),
-    Input("date_picker", "end_date"),
+    Input("cumulative_date_picker", "start_date"),
+    Input("cumulative_date_picker", "end_date"),
     Input("data_refresh_signal", "data")
 )
 def display_cumulative_energy_figure(start_date, end_date, signal):

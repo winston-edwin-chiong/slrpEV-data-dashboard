@@ -50,16 +50,6 @@ layout = \
                 )
             ]),
         ]),
-        # Interval components 
-        html.Div([
-            dcc.Interval(
-                id="data_refresh_interval_component",
-                interval=30 * 60 * 1000,  # update every 30 minutes
-                n_intervals=0
-            ),
-            dcc.Store(id="data_refresh_signal"),
-            html.Div(id="last_updated_timer")
-        ]),
     ])
 
 

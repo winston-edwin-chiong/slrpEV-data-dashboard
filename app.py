@@ -78,6 +78,33 @@ app.layout = \
         # --> Page Content <-- #
         dash.page_container,
         # --> <-- #
+
+        # --> Interval Components, Refresh/Validation Timestamps <-- #
+        html.Div([
+            html.Div([
+                dcc.Interval(
+                    id="data_refresh_interval_component",
+                    interval=30 * 60 * 1000,  # update every 30 minutes
+                    n_intervals=0
+                ),
+                dcc.Store(id="data_refresh_signal"),
+            ]),
+            html.Div(
+                id="last_updated_timer"
+            ),
+            html.Div([
+                dcc.Interval(
+                    id="CV_interval_component",
+                    interval=2 * 24 * 60 * 60 * 1000,  # update every two days
+                    n_intervals=0
+                ),
+                dcc.Store(id="CV_signal"),
+            ]),
+            html.Div(
+                id="last_validated_timer"
+            ),
+        ])
+        # --> <-- #
     ])
 
 # callback for toggling the collpase on small screens 
@@ -119,7 +146,7 @@ def CV_interval(n):
     '''
     # update CV timestamp 
     last_validated = redis_client.get("last_validated_time").decode("utf-8")
-    return n, f"Parameters last validated {last_validated}." 
+    return n, f"Parameters last validated at {last_validated}." 
 
 # --> <-- #
 

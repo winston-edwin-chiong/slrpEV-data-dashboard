@@ -24,6 +24,8 @@ df = df.drop(
             "Overstay_h"
         ]
     )
+# reverse data (most recent first)
+df = df[::-1]
 
 grid = dag.AgGrid(
     id="raw-data-grid",
@@ -39,7 +41,7 @@ grid = dag.AgGrid(
         "rowSelection": "multiple",
         "pagination": True
     },
-    style={"margin":5}
+    style={"height":600},
 )
 
 layout = \

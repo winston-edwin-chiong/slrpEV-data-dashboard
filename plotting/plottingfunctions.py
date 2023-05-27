@@ -127,6 +127,8 @@ class PlotMainTimeSeries:
             yaxis_title=plot_layout["cleaned_quantity"] +
             " " + plot_layout["units_measurement"],
             template="plotly",
+            margin=dict(l=20, r=20, pad=0),
+            title_pad=dict(l=0, r=0, t=0, b=0)
         )
 
         return fig
@@ -300,7 +302,7 @@ class PlotCumulativeEnergyDelivered:
                 # calculate cumulative sum in kWh
                 y=df["cumEnergy_Wh"].cumsum(axis=0) / 1000,
                 fill="tozeroy",
-                mode="lines"
+                mode="lines",
             )
         )
 
@@ -308,6 +310,8 @@ class PlotCumulativeEnergyDelivered:
             title="Cumulative Energy Delivered",
             xaxis_title="Time",
             yaxis_title="Energy Delivered (kWh)",
+            margin=dict(l=20, r=20, pad=0),
+            title_pad=dict(l=0, r=0, t=0, b=0)
             # yaxis = dict(range=[df["cum_sum_kWh"].min(), df["cum_sum_kWh"].max()]),
         )
 
@@ -350,35 +354,68 @@ class PlotHoverHistogram:
         },
     }
 
+
     @classmethod 
-    def plot_day_hover_histogram(cls, data, quantity, day):
+    def plot_day_hover_histogram(cls, data, quantity, day, point=None):
         data = data.loc[data["day"] == day]
 
         fig = go.Figure()
         fig.add_trace(
-            go.Histogram(x=data[quantity])
+            go.Histogram(
+                x=data[quantity],
+                histnorm="probability density",
+                hovertemplate="<extra></extra>Value: %{x}<br>Probability Density: %{y}"
+            )
         )
+        if point is not None: 
+            fig.add_trace(
+                go.Scatter(
+                    x=[point], 
+                    mode="markers",
+                    marker_symbol="arrow-up",
+                    hovertemplate="Hovered: %{x} <extra></extra>"
+                )
+            )
         fig.update_layout(
-            title=f"Distribution on {day}",
+            title=f"Dist. On {day}",
             xaxis_title=cls.cleaned_column_names[quantity]["col_name"],
-            yaxis_title="Count",
+            yaxis_title="Probability Density",
+            showlegend=False,
+            margin=dict(l=0, r=0, pad=0),
+            title_pad=dict(l=0, r=0, t=0, b=0)
         )          
 
         return fig 
     
 
     @classmethod 
-    def plot_hour_hover_histogram(cls, data, quantity, hour):
+    def plot_hour_hover_histogram(cls, data, quantity, hour, point=None):
         data = data[data.index.hour == hour]
 
         fig = go.Figure()
         fig.add_trace(
-            go.Histogram(x=data[quantity])
+            go.Histogram(
+                x=data[quantity],
+                histnorm="probability density",
+                hovertemplate="<extra></extra>Value: %{x}<br>Probability Density: %{y}"
+            )
         )
+        if point is not None: 
+            fig.add_trace(
+                go.Scatter(
+                    x=[point], 
+                    mode="markers",
+                    marker_symbol="arrow-up",
+                    hovertemplate="Hovered: %{x} <extra></extra>"
+                )
+            )
         fig.update_layout(
-            title=f"Distribution at Hour {hour}",
+            title=f"Dist. On Hour {hour}",
             xaxis_title=cls.cleaned_column_names[quantity]["col_name"],
-            yaxis_title="Count",
+            yaxis_title="Probability Density",
+            showlegend=False,
+            margin=dict(l=0, r=0, pad=0),
+            title_pad=dict(l=0, r=0, t=0, b=0)
         )         
 
         return fig 
@@ -411,8 +448,10 @@ class PlotHoverHistogram:
                             "size": 15
                         }
                     }
-                ]
-            }
+                ],              
+            },
+            margin=dict(l=0, r=0, pad=0),
+            title_pad=dict(l=0, r=0, t=0, b=0)  
         )
         return fig
 
