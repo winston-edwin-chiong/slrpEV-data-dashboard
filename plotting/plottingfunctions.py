@@ -35,8 +35,7 @@ def empty_session_figure() -> go.Figure:
 
 
 def add_training_end_vline(self, start_date, end_date):
-    """
-    """
+
     training_end = "2022-08-15"
 
     plotly_friendly_date = datetime.strptime(training_end,
@@ -99,11 +98,13 @@ class PlotMainTimeSeries:
     @classmethod
     def plot_main_time_series(cls, df: pd.DataFrame, granularity: str, quantity: str, start_date: str, end_date: str) -> go.Figure:
 
-        # prepare df for plotting
+        # filter df by date and columns
         df = cls.__query_df(df, granularity, quantity, start_date, end_date)
 
+        # get layout 
         plot_layout = cls.plot_layout_key[quantity]
 
+        # get hover data
         hover_column = cls.other_columns[granularity].get("hoverdata")
         hoverdata = df[hover_column]
         hoverdata["units"] = plot_layout["units_measurement"]
@@ -356,15 +357,26 @@ class PlotHoverHistogram:
 
 
     @classmethod 
-    def plot_day_hover_histogram(cls, data, quantity, day, point=None):
-        data = data.loc[data["day"] == day]
+    def plot_day_hover_histogram(cls, hoverData, df, quantity):
+
+        # extract day name
+        if hoverData["points"][0]["curveNumber"] == 0:
+            day_name = hoverData["points"][0]["customdata"][0]
+        elif hoverData["points"][0]["curveNumber"] == 1:
+            day_name = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
+
+        # get point to hover on 
+        point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0]
+
+        # filter df 
+        df = df.loc[df["day"] == day_name]
 
         fig = go.Figure()
         fig.add_trace(
             go.Histogram(
-                x=data[quantity],
-                histnorm="probability density",
-                hovertemplate="<extra></extra>Value: %{x}<br>Probability Density: %{y}"
+                x=df[quantity],
+                histnorm="percent",
+                hovertemplate="<extra></extra>Value: %{x}<br>% Share: %{y}"
             )
         )
         if point is not None: 
@@ -377,9 +389,9 @@ class PlotHoverHistogram:
                 )
             )
         fig.update_layout(
-            title=f"Dist. On {day}",
+            title=f"Dist. On {day_name}",
             xaxis_title=cls.cleaned_column_names[quantity]["col_name"],
-            yaxis_title="Probability Density",
+            yaxis_title="Percent Share",
             showlegend=False,
             margin=dict(l=0, r=0, pad=0),
             title_pad=dict(l=0, r=0, t=0, b=0)
@@ -389,30 +401,36 @@ class PlotHoverHistogram:
     
 
     @classmethod 
-    def plot_hour_hover_histogram(cls, data, quantity, hour, point=None):
-        data = data[data.index.hour == hour]
+    def plot_hour_hover_histogram(cls, hoverData, df, quantity):
+
+        # extract hour name
+        hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
+
+        # get point to hover on 
+        point = hoverData["points"][0]["y"]
+
+        df = df[df.index.hour == hour]
 
         fig = go.Figure()
         fig.add_trace(
             go.Histogram(
-                x=data[quantity],
-                histnorm="probability density",
-                hovertemplate="<extra></extra>Value: %{x}<br>Probability Density: %{y}"
+                x=df[quantity],
+                histnorm="percent",
+                hovertemplate="<extra></extra>Value: %{x}<br>% Share: %{y}"
             )
         )
-        if point is not None: 
-            fig.add_trace(
-                go.Scatter(
-                    x=[point], 
-                    mode="markers",
-                    marker_symbol="arrow-up",
-                    hovertemplate="Hovered: %{x} <extra></extra>"
-                )
+        fig.add_trace(
+            go.Scatter(
+                x=[point], 
+                mode="markers",
+                marker_symbol="arrow-up",
+                hovertemplate="Hovered: %{x} <extra></extra>"
             )
+        )
         fig.update_layout(
             title=f"Dist. On Hour {hour}",
             xaxis_title=cls.cleaned_column_names[quantity]["col_name"],
-            yaxis_title="Probability Density",
+            yaxis_title="Percent Share",
             showlegend=False,
             margin=dict(l=0, r=0, pad=0),
             title_pad=dict(l=0, r=0, t=0, b=0)

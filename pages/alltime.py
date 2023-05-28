@@ -152,7 +152,7 @@ layout = \
     Input("toggle_forecasts", "checked"),
     Input("data_refresh_signal", "data"),
 )
-def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal,):
+def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal):
     # load data
     data = pickle.loads(redis_client.get(granularity))
     # plot main time series
@@ -188,19 +188,10 @@ def display_histogram_hover(hoverData, quantity, granularity):
     hourlydemand = pickle.loads(redis_client.get("hourlydemand"))
     dailydemand = pickle.loads(redis_client.get("dailydemand"))
 
-    # extract hour and day
-    if hoverData["points"][0]["curveNumber"] == 0:
-        day_name = hoverData["points"][0]["customdata"][0]
-    elif hoverData["points"][0]["curveNumber"] == 1:
-        day_name = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
-
-    hour = int(pd.to_datetime(hoverData["points"][0]["x"]).strftime("%H"))
-    point = hoverData["points"][0]["y"]
-
     # create hover histograms
     if granularity == "dailydemand":
         day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
-            dailydemand, quantity, day_name, point)
+            hoverData, dailydemand, quantity)
         return day_hist, pltf.PlotHoverHistogram.empty_histogram_figure()
 
     elif granularity == "monthlydemand":
@@ -208,9 +199,9 @@ def display_histogram_hover(hoverData, quantity, granularity):
 
     else:
         day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
-            dailydemand, quantity, day_name)
+            hoverData, dailydemand, quantity)
         hour_hist = pltf.PlotHoverHistogram.plot_hour_hover_histogram(
-            hourlydemand, quantity, hour, point)
+            hoverData, hourlydemand, quantity)
         return day_hist, hour_hist
 
 

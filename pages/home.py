@@ -12,15 +12,20 @@ from datetime import datetime
 
 # --> Helper Functions <-- #
 
-def calculate_pct_change(now, before):
+def calculate_pct_change(after, before):
     '''
     Calculate the percent change between two numbers.
+    If 'before' is zero, this function returns 100, and returns 0 if both
+    'after' and 'before' are zero. 
     '''
-    if before and now:
-        return (now - before) * 100 / before
-    elif not before and now:
+    # both are zero case
+    if not after and not before:
+        return 0
+    # before is zero case 
+    elif not before:
         return 100
-    return 0
+    # now is zero & now and before are non-zero case
+    return (after - before) * 100 / before
 
 
 def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_data, monthlydemand):
