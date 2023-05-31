@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 from datetime import datetime, timedelta
 
 
@@ -284,39 +285,65 @@ class PlotDailySessionEnergyBreakdown:
 
     
 # Class to plot cumulative energy delivered
-class PlotCumulativeEnergyDelivered:
+class PlotCumulatives:
 
     @classmethod
-    def plot_cumulative_energy_delivered(cls, df: pd.DataFrame, start_date: str, end_date: str) -> go.Figure:
+    def plot_cumulative(cls, quantity: str, df: pd.DataFrame, start_date: str, end_date: str) -> go.Figure:
+        if quantity == "cumulative-energy-delivered":
+            # necessary for some reason, even though 'finishChargeTime' is already cast to datetime during cleaning
+            df["finishChargeTime"] = pd.to_datetime(df["finishChargeTime"])
+            df = df.sort_values(by="finishChargeTime")
+            df = cls.__query_date_df(df, start_date, end_date, "finishChargeTime")
 
-        # necessary for some reason, even though 'finishChargeTime' is already cast to datetime during cleaning
-        df["finishChargeTime"] = pd.to_datetime(df["finishChargeTime"])
-        df = df.sort_values(by="finishChargeTime")
-        # df["cum_sum_kWh"] = df["cumEnergy_Wh"].cumsum(axis=0) / 1000
-        df = cls.__query_date_df(df, start_date, end_date, "finishChargeTime")
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=df["finishChargeTime"],
-                # calculate cumulative sum in kWh
-                y=df["cumEnergy_Wh"].cumsum(axis=0) / 1000,
-                fill="tozeroy",
-                mode="lines",
+            fig = go.Figure()
+            fig.add_trace(
+                go.Scatter(
+                    x=df["finishChargeTime"],
+                    # calculate cumulative sum in kWh
+                    y=df["cumEnergy_Wh"].cumsum(axis=0) / 1000,
+                    fill="tozeroy",
+                    mode="lines",
+                )
             )
-        )
 
-        fig.update_layout(
-            title="Cumulative Energy Delivered",
-            xaxis_title="Time",
-            yaxis_title="Energy Delivered (kWh)",
-            margin=dict(l=20, r=20, pad=0),
-            title_pad=dict(l=0, r=0, t=0, b=0)
-            # yaxis = dict(range=[df["cum_sum_kWh"].min(), df["cum_sum_kWh"].max()]),
-        )
+            fig.update_layout(
+                title="Cumulative Energy Delivered",
+                xaxis_title="Time",
+                yaxis_title="Energy Delivered (kWh)",
+                margin=dict(l=20, r=20, pad=0),
+                title_pad=dict(l=0, r=0, t=0, b=0)
+            )
 
-        return fig
+            return fig
+        
+        elif quantity == "cumulative-num-users":
+            # calculate cumulative number of unique users
+            df["startChargeTime"] = pd.to_datetime(df["startChargeTime"])
+            df = df[['startChargeTime', 'userId']].sort_values(['startChargeTime', 'userId'])
+            df["cumulative_users"] = (~df['userId'].duplicated()).cumsum()
+
+            # query df by date
+            df = cls.__query_date_df(df, start_date, end_date, "startChargeTime")
+
+            fig = go.Figure()
+            fig.add_trace(
+                go.Scatter(
+                    x=df["startChargeTime"],
+                    y=df["cumulative_users"],
+                    fill="tozeroy",
+                    mode="lines",
+                )
+            )
+
+            fig.update_layout(
+                title="Cumulative Number of Unique Users",
+                xaxis_title="Time",
+                yaxis_title="Number of Unique Users",
+                margin=dict(l=20, r=20, pad=0),
+                title_pad=dict(l=0, r=0, t=0, b=0)
+            )
+            return fig
+
 
     @staticmethod
     def __query_date_df(df: pd.DataFrame, start_date: str, end_date: str, col:str) -> pd.DataFrame:
@@ -355,6 +382,38 @@ class PlotHoverHistogram:
         },
     }
 
+    @staticmethod
+    def default():
+        fig = go.Figure()
+        fig.update_layout(
+            {
+                "xaxis": {
+                    "visible": False,
+                    "rangeslider": {
+                        "visible": False
+                    }
+                },
+                "yaxis": {
+                    "visible": False
+                },
+                "annotations": [
+                    {
+                        "text": "Hover over a point to <br> to display more information!",
+                        "xref": "paper",
+                        "yref": "paper",
+                        "showarrow": False,
+                        "font": {
+                            "size": 10
+                        },
+                        "textangle": -15,
+                    }
+                ]
+            },
+            margin=dict(l=0, r=0, pad=0),
+            title_pad=dict(l=0, r=0, t=0, b=0)  
+        )
+        return fig
+
 
     @classmethod 
     def plot_day_hover_histogram(cls, hoverData, df, quantity):
@@ -362,11 +421,12 @@ class PlotHoverHistogram:
         # extract day name
         if hoverData["points"][0]["curveNumber"] == 0:
             day_name = hoverData["points"][0]["customdata"][0]
+
         elif hoverData["points"][0]["curveNumber"] == 1:
             day_name = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
 
-        # get point to hover on 
-        point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0]
+        # get point to hover on (if it exists in dailydemand)              
+        point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] if pd.to_datetime(hoverData["points"][0]["x"]) <= pd.to_datetime((datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")) else None
 
         # filter df 
         df = df.loc[df["day"] == day_name]
@@ -376,7 +436,8 @@ class PlotHoverHistogram:
             go.Histogram(
                 x=df[quantity],
                 histnorm="percent",
-                hovertemplate="<extra></extra>Value: %{x}<br>% Share: %{y}"
+                hovertemplate="<extra></extra>Value: %{x}<br>% Share: %{y}",
+                # marker=dict(line=dict(width=0.8, color="black"))
             )
         )
         if point is not None: 
@@ -416,7 +477,8 @@ class PlotHoverHistogram:
             go.Histogram(
                 x=df[quantity],
                 histnorm="percent",
-                hovertemplate="<extra></extra>Value: %{x}<br>% Share: %{y}"
+                hovertemplate="<extra></extra>Value: %{x}<br>% Share: %{y}",
+                # marker=dict(line=dict(width=0.8, color="black"))
             )
         )
         fig.add_trace(
@@ -542,4 +604,33 @@ class PlotForecasts:
                 fill="tozeroy",
             )
         )
-        return fig        
+        return fig   
+
+
+# Class to plot choice analytics 
+class ABC:     
+
+    @classmethod
+    def plot_sched_vs_reg(cls, df: pd.DataFrame) -> go.Figure():
+
+        df = df[["sch_centsPerHr", "reg_centsPerHr", "choice"]].value_counts().to_frame("counts").reset_index()
+
+        fig = px.scatter(data_frame=df, 
+                         y="sch_centsPerHr", 
+                         x="reg_centsPerHr", 
+                         color="choice", 
+                         size="counts", 
+                         size_max=100,
+                         labels={"choice": "Choice"}
+                         )
+        fig.update_traces(hovertemplate="Scheduled ¢/Hr: %{x}<br>Regular ¢/Hr: %{y}<br>Count: %{marker.size:,}<br>Choice: %{text}<extra></extra>", text=df['choice'])
+        fig.update_layout(
+            title=f"Choice On Different Price / Charge Offerings",
+            xaxis_title="REGULAR PRICE (cents/hour)",
+            yaxis_title="SCHEDULED PRICE (cents/hour)",
+            showlegend=True,
+            margin=dict(l=15, r=15, pad=0),
+            title_pad=dict(l=0, r=0, t=0, b=0)
+        ) 
+        
+        return fig

@@ -11,6 +11,16 @@ dash.register_page(__name__, path="/today")
 
 layout = \
     html.Div([
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([]),
+                dbc.Col([])
+            ])
+        ])
+    ])
+
+layout = \
+    html.Div([
         html.Div([
             html.Div([
                 "Today's Sessions",

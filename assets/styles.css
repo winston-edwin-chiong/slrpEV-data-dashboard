@@ -1,35 +1,32 @@
-
-
-.calendar {
-    margin: 5px;
-}
-
-.dash-dropdown {
-    margin: 5px;
-    width: 230px;
-}
-
-#jump_to_present_btn {
-    margin: 5px;
-}
-
 .Mac {
     height: auto;
     width: auto;
     max-height: 450px;
 }
 
-/* #day_histogram {
-    height: 350px;
+
+
+
+/* All Time Tab Controls */
+
+#cumulative-graph-picker {
+    width: 350px;
 }
 
-#hour_histogram {
-    height: 350px;
+#quantity-picker, #dataframe-picker {
+    width: 215px;
 }
 
-#time_series_plot {
-    height: 700px;
-} */
+.analytics-control-box {
+    width: 330px;
+}
+
+
+#toggle-forecasts:hover{
+    cursor: pointer;
+}
+
+
 
 
 /* Navbar Styles */
@@ -55,4 +52,34 @@
 .navbar-item:hover .navbar-icon {
     color: black;
     filter: brightness(100%);
+}
+
+
+/* Calendar Element */
+
+.CalendarDay__selected {
+    background: #003262!important;
+    border: 1px double #15284B !important;
+}
+
+
+.CalendarDay__selected:active, .CalendarDay__selected:hover {
+    background: #003262!important;
+    border: 1px double #15284B !important;
+}
+
+.CalendarDay__selected_span {
+    background: #003262!important;
+    opacity: 50%;
+    border: 1px double #003262 !important;
+}
+
+.CalendarDay__selected_span:hover {
+    background: #003262 !important;
+    opacity: 100% !important;
+    border: 1px double #003262 !important; 
+}
+
+.DateInput_input__focused {
+    border-bottom: 2px solid #003262 !important;
 }

@@ -72,12 +72,17 @@ app.layout = \
                     ], horizontal="center")
                 ], id="navbar-collapse", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
-        ], className="py-2 nav-fill w-100 border-start-0 border-end-0", sticky="top", expand="lg"),
+        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 .bg-secondary.bg-gradient shadow", sticky="top", expand="lg"),
         # --> <---#
 
         # --> Page Content <-- #
         dash.page_container,
         # --> <-- #
+
+
+        # --> Footer <-- #
+        # --> <-- #
+
 
         # --> Interval Components, Refresh/Validation Timestamps <-- #
         html.Div([
