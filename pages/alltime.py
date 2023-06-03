@@ -110,7 +110,7 @@ tab_one_content = \
         html.Div([
             dbc.Container([
                 dbc.Row([
-                    dbc.Col(
+                    dbc.Col([
                         dcc.Graph(
                             id="time-series-plot",
                             style={"height": "600px"},
@@ -118,8 +118,9 @@ tab_one_content = \
                                 "displaylogo": False,
                                 "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                             },
+                            className="border"
                         ),                    
-                    width=9,),                    
+                    ], className="col-md-9 col-sm-12 mt-2"),                    
                     dbc.Col([
                             dcc.Graph(
                             id="hour-histogram",
@@ -127,6 +128,7 @@ tab_one_content = \
                             config = {
                                 "displaylogo": False
                             },
+                            className="border border-bottom-0"
                         ),
                         dcc.Graph(
                             id="day-histogram",
@@ -134,8 +136,9 @@ tab_one_content = \
                             config = {
                                 "displaylogo": False
                             },
+                            className="border border-top-0"
                         )
-                    ], width=3)                    
+                    ], className="col-md-3 col-sm-12 mt-2")                    
                 ])
             ], fluid=True),
         ]),
@@ -183,7 +186,7 @@ tab_two_content = \
             config={
                 "displaylogo": False
             },
-            className="vh-50"
+            className="vh-50 border m-2"
         ),
     ])
 
@@ -194,7 +197,7 @@ tab_three_content = \
             config={
                 "displaylogo": False
             },
-            className="vh-75"
+            className="vh-50 border m-2"
         ),
     ])
 

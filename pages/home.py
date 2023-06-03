@@ -98,8 +98,8 @@ layout = \
                             html.Div(className="my-3",
                                      id="homepage-cum-kwh-stats")
                         ])
-                    ], className="h-100 rounded shadow"),
-                ], className="col-md-6 col-sm-12"),
+                    ], className="h-100 rounded shadow text-center"),
+                ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
                     dbc.Card([
                         dbc.CardHeader([
@@ -111,9 +111,9 @@ layout = \
                             html.Div(className="my-3",
                                      id="homepage-kwh-change")
                         ])
-                    ], className="h-100 rounded shadow"),
-                ], className="col-md-6 col-sm-12"),
-            ], className="m-3 gy-3"),
+                    ], className="h-100 rounded shadow text-center"),
+                ], className="col-md-6 col-sm-12 col-12"),
+            ], className="mt-2 mx-5 gy-4 gx-4 row"),
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
@@ -126,8 +126,8 @@ layout = \
                             html.Div(className="my-3",
                                     id="homepage-cum-emiles-stats")
                         ])
-                    ], className="h-100 rounded shadow"),
-                ], className="col-md-6 col-sm-12"),
+                    ], className="h-100 rounded shadow text-center"),
+                ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
                     dbc.Card([
                         dbc.CardHeader([
@@ -138,9 +138,9 @@ layout = \
                             html.Div(className="my-3",
                                     id="homepage-users-change")
                         ])
-                    ], className="h-100 rounded shadow"),
-                ], className="col-md-6 col-sm-12"),
-            ], className="m-3 gy-3"),
+                    ], className="h-100 rounded shadow text-center"),
+                ], className="col-md-6 col-sm-12 col-12"),
+            ], className="mt-2 mx-5 gy-4 gx-4 row"),
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
@@ -153,8 +153,8 @@ layout = \
                             html.Div(className="my-3",
                                     id="homepage-cum-sessions-stats")
                         ])
-                    ], className="h-100 rounded shadow"),
-                ], className="col-md-6 col-sm-12"),
+                    ], className="h-100 rounded shadow text-center"),
+                ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
                     dbc.Card([
                         dbc.CardHeader([
@@ -166,9 +166,9 @@ layout = \
                             html.Div(className="my-3",
                                     id="homepage-peak-power-change")
                         ])
-                    ], className="h-100 rounded shadow"),
-                ], className="col-md-6 col-sm-12"),
-            ], className="m-3 gy-3"),
+                    ], className="h-100 rounded shadow text-center"),
+                ], className="col-md-6 col-sm-12 col-12"),
+            ], className="mt-2 mx-5 gy-4 gx-4 row"),
         ], fluid=True)
     ])
 

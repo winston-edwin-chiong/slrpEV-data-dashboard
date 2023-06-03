@@ -12,6 +12,13 @@
   }
 
 
+/* Today Options */
+#today-graph-picker {
+    width: 340px;
+    font-size: 80%;
+}
+
+
 /* Datatable */
 
 .ag-theme-alpine {
@@ -53,7 +60,6 @@
 
 #cumulative-graph-picker {
     width: 375px;
-    display: inline-block;
     font-size: 80%;
 }
 

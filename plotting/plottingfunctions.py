@@ -5,36 +5,6 @@ import plotly.express as px
 from datetime import datetime, timedelta
 
 
-# Plot empty figure if no sessions
-def empty_session_figure() -> go.Figure:
-    fig = go.Figure()
-    fig.update_layout(
-        {
-            "xaxis": {
-                "visible": False,
-                "rangeslider": {
-                    "visible": False
-                }
-            },
-            "yaxis": {
-                "visible": False
-            },
-            "annotations": [
-                {
-                    "text": "No sessions today!<br>Check back soon :)",
-                    "xref": "paper",
-                    "yref": "paper",
-                    "showarrow": False,
-                    "font": {
-                        "size": 28
-                    }
-                }
-            ]
-        }
-    )
-    return fig
-
-
 def add_training_end_vline(self, start_date, end_date):
 
     training_end = "2022-08-15"
@@ -169,12 +139,44 @@ class PlotMainTimeSeries:
 
 
 # Class to plot daily session time series
-class PlotDailySessionTimeSeries:
+class PlotDailySessions:
 
-    def plot_daily_time_series(df: pd.DataFrame) -> go.Figure:
+    # Plot empty figure if no sessions
+    @staticmethod
+    def empty_session_figure() -> go.Figure:
+        fig = go.Figure()
+        fig.update_layout(
+            {
+                "xaxis": {
+                    "visible": False,
+                    "rangeslider": {
+                        "visible": False
+                    }
+                },
+                "yaxis": {
+                    "visible": False
+                },
+                "annotations": [
+                    {
+                        "text": "No sessions today!<br>Check back soon :)",
+                        "xref": "paper",
+                        "yref": "paper",
+                        "showarrow": False,
+                        "font": {
+                            "size": 28
+                        }
+                    }
+                ]
+            }
+        )
+        return fig
+
+
+    @classmethod
+    def plot_daily_time_series(cls, df: pd.DataFrame) -> go.Figure:
 
         if len(df) == 0:
-            return empty_session_figure()
+            return cls.empty_session_figure()
 
         fig = go.Figure()
 
@@ -231,8 +233,42 @@ class PlotDailySessionTimeSeries:
 
 
     @classmethod
-    def plot_daily_peak_forecast(cls, fig: go.Figure, peak: float) -> go.Figure:
-        return 
+    def plot_today_forecast(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
+        # query today's forecast
+        peak = df.loc[df.index == datetime.now().strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
+
+        # add horizontal line to figure 
+        fig.add_hline(
+            y=peak,
+            line_dash="dot",
+            annotation_text=f"Peak Power Forecast: {round(peak, 1)} W"
+        )
+        return fig
+
+
+    @classmethod
+    def plot_daily_energy_breakdown(cls, df: pd.DataFrame) -> go.Figure:
+
+        if len(df) == 0:
+            return cls.empty_session_figure()
+
+        df = df[["dcosId", "cumEnergy_Wh", "vehicle_model"]
+                ].groupby("dcosId").first().copy()
+
+        fig = go.Figure(data=[go.Pie(
+            labels=df["vehicle_model"],
+            values=df["cumEnergy_Wh"]/1000,
+            hole=0.6,
+            hovertemplate="<extra></extra>" +
+            "Vehicle Model: %{label}" +
+            "<br>Energy Consumed Today: %{value} kWh")
+        ]
+        )
+
+        fig.update_layout(
+            title_text=f'Total Energy Delivered Today: {df["cumEnergy_Wh"].sum(axis=0) / 1000} kWh',
+        )
+        return fig
         
 
     @staticmethod
@@ -255,33 +291,6 @@ class PlotDailySessionTimeSeries:
             return df.loc[(df.index <= end_date)]
         else:
             return df.loc[(df.index >= start_date) & (df.index <= end_date)]
-
-
-# Class to plot vehicle donut chart
-class PlotDailySessionEnergyBreakdown:
-
-    def plot_daily_energy_breakdown(df: pd.DataFrame) -> go.Figure:
-
-        if len(df) == 0:
-            return empty_session_figure()
-
-        df = df[["dcosId", "cumEnergy_Wh", "vehicle_model"]
-                ].groupby("dcosId").first().copy()
-
-        fig = go.Figure(data=[go.Pie(
-            labels=df["vehicle_model"],
-            values=df["cumEnergy_Wh"]/1000,
-            hole=0.6,
-            hovertemplate="<extra></extra>" +
-            "Vehicle Model: %{label}" +
-            "<br>Energy Consumed Today: %{value} kWh")
-        ]
-        )
-
-        fig.update_layout(
-            title_text=f'Total Energy Delivered Today: {df["cumEnergy_Wh"].sum(axis=0) / 1000} kWh',
-        )
-        return fig
 
     
 # Class to plot cumulative energy delivered

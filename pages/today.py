@@ -1,83 +1,83 @@
 import dash
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 import dash_daq as daq
 import pickle
 from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State
-from dash import html, dcc
+from dash import html, dcc, Patch
 from tasks.schedule import redis_client
 
 dash.register_page(__name__, path="/today")
 
-layout = \
-    html.Div([
-        dbc.Container([
-            dbc.Row([
-                dbc.Col([]),
-                dbc.Col([])
-            ])
-        ])
-    ])
 
 layout = \
     html.Div([
+        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="today-open-settings-btn"),
+        dbc.Collapse([
+            dbc.Container([
+                dbc.Row([
+                    dbc.Col([
+                        html.Div([
+                            html.Div("Graph Picker"),
+                            dcc.Dropdown(
+                                id="today-graph-picker",
+                                options=[
+                                    {"label": "Today's 5-Min Aggregate Power", "value": "today-aggregate-power"},
+                                    {"label": "Today's Energy Distribution by Vehicle Model", "value": "today-energy-dist"},                                    
+                                ],
+                                value="today-aggregate-power",
+                                clearable=False,
+                                searchable=False,
+                            )
+                        ], className="d-inline-flex flex-column px-2 py-2 border rounded mx-2 my-2")
+                    ], className="col-md-6 col-sm-12 d-flex justify-content-start align-items-center"),
+                    dbc.Col([
+                        html.Div([
+                            html.Div("Toggle Yesterday"),
+                            dmc.Switch(
+                                size="lg",
+                                radius="lg",
+                                checked=False,
+                                id="toggle-yesterday",
+                            ),
+                            html.Div("Toggle Peak Power Forecast"),
+                            dmc.Switch(
+                                size="lg",
+                                radius="lg",
+                                checked=False,
+                                id="toggle-daily-forecast",
+                            ),
+                        ], className="d-inline-flex flex-column px-2 py-2 border rounded mx-2 my-2")
+                    ], className="col-md-4 col-sm-12 d-flex justify-content-start align-items-center")
+                ], className="justify-content-start")
+            ], fluid=True),
+        ], id="today-settings-collapse"),
         html.Div([
-            html.Div([
-                "Today's Sessions",
-                html.Div([
-                    daq.ToggleSwitch(
-                        label="Toggle Yesterday",
-                        value=False,
-                        id="toggle_yesterday"),
-                ]),
-                dcc.Graph(
-                    id="daily_time_series",
-                    config={
-                        "displaylogo": False,
-                        "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                    },
-                ),
-            ]),
-            "User Information",
-            html.Div([
-                html.Li("User has been here ",
-                        id="num_sessions_user"),
-                html.Li("User charges on average", id="avg_duration_user"),
-                html.Li("User usually charges",
-                        id="freq_connect_time_user"),
-                html.Li("User has consumed",
-                        id="total_nrg_consumed_user")
-            ],
-                id='user-information',
-            ),
-            html.Div([
-                "Energy Breakdown",
-                dcc.Graph(
-                    id="vehicle_pie_chart",
-                    config={
-                        "displaylogo": False
-                    }
-                )
-            ]),
-        ]),
+        ], id="today-graph")
     ])
 
 
 @dash.callback(
     Output("daily_time_series", "figure"),
     Input("data_refresh_signal", "data"),
-    Input("toggle_yesterday", "value")
+    Input("toggle-yesterday", "checked"),
+    Input("toggle-daily-forecast", "checked")
 )
-def display_daily_time_series(signal, yesterday):
+def display_daily_time_series(signal, yesterday, forecast):
     # load data
     data = pickle.loads(redis_client.get("todays_sessions"))
     # plot figure
-    fig = pltf.PlotDailySessionTimeSeries.plot_daily_time_series(data)
+    fig = pltf.PlotDailySessions.plot_daily_time_series(data)
     # plot yesterday's time series
     if yesterday:
         fivemindemand = pickle.loads(redis_client.get("fivemindemand"))
-        fig = pltf.PlotDailySessionTimeSeries.plot_yesterday(fig, fivemindemand)
+        fig = pltf.PlotDailySessions.plot_yesterday(fig, fivemindemand)
+    if forecast:
+        daily_forecast = pickle.loads(redis_client.get("daily_forecasts"))
+        fig = pltf.PlotDailySessions.plot_today_forecast(fig, daily_forecast)
     return fig
+
 
 @dash.callback(
     Output("vehicle_pie_chart", "figure"),
@@ -87,8 +87,9 @@ def display_vehicle_pie_chart(signal):
     # load data
     data = pickle.loads(redis_client.get("todays_sessions"))
     # plot figure
-    fig = pltf.PlotDailySessionEnergyBreakdown.plot_daily_energy_breakdown(data)
+    fig = pltf.PlotDailySessions.plot_daily_energy_breakdown(data)
     return fig
+
 
 @dash.callback(
     Output("num_sessions_user", "children"),
@@ -118,3 +119,60 @@ def display_user_hover(hoverData):
     )
 
     return text
+
+
+@dash.callback(
+    Output("today-graph", "children"),
+    Input("today-graph-picker", "value")
+)
+def display_today_graph(quantity):
+    if quantity == "today-aggregate-power":
+        return (            
+            html.Div([
+                dbc.Container([
+                    dbc.Row([
+                        dbc.Col([
+                            dcc.Graph(
+                                id="daily_time_series",
+                                config={
+                                    "displaylogo": False,
+                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                },
+                            ),
+                        ], className="col-md-10 col-sm-12"),
+                        dbc.Col([
+                            html.Div("User Information"),
+                            html.Div([
+                                html.Ul("User has been here ", id="num_sessions_user", className="p-1"),
+                                html.Ul("User charges on average", id="avg_duration_user", className="p-1"),
+                                html.Ul("User usually charges", id="freq_connect_time_user", className="p-1"),
+                                html.Ul("User has consumed", id="total_nrg_consumed_user", className="p-1")
+                            ], id='user-information', className="p-3 border rounded"),
+                        ], className="col-md-2 col-sm-12 d-inline-flex flex-column align-items-center justify-content-center")
+                    ], className="row mx-2")
+                ], fluid=True),
+            ]),
+        )
+    elif quantity == "today-energy-dist":
+        return (
+            html.Div([
+                dcc.Graph(
+                    id="vehicle_pie_chart",
+                    config={
+                        "displaylogo": False
+                    }
+                )
+            ]),
+        )
+
+
+# toggle settings collapse
+@dash.callback(
+    Output("today-settings-collapse", "is_open"),
+    Input("today-open-settings-btn", "n_clicks"),
+    State("today-settings-collapse", "is_open"),
+)
+def toggle_tab_one_collapse(button_press, is_open):
+    if button_press:
+        return not is_open
+    return is_open
