@@ -36,6 +36,7 @@ app.layout = \
 # app layout
 app.layout = \
     html.Div([
+
         # --> Navbar <-- #
         dbc.Navbar([
             dbc.Container([
@@ -72,8 +73,9 @@ app.layout = \
                     ], horizontal="center")
                 ], id="navbar-collapse", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
-        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 .bg-secondary.bg-gradient shadow", sticky="top", expand="lg"),
+        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 .bg-secondary.bg-gradient shadow-sm", sticky="top", expand="lg"),
         # --> <---#
+
 
         # --> Page Content <-- #
         dash.page_container,
@@ -81,8 +83,19 @@ app.layout = \
 
 
         # --> Footer <-- #
+        html.Footer([
+            html.Div([
+                html.Div(
+                    id="last_updated_timer",
+                    className="me-1"
+                ),
+                html.Div(
+                    id="last_validated_timer",
+                    className="me-1"
+                ),
+            ], className="d-flex justify-content-start")
+        ], className="footer bg-light position-static bottom-0 start-0 mt-5"),
         # --> <-- #
-
 
         # --> Interval Components, Refresh/Validation Timestamps <-- #
         html.Div([
@@ -94,9 +107,6 @@ app.layout = \
                 ),
                 dcc.Store(id="data_refresh_signal"),
             ]),
-            html.Div(
-                id="last_updated_timer"
-            ),
             html.Div([
                 dcc.Interval(
                     id="CV_interval_component",
@@ -105,12 +115,10 @@ app.layout = \
                 ),
                 dcc.Store(id="CV_signal"),
             ]),
-            html.Div(
-                id="last_validated_timer"
-            ),
         ])
         # --> <-- #
-    ])
+
+    ], className="d-flex flex-column h-100")
 
 # callback for toggling the collpase on small screens 
 @app.callback(

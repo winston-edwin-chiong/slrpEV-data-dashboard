@@ -14,6 +14,7 @@ redis_client = redis.Redis(host='localhost', port=6360)
 
 # load data
 df = pickle.loads(redis_client.get("raw_data"))
+print("yes!")
 # drop helper columns 
 df = df.drop(
         columns=[
@@ -34,30 +35,38 @@ grid = dag.AgGrid(
     columnSize="sizeToFit",
     rowModelType="infinite",
     dashGridOptions={
-        # The number of rows rendered outside the viewable area the grid renders.
         "rowBuffer": 0,
-        # How many blocks to keep in the store. Default is no limit, so every requested block is kept.
         "maxBlocksInCache": 1,
         "rowSelection": "multiple",
         "pagination": True
     },
-    style={"height":600},
 )
 
 layout = \
         html.Div([
-            html.Button("Reset Columns", id="reset-btn"),
+            html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="grid-settings-btn"),
+            dbc.Collapse([
+                html.Div([
+                    html.Div("Select Columns"),
+                    html.Button("Reset Columns", className="btn btn-outline-secondary btn-sm py-1 px-2 ms-2 mt-1 rounded", id="reset-btn"),
+                    dcc.Dropdown(
+                        id='data-column-dropdown',
+                        options=[{'label': col, 'value': col} for col in df.columns],
+                        multi=True,
+                        value=[option["value"] for option in [{'label': col, 'value': col} for col in df.columns]],
+                        className='m-2',
+                    )
+                ], className="px-2 py-2 border rounded mx-2 my-2")
+            ], id="grid-settings-collapse", is_open=False),
             html.Div([
-                dcc.Checklist(
-                    id='column-checklist',
-                    options=[{'label': col, 'value': col} for col in df.columns],
-                    value=[option["value"] for option in [{'label': col, 'value': col} for col in df.columns]],
-                    labelStyle={'display': 'block'}
-                )
-            ], style={'height': '300px', 'width': '250px', 'overflow': 'auto'}),
-            grid, 
+                grid, 
+            ], className="p-3")
         ])
 
+
+
+
+# DON'T TOUCH THIS
 
 operators = {
     "greaterThanOrEqual": "ge",
@@ -68,7 +77,6 @@ operators = {
     "equals": "eq",
 }
 
-# Don't touch this
 def filterDf(df, data, col):
     if data["filterType"] == "date":
         crit1 = data["dateFrom"]
@@ -152,19 +160,33 @@ def infinite_scroll(request):
     partial = dff.iloc[request["startRow"] : request["endRow"]]
     return {"rowData": partial.to_dict("records"), "rowCount": len(dff.index)}
 
+
+@dash.callback(
+    Output("data-column-dropdown", "value"),
+    Input("reset-btn", "n_clicks"),
+    State("data-column-dropdown", 'options'),
+    prevent_inital_call=True
+)
+def reset_columns(n, checklist_options):
+    if n is not None and n % 2 != 0: 
+        return []
+    return [option["value"] for option in checklist_options]
+
+
 @dash.callback(
     Output('raw-data-grid', 'columnDefs'),
-    Input('column-checklist', 'value')
+    Input('data-column-dropdown', 'value')
 )
 def update_columns(selected_columns):
     return [{"field": i} for i in selected_columns]
 
 
 @dash.callback(
-    Output("column-checklist", "value"),
-    Input("reset-btn", "n_clicks"),
-    State("column-checklist", 'options'),
-    prevent_inital_call=True
+    Output("grid-settings-collapse", "is_open"),
+    Input("grid-settings-btn", "n_clicks"),
+    State("grid-settings-collapse", "is_open"),
 )
-def reset_columns(n, checklist_options):
-    return [option["value"] for option in checklist_options]
+def toggle_grid_collapse(button_press, is_open):
+    if button_press:
+        return not is_open
+    return is_open

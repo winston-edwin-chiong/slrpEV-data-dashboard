@@ -30,8 +30,8 @@ def prediction_to_run(granularity):
 
 tab_one_content = \
     html.Div([
-        html.Button("Settings", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="tab-one-open-settings-btn"),
-        dbc.Collapse([
+        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="tab-one-open-settings-btn"),
+        dbc.Collapse([ 
             dbc.Container([
                 dbc.Row([
                     dbc.Col([
@@ -105,6 +105,7 @@ tab_one_content = \
                     ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center")
                 ])
             ], fluid=True),
+            dbc.Tooltip("Only supported for hourly and daily granularities.", target="toggle-forecasts", placement="bottom", delay={"show":2000}),
         ], id="tab-one-settings-collapse", is_open=False),
         html.Div([
             dbc.Container([
@@ -142,7 +143,7 @@ tab_one_content = \
 
 tab_two_content = \
     html.Div([
-        html.Button("Settings", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="tab-two-open-settings-btn"),
+        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="tab-two-open-settings-btn"),
         dbc.Collapse([
             dbc.Container([
                 dbc.Row([
@@ -166,6 +167,7 @@ tab_two_content = \
                                 options=[
                                     {"label": "Cumulative Energy Demand", "value": "cumulative-energy-delivered"},
                                     {"label": "Cumulative Number of Unique Users", "value": "cumulative-num-users"},
+                                    {"label": "Cumulative Energy Consumption by Vehicle Model", "value": "cumulative-vehicle-model-energy"},                                    
                                 ],
                                 value="cumulative-energy-delivered",
                                 clearable=False,
@@ -355,5 +357,5 @@ def display_cumulative_num_users(signal):
     # load data
     data = pickle.loads(redis_client.get("raw_data"))
     # plot figure
-    fig = pltf.ABC.plot_sched_vs_reg(data)
+    fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data)
     return fig 

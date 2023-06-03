@@ -5,12 +5,56 @@
 }
 
 
+/* Root */
+
+:root {
+    --berkeley-blue: rgba(0, 50, 98, 1);
+  }
+
+
+/* Datatable */
+
+.ag-theme-alpine {
+    --ag-font-family: var(--bs-body-font-family) !important;
+    --ag-font-size: var(--bs-body-font-size) !important;
+}
+
+#raw-data-grid {
+    height: 900px !important;
+}
+
+.ag-cell, .ag-header-cell, #raw-data-grid {
+    font-size: x-small;
+}
+
+/* Grid Options */
+
+.Select-control {
+    padding-top: 7px;
+}
+
+.Select--multi .Select-value {
+    background-color: rgba(0, 50, 98, 0.15);
+    border: 1px solid rgba(0, 50, 98, 0.25);
+    color: rgba(0, 50, 98, 1);
+}
+
+.Select--multi .Select-value-icon {
+    border-right: 1px solid rgba(0, 50, 98, 0.25);
+}
+
+.Select--multi .Select-value-icon:focus, .Select--multi .Select-value-icon:hover {
+    background-color: rgba(0, 50, 98, 0.08);
+    color: rgba(0, 50, 98, 1);
+}
 
 
 /* All Time Tab Controls */
 
 #cumulative-graph-picker {
-    width: 350px;
+    width: 375px;
+    display: inline-block;
+    font-size: 80%;
 }
 
 #quantity-picker, #dataframe-picker {
@@ -18,7 +62,7 @@
 }
 
 .analytics-control-box {
-    width: 330px;
+    width: 335px;
 }
 
 
@@ -26,8 +70,10 @@
     cursor: pointer;
 }
 
-
-
+.mantine-17wer7s:checked {
+    background-color: var(--berkeley-blue) ;
+    border-color: var(--berkeley-blue) ;
+}
 
 /* Navbar Styles */
 
@@ -42,44 +88,41 @@
 
 .navbar-item:hover {
     color: black;
-    filter: brightness(100%);
     transition: all 0.3s;
-    opacity: 60%;
     background-color: lightgray;
     border-radius: 10px;
 }
 
 .navbar-item:hover .navbar-icon {
     color: black;
-    filter: brightness(100%);
 }
 
 
 /* Calendar Element */
 
 .CalendarDay__selected {
-    background: #003262!important;
+    background: var(--berkeley-blue) !important;
     border: 1px double #15284B !important;
 }
 
 
 .CalendarDay__selected:active, .CalendarDay__selected:hover {
-    background: #003262!important;
+    background: var(--berkeley-blue) !important;
     border: 1px double #15284B !important;
 }
 
 .CalendarDay__selected_span {
-    background: #003262!important;
+    background: var(--berkeley-blue) !important;
     opacity: 50%;
-    border: 1px double #003262 !important;
+    border: 1px double var(--berkeley-blue) !important;
 }
 
 .CalendarDay__selected_span:hover {
-    background: #003262 !important;
+    background: var(--berkeley-blue) !important;
     opacity: 100% !important;
-    border: 1px double #003262 !important; 
+    border: 1px double var(--berkeley-blue) !important; 
 }
 
 .DateInput_input__focused {
-    border-bottom: 2px solid #003262 !important;
+    border-bottom: 2px solid var(--berkeley-blue) !important;
 }

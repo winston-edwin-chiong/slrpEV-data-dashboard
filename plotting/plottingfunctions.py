@@ -343,6 +343,19 @@ class PlotCumulatives:
                 title_pad=dict(l=0, r=0, t=0, b=0)
             )
             return fig
+        
+        elif quantity == "cumulative-vehicle-model-energy":
+            # group by vehicle model 
+            df = df[["vehicle_model", "cumEnergy_Wh"]].groupby("vehicle_model").sum()
+            df = df.sort_values("cumEnergy_Wh", ascending=False).head(15)
+
+            fig = px.pie(df, values='cumEnergy_Wh', names=df.index)
+            fig.update_layout(
+                title="Top 15 Energy Consumption by Vehicle Model",
+                margin=dict(l=20, r=20, pad=0),
+                title_pad=dict(l=0, r=0, t=0, b=0)
+            )
+            return fig
 
 
     @staticmethod
@@ -426,7 +439,7 @@ class PlotHoverHistogram:
             day_name = pd.to_datetime(hoverData["points"][0]["x"]).day_name()
 
         # get point to hover on (if it exists in dailydemand)              
-        point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] if pd.to_datetime(hoverData["points"][0]["x"]) <= pd.to_datetime((datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")) else None
+        point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] if pd.to_datetime(hoverData["points"][0]["x"]) < pd.to_datetime((datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")) else None
 
         # filter df 
         df = df.loc[df["day"] == day_name]
@@ -608,7 +621,7 @@ class PlotForecasts:
 
 
 # Class to plot choice analytics 
-class ABC:     
+class PlotSchedVsReg:     
 
     @classmethod
     def plot_sched_vs_reg(cls, df: pd.DataFrame) -> go.Figure():
