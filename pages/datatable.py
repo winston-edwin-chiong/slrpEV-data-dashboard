@@ -14,7 +14,7 @@ redis_client = redis.Redis(host='localhost', port=6360)
 
 # load data
 df = pickle.loads(redis_client.get("raw_data"))
-print("yes!")
+
 # drop helper columns 
 df = df.drop(
         columns=[
@@ -66,7 +66,7 @@ layout = \
 
 
 
-# DON'T TOUCH THIS
+# --> DON'T TOUCH THIS <-- #
 
 operators = {
     "greaterThanOrEqual": "ge",
@@ -114,6 +114,8 @@ def filterDf(df, data, col):
     else:
         df = df.loc[getattr(df[col], operators[data["type"]])(crit1)]
     return df
+
+# --> <-- #
 
 
 @dash.callback(
@@ -190,3 +192,25 @@ def toggle_grid_collapse(button_press, is_open):
     if button_press:
         return not is_open
     return is_open
+
+@dash.callback(
+    Output("raw-data-grid", "rowData"),
+    Input("data_refresh_signal", "data")
+)
+def update_data(signal):
+    # load data
+    df = pickle.loads(redis_client.get("raw_data"))
+    # drop helper columns 
+    df = df.drop(
+            columns=[
+                "finishChargeTime",
+                "trueDurationHrs",
+                "true_peakPower_W",
+                "Overstay",
+                "Overstay_h"
+            ]
+        )
+    # reverse data (most recent first)
+    df = df[::-1]
+
+    return df.to_dict("records")
