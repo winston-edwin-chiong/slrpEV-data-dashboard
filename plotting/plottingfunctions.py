@@ -427,7 +427,6 @@ class PlotHoverHistogram:
                         "font": {
                             "size": 10
                         },
-                        "textangle": -15,
                     }
                 ]
             },
@@ -468,7 +467,7 @@ class PlotHoverHistogram:
                     x=[point], 
                     mode="markers",
                     marker_symbol="arrow-up",
-                    hovertemplate="Hovered: %{x} <extra></extra>"
+                    hovertemplate="Realized: %{x} <extra></extra>"
                 )
             )
         fig.update_layout(
@@ -508,7 +507,7 @@ class PlotHoverHistogram:
                 x=[point], 
                 mode="markers",
                 marker_symbol="arrow-up",
-                hovertemplate="Hovered: %{x} <extra></extra>"
+                hovertemplate="Realized: %{x} <extra></extra>"
             )
         )
         fig.update_layout(

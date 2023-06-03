@@ -100,6 +100,13 @@ tab_one_content = \
                                 radius="lg",
                                 checked=False,
                                 id="toggle-forecasts",
+                            ),
+                            html.Div("Toggle Histograms"),
+                            dmc.Switch(
+                                size="lg",
+                                radius="lg",
+                                checked=True,
+                                id="toggle-histograms",
                             )
                         ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
                     ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center")
@@ -118,9 +125,9 @@ tab_one_content = \
                                 "displaylogo": False,
                                 "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                             },
-                            className="border"
+                            className="p-1 border border-dark rounded"
                         ),                    
-                    ], className="col-md-9 col-sm-12 mt-2"),                    
+                    ], className="col-md-9 col-sm-12"),                    
                     dbc.Col([
                             dcc.Graph(
                             id="hour-histogram",
@@ -128,7 +135,7 @@ tab_one_content = \
                             config = {
                                 "displaylogo": False
                             },
-                            className="border border-bottom-0"
+                            className="p-1 border border-dark border-bottom-0 rounded-top"
                         ),
                         dcc.Graph(
                             id="day-histogram",
@@ -136,11 +143,11 @@ tab_one_content = \
                             config = {
                                 "displaylogo": False
                             },
-                            className="border border-top-0"
+                            className="p-1 border border-dark border-top-0 rounded-bottom"
                         )
-                    ], className="col-md-3 col-sm-12 mt-2")                    
+                    ], className="col-md-3 col-sm-12")                    
                 ])
-            ], fluid=True),
+            ], className="mt-2", fluid=True),
         ]),
     ])
 
@@ -186,7 +193,7 @@ tab_two_content = \
             config={
                 "displaylogo": False
             },
-            className="vh-50 border m-2"
+            className="vh-50 border m-2 p-1 border border-dark rounded"
         ),
     ])
 
@@ -197,7 +204,7 @@ tab_three_content = \
             config={
                 "displaylogo": False
             },
-            className="vh-50 border m-2"
+            className="vh-50 border m-2 p-1 border border-dark rounded"
         ),
     ])
 
@@ -362,3 +369,13 @@ def display_cumulative_num_users(signal):
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data)
     return fig 
+
+
+@dash.callback(
+    Output("main-ts-div", "children"),
+    Input("toggle-histograms", "checked")
+)
+def toggle_histograms(checked):
+    if checked:
+        return # main ts w/ histograms
+    return # main ts w/o histograms

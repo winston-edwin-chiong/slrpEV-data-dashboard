@@ -138,6 +138,7 @@ def display_today_graph(quantity):
                                     "displaylogo": False,
                                     "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
                                 },
+                                className="p-1 border border-dark rounded"
                             ),
                         ], className="col-md-10 col-sm-12"),
                         dbc.Col([
@@ -150,7 +151,7 @@ def display_today_graph(quantity):
                             ], id='user-information', className="p-3 border rounded"),
                         ], className="col-md-2 col-sm-12 d-inline-flex flex-column align-items-center justify-content-center")
                     ], className="row mx-2")
-                ], fluid=True),
+                ], className="mt-2", fluid=True),
             ]),
         )
     elif quantity == "today-energy-dist":
@@ -160,8 +161,9 @@ def display_today_graph(quantity):
                     id="vehicle_pie_chart",
                     config={
                         "displaylogo": False
-                    }
-                )
+                    },
+                    className="p-1 border border-dark rounded"
+                ),
             ]),
         )
 
