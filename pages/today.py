@@ -31,7 +31,7 @@ layout = \
                                 searchable=False,
                             )
                         ], className="d-inline-flex flex-column px-2 py-2 border rounded mx-2 my-2")
-                    ], className="col-md-6 col-sm-12 d-flex justify-content-start align-items-center"),
+                    ], className="col-lg-5 col-sm-12 col-12"),
                     dbc.Col([
                         html.Div([
                             html.Div("Toggle Yesterday"),
@@ -49,12 +49,12 @@ layout = \
                                 id="toggle-daily-forecast",
                             ),
                         ], className="d-inline-flex flex-column px-2 py-2 border rounded mx-2 my-2")
-                    ], className="col-md-4 col-sm-12 d-flex justify-content-start align-items-center")
+                    ], className="col-lg-4 col-sm-12 col-12")
                 ], className="justify-content-start")
             ], fluid=True),
         ], id="today-settings-collapse"),
         html.Div([
-        ], id="today-graph")
+        ], id="today-graph", className="my-2")
     ])
 
 
@@ -112,10 +112,10 @@ def display_user_hover(hoverData):
         data, userId)
     
     text = (
-        f"User has been here {num_sessions} times!", 
-        f"User charges on average {avg_duration} hours!", 
-        f"User usually charges: {freq_connect}", 
-        f"User has consumed {total_nrg} kWh to date!"
+        f"{num_sessions}", 
+        f"{avg_duration} hours", 
+        f"{freq_connect}", 
+        f"{round(total_nrg, 1)} kWh"
     )
 
     return text
@@ -125,8 +125,8 @@ def display_user_hover(hoverData):
     Output("today-graph", "children"),
     Input("today-graph-picker", "value")
 )
-def display_today_graph(quantity):
-    if quantity == "today-aggregate-power":
+def display_today_graph(value):
+    if value == "today-aggregate-power":
         return (            
             html.Div([
                 dbc.Container([
@@ -140,21 +140,33 @@ def display_today_graph(quantity):
                                 },
                                 className="p-1 border border-dark rounded"
                             ),
-                        ], className="col-md-10 col-sm-12"),
+                        ], className="col-md-10 col-sm-12 px-2"),
                         dbc.Col([
-                            html.Div("User Information"),
+                            html.Div("User Information", className="fw-bold"),
                             html.Div([
-                                html.Ul("User has been here ", id="num_sessions_user", className="p-1"),
-                                html.Ul("User charges on average", id="avg_duration_user", className="p-1"),
-                                html.Ul("User usually charges", id="freq_connect_time_user", className="p-1"),
-                                html.Ul("User has consumed", id="total_nrg_consumed_user", className="p-1")
-                            ], id='user-information', className="p-3 border rounded"),
-                        ], className="col-md-2 col-sm-12 d-inline-flex flex-column align-items-center justify-content-center")
+                                html.Ul([
+                                    html.Span("Lifetime number of sessions: ", className="fst-italic"),
+                                    html.Span(id="num_sessions_user")
+                                    ], className="p-1"),
+                                html.Ul([
+                                    html.Span("Average charge duration: ", className="fst-italic"), 
+                                    html.Span(id="avg_duration_user")
+                                    ], className="p-1"),
+                                html.Ul([
+                                    html.Span("Usual charge time: ", className="fst-italic"), 
+                                    html.Span(id="freq_connect_time_user")
+                                    ], className="p-1"),
+                                html.Ul([
+                                    html.Span("Lifetime energy consumption: ", className="fst-italic"), 
+                                    html.Span(id="total_nrg_consumed_user")
+                                    ], className="p-1")
+                            ], id='user-information', className="p-3 border border-dark rounded"),
+                        ], className="col-md-2 col-sm-12 d-inline-flex flex-column align-items-center justify-content-center px-2")
                     ], className="row mx-2")
-                ], className="mt-2", fluid=True),
+                ], className="mt-2 p-0", fluid=True),
             ]),
         )
-    elif quantity == "today-energy-dist":
+    elif value == "today-energy-dist":
         return (
             html.Div([
                 dcc.Graph(
@@ -164,7 +176,7 @@ def display_today_graph(quantity):
                     },
                     className="p-1 border border-dark rounded"
                 ),
-            ]),
+            ], className="mx-2"),
         )
 
 

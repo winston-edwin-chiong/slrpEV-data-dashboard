@@ -93,6 +93,7 @@ class PlotMainTimeSeries:
                 fill="tozeroy",
             )
         )
+
         fig.update_layout(
             title=plot_layout["cleaned_quantity"],
             xaxis_title="Time",
@@ -356,11 +357,15 @@ class PlotCumulatives:
         elif quantity == "cumulative-vehicle-model-energy":
             # group by vehicle model 
             df = df[["vehicle_model", "cumEnergy_Wh"]].groupby("vehicle_model").sum()
-            df = df.sort_values("cumEnergy_Wh", ascending=False).head(15)
+            df = df.sort_values("cumEnergy_Wh", ascending=False).head(20)
+            df["cumEnergy_kWh"] = round(df["cumEnergy_Wh"] / 1000, 1)
 
-            fig = px.pie(df, values='cumEnergy_Wh', names=df.index)
+            fig = px.bar(df, x=df.index, y='cumEnergy_kWh')
+            fig.update_traces(hovertemplate="Vehicle Model: %{x}<br>Energy Consumed: %{y} kWh<extra></extra>")
             fig.update_layout(
-                title="Top 15 Energy Consumption by Vehicle Model",
+                title="Top 20 Energy Consumption by Vehicle Model",
+                xaxis_title="Vehicle Model",
+                yaxis_title="Cumulative Energy Consumption (kWh)",
                 margin=dict(l=20, r=20, pad=0),
                 title_pad=dict(l=0, r=0, t=0, b=0)
             )

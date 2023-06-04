@@ -12,9 +12,31 @@
   }
 
 
+.body {
+    min-height: 100%;
+}
+
+
+/* Footer */
+
+#_pages_content {
+    height: 100vh;
+}
+
+.my-footer {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    position: fixed;
+    font-size: 10px;
+    width: 100%;
+}
+
+
 /* Today Options */
+
 #today-graph-picker {
-    width: 340px;
+    width: 365px;
     font-size: 80%;
 }
 
@@ -27,12 +49,13 @@
 }
 
 #raw-data-grid {
-    height: 900px !important;
+    height: 800px !important;
 }
 
 .ag-cell, .ag-header-cell, #raw-data-grid {
     font-size: x-small;
 }
+
 
 /* Grid Options */
 
@@ -72,14 +95,15 @@
 }
 
 
-#toggle-forecasts:hover{
+#toggle-forecasts:hover, #toggle-histograms:hover{
     cursor: pointer;
 }
 
-.mantine-17wer7s:checked {
-    background-color: var(--berkeley-blue) ;
-    border-color: var(--berkeley-blue) ;
+#toggle-histograms:checked, #toggle-forecasts:checked, #toggle-rolling-avg:checked {
+    background-color: var(--berkeley-blue);
+    border-color: var(--berkeley-blue);
 }
+
 
 /* Navbar Styles */
 

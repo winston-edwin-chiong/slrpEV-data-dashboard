@@ -18,24 +18,6 @@ app.title = "slrpEV Dashboard"
 # app layout
 app.layout = \
     html.Div([
-        dbc.NavbarSimple([
-            dbc.Nav([
-                dbc.NavItem([dbc.NavLink(f"{page['name']}", href=page["relative_path"])]) for page in dash.page_registry.values()
-            ])
-        ],
-        brand="slrpEV Dashboard",
-        brand_href="/",
-        brand_external_link=True,
-        fluid=True,
-        sticky="top",
-        expand="lg"
-        ),
-        dash.page_container,
-    ])
-
-# app layout
-app.layout = \
-    html.Div([
 
         # --> Navbar <-- #
         dbc.Navbar([
@@ -73,7 +55,7 @@ app.layout = \
                     ], horizontal="center")
                 ], id="navbar-collapse", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
-        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 .bg-secondary.bg-gradient shadow-sm", sticky="top", expand="lg"),
+        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 border-2 bg-secondary shadow-sm", sticky="top", expand="lg"),
         # --> <---#
 
 
@@ -85,17 +67,26 @@ app.layout = \
         # --> Footer <-- #
         html.Footer([
             html.Div([
-                html.Div(
-                    id="last_updated_timer",
-                    className="me-1"
-                ),
-                html.Div(
-                    id="last_validated_timer",
-                    className="me-1"
-                ),
-            ], className="d-flex justify-content-start")
-        ], className="footer bg-light position-static bottom-0 start-0 mt-5"),
+                html.Div([
+                    html.Div(
+                        id="last_updated_timer",
+                    ),
+                    html.Div(
+                        id="last_validated_timer",
+                    ),
+                ], className="d-inline-flex flex-column"),
+                html.Div([
+                    html.Div("Made with ❤️ by Winston"),
+                    html.Div("Icons by Bootstrap Icons and Icons8"),
+                    html.Div([
+                        html.A(html.I(className="bi bi-github m-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
+                        html.A(html.I(className="bi bi-linkedin m-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
+                    ], className="d-flex"),
+                ], className="d-inline-flex flex-column align-items-center")
+            ], className="d-flex justify-content-between align-items-center")
+        ], className="my-footer p-2 mt-5 bg-secondary border-top border-2 shadow-top"),
         # --> <-- #
+
 
         # --> Interval Components, Refresh/Validation Timestamps <-- #
         html.Div([
@@ -118,7 +109,7 @@ app.layout = \
         ])
         # --> <-- #
 
-    ], className="d-flex flex-column h-100")
+    ])
 
 # callback for toggling the collpase on small screens 
 @app.callback(

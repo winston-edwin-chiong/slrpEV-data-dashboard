@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 import pandas as pd
 import pickle
 from plotting import plottingfunctions as pltf
-from datetime import timedelta
+from datetime import timedelta, datetime
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from tasks.schedule import redis_client
@@ -85,10 +85,10 @@ tab_one_content = \
                         html.Div([
                             html.Div("Jump to..."),
                             html.Div([
-                                html.Button("Today", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 rounded", id="jump_to_present_btn"),
-                                html.Button("This Month", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 rounded", id="jump_to_month_btn"),
-                                html.Button("This Year", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 rounded", id="jump_to_year_btn"),
-                                html.Button("All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 rounded", id="jump_to_alltime_btn")
+                                html.Button("Last 7 Days", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_last_seven_days_btn"),
+                                html.Button("This Month", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_month_btn"),
+                                html.Button("YTD", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_year_btn"),
+                                html.Button("All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_alltime_btn")
                             ], className="d-grid gap-2 d-md-block"),
                         ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
                     ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center"),
@@ -96,59 +96,26 @@ tab_one_content = \
                         html.Div([
                             html.Div("Toggle Forecasts"),
                             dmc.Switch(
-                                size="lg",
+                                size="md",
                                 radius="lg",
                                 checked=False,
                                 id="toggle-forecasts",
                             ),
                             html.Div("Toggle Histograms"),
                             dmc.Switch(
-                                size="lg",
+                                size="md",
                                 radius="lg",
                                 checked=True,
                                 id="toggle-histograms",
-                            )
+                            ),
                         ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
                     ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center")
                 ])
             ], fluid=True),
-            dbc.Tooltip("Only supported for hourly and daily granularities.", target="toggle-forecasts", placement="bottom", delay={"show":2000}),
+            dbc.Tooltip("Only supported for hourly and daily granularities.", target="toggle-forecasts", placement="bottom", delay={"show":1250}),
         ], id="tab-one-settings-collapse", is_open=False),
         html.Div([
-            dbc.Container([
-                dbc.Row([
-                    dbc.Col([
-                        dcc.Graph(
-                            id="time-series-plot",
-                            style={"height": "600px"},
-                            config={
-                                "displaylogo": False,
-                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                            },
-                            className="p-1 border border-dark rounded"
-                        ),                    
-                    ], className="col-md-9 col-sm-12"),                    
-                    dbc.Col([
-                            dcc.Graph(
-                            id="hour-histogram",
-                            style={"height": "300px"},
-                            config = {
-                                "displaylogo": False
-                            },
-                            className="p-1 border border-dark border-bottom-0 rounded-top"
-                        ),
-                        dcc.Graph(
-                            id="day-histogram",
-                            style={"height": "300px"},                                
-                            config = {
-                                "displaylogo": False
-                            },
-                            className="p-1 border border-dark border-top-0 rounded-bottom"
-                        )
-                    ], className="col-md-3 col-sm-12")                    
-                ])
-            ], className="mt-2", fluid=True),
-        ]),
+        ], id="main-ts-div"),
     ])
 
 tab_two_content = \
@@ -281,7 +248,7 @@ def display_histogram_hover(hoverData, quantity, granularity):
 @dash.callback(
     Output("maints-date-picker", "start_date"),
     Output("maints-date-picker", "end_date"),
-    Input("jump_to_present_btn", "n_clicks"),
+    Input("jump_to_last_seven_days_btn", "n_clicks"),
 )
 def jump_to_present(button_press):
     return get_last_days_datetime(7), get_last_days_datetime(-1)
@@ -295,7 +262,7 @@ def jump_to_present(button_press):
     prevent_initial_call=True
 )
 def jump_to_month(button_press):
-    return get_last_days_datetime(31), get_last_days_datetime(-1)
+    return pd.Timestamp.now().date().replace(day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
 
 
 # jump to this year button
@@ -306,7 +273,7 @@ def jump_to_month(button_press):
     prevent_initial_call=True
 )
 def jump_to_year(button_press):
-    return get_last_days_datetime(365), get_last_days_datetime(-1)
+    return pd.Timestamp.now().date().replace(month=1, day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
 
 
 # jump to this alltime button
@@ -351,11 +318,11 @@ def toggle_tab_two_collapse(button_press, is_open):
     Input("cumulative-date-picker", "end_date"),
     Input("cumulative-graph-picker", "value")
 )
-def display_cumulative_graph(start_date, end_date, quantity):
+def display_cumulative_graph(start_date, end_date, value):
     # load data
     data = pickle.loads(redis_client.get("raw_data"))
     # plot figure
-    return pltf.PlotCumulatives.plot_cumulative(quantity, data, start_date, end_date)
+    return pltf.PlotCumulatives.plot_cumulative(value, data, start_date, end_date)
 
 
 # update scheduled vs. regular scatter
@@ -376,6 +343,57 @@ def display_cumulative_num_users(signal):
     Input("toggle-histograms", "checked")
 )
 def toggle_histograms(checked):
-    if checked:
-        return # main ts w/ histograms
-    return # main ts w/o histograms
+    if checked: # main ts w/ histograms
+        return (
+            dbc.Container([
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Graph(
+                            id="time-series-plot",
+                            style={"height": "600px"},
+                            config={
+                                "displaylogo": False,
+                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                            },
+                            className="p-1 border border-dark rounded"
+                        ),                    
+                    ], className="col-md-9 col-sm-12 col-12 px-2"),                    
+                    dbc.Col([
+                            dcc.Graph(
+                            id="hour-histogram",
+                            style={"height": "300px"},
+                            config = {
+                                "displaylogo": False
+                            },
+                            className="p-1 border border-dark border-bottom-0 rounded-top"
+                        ),
+                        dcc.Graph(
+                            id="day-histogram",
+                            style={"height": "300px"},                                
+                            config = {
+                                "displaylogo": False
+                            },
+                            className="p-1 border border-dark border-top-0 rounded-bottom"
+                        )
+                    ], className="col-md-3 col-sm-12 col-12 px-2")                    
+                ])
+            ], className="mt-2", fluid=True),
+        )
+    else: # main ts w/o histograms
+        return (
+            dbc.Container([
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Graph(
+                            id="time-series-plot",
+                            style={"height": "600px"},
+                            config={
+                                "displaylogo": False,
+                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                            },
+                            className="p-1 border border-dark rounded"
+                        ),                    
+                    ], className="col-12 px-2"),                                      
+                ])
+            ], className="mt-2", fluid=True),
+        )
