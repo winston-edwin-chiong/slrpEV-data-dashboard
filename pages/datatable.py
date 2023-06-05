@@ -1,7 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
-from datetime import datetime 
+from datetime import datetime
 from dash import html, dcc, dash_table, Input, Output, State
 import dash_daq as daq
 import redis
@@ -15,23 +15,24 @@ redis_client = redis.Redis(host='localhost', port=6360)
 # load data
 df = pickle.loads(redis_client.get("raw_data"))
 
-# drop helper columns 
+# drop helper columns
 df = df.drop(
-        columns=[
-            "finishChargeTime",
-            "trueDurationHrs",
-            "true_peakPower_W",
-            "Overstay",
-            "Overstay_h"
-        ]
-    )
+    columns=[
+        "finishChargeTime",
+        "trueDurationHrs",
+        "true_peakPower_W",
+        "Overstay",
+        "Overstay_h"
+    ]
+)
 # reverse data (most recent first)
 df = df[::-1]
 
 grid = dag.AgGrid(
     id="raw-data-grid",
     columnDefs=[{"field": i} for i in df.columns],
-    defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth":125},
+    defaultColDef={"resizable": True, "sortable": True,
+                   "filter": True, "minWidth": 125},
     columnSize="sizeToFit",
     rowModelType="infinite",
     dashGridOptions={
@@ -43,27 +44,29 @@ grid = dag.AgGrid(
 )
 
 layout = \
-        html.Div([
-            html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="grid-settings-btn"),
-            dbc.Collapse([
-                html.Div([
-                    html.Div("Select Columns"),
-                    html.Button("Reset Columns", className="btn btn-outline-secondary btn-sm py-1 px-2 ms-2 mt-1 rounded", id="reset-btn"),
-                    dcc.Dropdown(
-                        id='data-column-dropdown',
-                        options=[{'label': col, 'value': col} for col in df.columns],
-                        multi=True,
-                        value=[option["value"] for option in [{'label': col, 'value': col} for col in df.columns]],
-                        className='m-2',
-                    )
-                ], className="px-2 py-2 border rounded mx-2 my-2")
-            ], id="grid-settings-collapse", is_open=False),
+    html.Div([
+        html.Button(
+            "Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="grid-settings-btn"),
+        dbc.Collapse([
             html.Div([
-                grid, 
-            ], className="p-3")
-        ])
-
-
+                html.Div("Select Columns"),
+                html.Button(
+                    "Reset Columns", className="btn btn-outline-secondary btn-sm py-1 px-2 ms-2 mt-1 rounded", id="reset-btn"),
+                dcc.Dropdown(
+                    id='data-column-dropdown',
+                    options=[{'label': col, 'value': col}
+                             for col in df.columns],
+                    multi=True,
+                    value=[option["value"] for option in [
+                        {'label': col, 'value': col} for col in df.columns]],
+                    className='m-2',
+                )
+            ], className="px-2 py-2 border rounded mx-2 my-2")
+        ], id="grid-settings-collapse", is_open=False),
+        html.Div([
+            grid,
+        ], className="p-3")
+    ])
 
 
 # --> DON'T TOUCH THIS <-- #
@@ -76,6 +79,7 @@ operators = {
     "notEqual": "ne",
     "equals": "eq",
 }
+
 
 def filterDf(df, data, col):
     if data["filterType"] == "date":
@@ -104,7 +108,8 @@ def filterDf(df, data, col):
         df = df.loc[~df[col].str.endswith(crit1)]
     elif data["type"] == "inRange":
         if data["filterType"] == "date":
-            df = df.loc[df[col].astype("datetime64[ns]").between_time(crit1, crit2)]
+            df = df.loc[df[col].astype(
+                "datetime64[ns]").between_time(crit1, crit2)]
         else:
             df = df.loc[df[col].between(crit1, crit2)]
     elif data["type"] == "blank":
@@ -159,7 +164,7 @@ def infinite_scroll(request):
         lines = len(dff.index)
         if lines == 0:
             lines = 1
-    partial = dff.iloc[request["startRow"] : request["endRow"]]
+    partial = dff.iloc[request["startRow"]: request["endRow"]]
     return {"rowData": partial.to_dict("records"), "rowCount": len(dff.index)}
 
 
@@ -170,7 +175,7 @@ def infinite_scroll(request):
     prevent_inital_call=True
 )
 def reset_columns(n, checklist_options):
-    if n is not None and n % 2 != 0: 
+    if n is not None and n % 2 != 0:
         return []
     return [option["value"] for option in checklist_options]
 
@@ -193,6 +198,7 @@ def toggle_grid_collapse(button_press, is_open):
         return not is_open
     return is_open
 
+
 @dash.callback(
     Output("raw-data-grid", "rowData"),
     Input("data_refresh_signal", "data")
@@ -200,16 +206,16 @@ def toggle_grid_collapse(button_press, is_open):
 def update_data(signal):
     # load data
     df = pickle.loads(redis_client.get("raw_data"))
-    # drop helper columns 
+    # drop helper columns
     df = df.drop(
-            columns=[
-                "finishChargeTime",
-                "trueDurationHrs",
-                "true_peakPower_W",
-                "Overstay",
-                "Overstay_h"
-            ]
-        )
+        columns=[
+            "finishChargeTime",
+            "trueDurationHrs",
+            "true_peakPower_W",
+            "Overstay",
+            "Overstay_h"
+        ]
+    )
     # reverse data (most recent first)
     df = df[::-1]
 

@@ -4,6 +4,7 @@ import pickle
 from datetime import datetime
 from celery import Celery
 from celery.schedules import crontab
+from celery.signals import beat_init
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
@@ -134,3 +135,21 @@ def update_hourly_params():
                      datetime.now().strftime('%m/%d/%y %H:%M:%S'))
 
     logger.info("Done!")
+
+
+@beat_init.connect
+def run_startup_tasks(**kwargs):
+    if not redis_client.get("raw_data"):
+        query_data()
+
+    if not redis_client.get("daily_params"): 
+        update_daily_params()
+
+    if not redis_client.get("hourly_params"):
+        update_hourly_params()
+
+    if not redis_client.get("daily_forecasts"):
+        forecast_daily()
+
+    if not redis_client.get("hourly_forecasts"):
+        forecast_hourly()

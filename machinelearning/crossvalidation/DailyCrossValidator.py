@@ -47,9 +47,9 @@ class SARIMACrossValidator:
         return {"order": stepwise_fit.order, "seasonal_order": stepwise_fit.seasonal_order}
 
     def __train_test_split(self, df: pd.DataFrame):
-        # take only needed column 
+        # take only needed column
         df = df[[self.col_name]]
-        
+
         X_train, X_test, y_train, y_test = train_test_split(
             df.drop(columns=[self.col_name]),
             df[[self.col_name]],

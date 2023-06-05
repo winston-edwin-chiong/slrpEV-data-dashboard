@@ -6,7 +6,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-## Main Class
+# Main Class
 class HourlyCrossValidator:
 
     columns = ["energy_demand_kWh", "peak_power_W"]
@@ -20,16 +20,18 @@ class HourlyCrossValidator:
         best_params = {}
 
         for column in self.columns:
-            # initalize cross validator, cross validate  
-            params = kNNCrossValidator(self.max_neighbors, self.max_depth, column).cross_validate_one(df)
+            # initalize cross validator, cross validate
+            params = kNNCrossValidator(
+                self.max_neighbors, self.max_depth, column).cross_validate_one(df)
             best_params[column] = params
 
-        best_params["avg_power_demand_W"] = best_params["energy_demand_kWh"] # same data, different units, so same parameters
+        # same data, different units, so same parameters
+        best_params["avg_power_demand_W"] = best_params["energy_demand_kWh"]
 
         return best_params
-    
 
-## Helper Class
+
+# Helper Class
 class kNNCrossValidator:
 
     test_size = 0.2
@@ -39,7 +41,6 @@ class kNNCrossValidator:
         self.max_neighbors = max_neighbors
         self.max_depth = max_depth
         self.col_name = col_name
-
 
     def cross_validate_one(self, df) -> dict:
         # create features
@@ -53,12 +54,15 @@ class kNNCrossValidator:
 
         # create parameter grid
         params = {
-            "estimator__n_neighbors": np.arange(10, self.max_neighbors+1), # start searching at 10 neighbors
-            "subset_features__num_lags": np.arange(40, self.max_depth+1) # start searching at 40 lags as features
+            # start searching at 10 neighbors
+            "estimator__n_neighbors": np.arange(10, self.max_neighbors+1),
+            # start searching at 40 lags as features
+            "subset_features__num_lags": np.arange(40, self.max_depth+1)
         }
 
         # split data into train, validation, and test
-        X_train_validation, X_train, X_validation, X_test, y_train_validation, y_train, y_validation, y_test = self.__train_test_split(df)
+        X_train_validation, X_train, X_validation, X_test, y_train_validation, y_train, y_validation, y_test = self.__train_test_split(
+            df)
 
         # create grid and iteratively search
         grid = GridSearchCV(
@@ -66,7 +70,8 @@ class kNNCrossValidator:
             param_grid=params,
             scoring="neg_mean_squared_error",
             verbose=4,
-            cv=[(np.arange(0, len(X_train)), np.arange(len(X_train), len(X_train_validation)))]
+            cv=[(np.arange(0, len(X_train)), np.arange(
+                len(X_train), len(X_train_validation)))]
         )
         grid.fit(X_train_validation, y_train_validation)
 
@@ -77,7 +82,6 @@ class kNNCrossValidator:
 
         return best_params
 
-
     def __create_all_lag_features(self, df) -> pd.DataFrame:
         # create pipeline, pass data, create features
         pipeline = Pipeline([
@@ -87,7 +91,6 @@ class kNNCrossValidator:
         df_with_features = pipeline.fit_transform(df)
 
         return df_with_features
-
 
     def __train_test_split(self, df):
 
@@ -110,8 +113,7 @@ class kNNCrossValidator:
         return X_train_validation, X_train, X_validation, X_test, y_train_validation, y_train, y_validation, y_test
 
 
-
-## Pipeline Classes
+# Pipeline Classes
 class CreateLagFeatures(BaseEstimator, TransformerMixin):
 
     def __init__(self, num_lag_depths, col_name):
@@ -120,32 +122,33 @@ class CreateLagFeatures(BaseEstimator, TransformerMixin):
         self.col_name = col_name
 
     def fit(self, X, y=None):
-        return self 
-    
+        return self
+
     def transform(self, X):
         return self.__create_lag_features(X, self.num_lags_depths, self.col_name)
-    
+
     @staticmethod
     def __create_lag_features(df, num_lag_depths, col_name):
         df_with_lags = df.copy(deep=True)
-        for lag_depth in np.arange(1,num_lag_depths+1):
+        for lag_depth in np.arange(1, num_lag_depths+1):
             column = df_with_lags[col_name].shift(24*lag_depth)
-            df_with_lags = pd.concat([df_with_lags, column.rename("lag" + f"{lag_depth}")], axis=1)
+            df_with_lags = pd.concat(
+                [df_with_lags, column.rename("lag" + f"{lag_depth}")], axis=1)
         return df_with_lags.dropna()
 
 
 class SubsetLags(BaseEstimator, TransformerMixin):
-    
+
     def __init__(self, num_lags=1):
         super().__init__()
         self.num_lags = num_lags
-        
+
     def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X):
         return self.__select_subset_lags(X, self.num_lags)
-    
+
     @staticmethod
     def __select_subset_lags(df, num_lags):
         return df[[f"lag{depth}" for depth in np.arange(1, num_lags+1)]]

@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
+import plotly.io as pio 
 
 
 def add_training_end_vline(self, start_date, end_date):
@@ -99,7 +100,6 @@ class PlotMainTimeSeries:
             xaxis_title="Time",
             yaxis_title=plot_layout["cleaned_quantity"] +
             " " + plot_layout["units_measurement"],
-            template="plotly",
             margin=dict(l=20, r=20, pad=0),
             title_pad=dict(l=0, r=0, t=0, b=0)
         )

@@ -28,10 +28,12 @@ def prediction_to_run(granularity):
     elif granularity == "monthlydemand":
         return  # not yet supported
 
+
 tab_one_content = \
     html.Div([
-        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="tab-one-open-settings-btn"),
-        dbc.Collapse([ 
+        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded",
+                    id="tab-one-open-settings-btn"),
+        dbc.Collapse([
             dbc.Container([
                 dbc.Row([
                     dbc.Col([
@@ -68,11 +70,11 @@ tab_one_content = \
                                 id="quantity-picker",
                                 options=[
                                     {'label': 'Energy Demand',
-                                    'value': 'energy_demand_kWh'},
+                                     'value': 'energy_demand_kWh'},
                                     {'label': 'Average Power Demand',
-                                    'value': 'avg_power_demand_W'},
+                                     'value': 'avg_power_demand_W'},
                                     {'label': 'Peak Power Demand',
-                                    'value': 'peak_power_W'}
+                                     'value': 'peak_power_W'}
                                 ],
                                 value='energy_demand_kWh',  # default value
                                 clearable=False,
@@ -85,10 +87,14 @@ tab_one_content = \
                         html.Div([
                             html.Div("Jump to..."),
                             html.Div([
-                                html.Button("Last 7 Days", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_last_seven_days_btn"),
-                                html.Button("This Month", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_month_btn"),
-                                html.Button("YTD", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_year_btn"),
-                                html.Button("All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_alltime_btn")
+                                html.Button(
+                                    "Last 7 Days", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_last_seven_days_btn"),
+                                html.Button(
+                                    "This Month", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_month_btn"),
+                                html.Button(
+                                    "YTD", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_year_btn"),
+                                html.Button(
+                                    "All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_alltime_btn")
                             ], className="d-grid gap-2 d-md-block"),
                         ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
                     ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center"),
@@ -112,7 +118,8 @@ tab_one_content = \
                     ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center")
                 ])
             ], fluid=True),
-            dbc.Tooltip("Only supported for hourly and daily granularities.", target="toggle-forecasts", placement="bottom", delay={"show":1250}),
+            dbc.Tooltip("Only supported for hourly and daily granularities.",
+                        target="toggle-forecasts", placement="bottom", delay={"show": 1250}),
         ], id="tab-one-settings-collapse", is_open=False),
         html.Div([
         ], id="main-ts-div"),
@@ -120,7 +127,8 @@ tab_one_content = \
 
 tab_two_content = \
     html.Div([
-        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="tab-two-open-settings-btn"),
+        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded",
+                    id="tab-two-open-settings-btn"),
         dbc.Collapse([
             dbc.Container([
                 dbc.Row([
@@ -142,9 +150,12 @@ tab_two_content = \
                             dcc.Dropdown(
                                 id="cumulative-graph-picker",
                                 options=[
-                                    {"label": "Cumulative Energy Demand", "value": "cumulative-energy-delivered"},
-                                    {"label": "Cumulative Number of Unique Users", "value": "cumulative-num-users"},
-                                    {"label": "Cumulative Energy Consumption by Vehicle Model", "value": "cumulative-vehicle-model-energy"},                                    
+                                    {"label": "Cumulative Energy Demand",
+                                        "value": "cumulative-energy-delivered"},
+                                    {"label": "Cumulative Number of Unique Users",
+                                        "value": "cumulative-num-users"},
+                                    {"label": "Cumulative Energy Consumption by Vehicle Model",
+                                        "value": "cumulative-vehicle-model-energy"},
                                 ],
                                 value="cumulative-energy-delivered",
                                 clearable=False,
@@ -155,25 +166,27 @@ tab_two_content = \
                 ], className="justify-content-start"),
             ], fluid=True),
         ], id="tab-two-settings-collapse", is_open=False),
-        dcc.Graph(
-            id="cumulative-graph",
-            config={
-                "displaylogo": False
-            },
-            className="vh-50 border m-2 p-1 border border-dark rounded"
-        ),
+        dcc.Loading([
+            dcc.Graph(
+                id="cumulative-graph",
+                config={
+                    "displaylogo": False
+                },
+                className="vh-50 border m-2 p-1 border border-dark rounded"
+            ),
+        ])
     ])
 
 tab_three_content = \
     html.Div([
         dcc.Graph(
-            id="sched-vs-reg-scatter",           
+            id="sched-vs-reg-scatter",
             config={
                 "displaylogo": False
             },
             className="vh-50 border m-2 p-1 border border-dark rounded"
         ),
-    ])
+    ],)
 
 layout = \
     dbc.Tabs([
@@ -335,7 +348,7 @@ def display_cumulative_num_users(signal):
     data = pickle.loads(redis_client.get("raw_data"))
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data)
-    return fig 
+    return fig
 
 
 @dash.callback(
@@ -343,57 +356,61 @@ def display_cumulative_num_users(signal):
     Input("toggle-histograms", "checked")
 )
 def toggle_histograms(checked):
-    if checked: # main ts w/ histograms
+    if checked:  # main ts w/ histograms
         return (
             dbc.Container([
                 dbc.Row([
                     dbc.Col([
-                        dcc.Graph(
-                            id="time-series-plot",
-                            style={"height": "600px"},
-                            config={
-                                "displaylogo": False,
-                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                            },
-                            className="p-1 border border-dark rounded"
-                        ),                    
-                    ], className="col-md-9 col-sm-12 col-12 px-2"),                    
-                    dbc.Col([
+                        dcc.Loading([
                             dcc.Graph(
+                                id="time-series-plot",
+                                style={"height": "600px"},
+                                config={
+                                    "displaylogo": False,
+                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                },
+                                className="p-1 border border-dark rounded"
+                            ),
+                        ])
+                    ], className="col-md-9 col-sm-12 col-12 px-2"),
+                    dbc.Col([
+                        dcc.Graph(
                             id="hour-histogram",
                             style={"height": "300px"},
-                            config = {
+                            config={
                                 "displaylogo": False
                             },
                             className="p-1 border border-dark border-bottom-0 rounded-top"
                         ),
                         dcc.Graph(
                             id="day-histogram",
-                            style={"height": "300px"},                                
-                            config = {
+                            style={"height": "300px"},
+                            config={
                                 "displaylogo": False
                             },
                             className="p-1 border border-dark border-top-0 rounded-bottom"
                         )
-                    ], className="col-md-3 col-sm-12 col-12 px-2")                    
+                    ], className="col-md-3 col-sm-12 col-12 px-2")
                 ])
             ], className="mt-2", fluid=True),
         )
-    else: # main ts w/o histograms
+    else:  # main ts w/o histograms
         return (
             dbc.Container([
                 dbc.Row([
                     dbc.Col([
-                        dcc.Graph(
-                            id="time-series-plot",
-                            style={"height": "600px"},
-                            config={
-                                "displaylogo": False,
-                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                            },
-                            className="p-1 border border-dark rounded"
-                        ),                    
-                    ], className="col-12 px-2"),                                      
+                        dcc.Loading([
+                            dcc.Graph(
+                                id="time-series-plot",
+                                style={"height": "600px"},
+                                config={
+                                    "displaylogo": False,
+                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                },
+                                className="p-1 border border-dark rounded"
+                            ),
+                        ])
+                    ], className="col-12 px-2"),
                 ])
             ], className="mt-2", fluid=True),
         )

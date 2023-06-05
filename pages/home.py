@@ -21,7 +21,7 @@ def calculate_pct_change(after, before):
     # both are zero case
     if not after and not before:
         return 0
-    # before is zero case 
+    # before is zero case
     elif not before:
         return 100
     # now is zero & now and before are non-zero case
@@ -84,7 +84,8 @@ dash.register_page(__name__, path="/")
 
 layout = \
     html.Div([
-        html.H1(datetime.now().strftime("%A, %B %d, %Y"), className="d-flex justify-content-center text-center my-3"),
+        html.H1(datetime.now().strftime("%A, %B %d, %Y"),
+                className="d-flex justify-content-center text-center my-3"),
         dbc.Container([
             dbc.Row([
                 dbc.Col([
@@ -124,7 +125,7 @@ layout = \
                         dbc.CardBody([
                             html.H2(id="homepage-cum-emiles"),
                             html.Div(className="my-3",
-                                    id="homepage-cum-emiles-stats")
+                                     id="homepage-cum-emiles-stats")
                         ])
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
@@ -136,7 +137,7 @@ layout = \
                         dbc.CardBody([
                             html.H2(id="homepage-users"),
                             html.Div(className="my-3",
-                                    id="homepage-users-change")
+                                     id="homepage-users-change")
                         ])
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
@@ -151,7 +152,7 @@ layout = \
                         dbc.CardBody([
                             html.H2(id="homepage-cum-sessions"),
                             html.Div(className="my-3",
-                                    id="homepage-cum-sessions-stats")
+                                     id="homepage-cum-sessions-stats")
                         ])
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
@@ -164,7 +165,7 @@ layout = \
                         dbc.CardBody([
                             html.H2(id="homepage-peak-power"),
                             html.Div(className="my-3",
-                                    id="homepage-peak-power-change")
+                                     id="homepage-peak-power-change")
                         ])
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
@@ -202,7 +203,7 @@ def update_today_homepage_cards(n):
     if len(today) == 0:
         kwh_change, users_change, peak_power_change = calcuate_stats_change(
             0, 0, peak_power_float, dailydemand, raw_data, monthlydemand)
-        
+
         return 0, 0, peak_power, kwh_change, users_change, peak_power_change
 
     else:
@@ -215,7 +216,7 @@ def update_today_homepage_cards(n):
 
         kwh_change, users_change, peak_power_change = calcuate_stats_change(
             kwh_today_float, num_users, peak_power_float, dailydemand, raw_data, monthlydemand)
-        
+
         return kwh_today, num_users, peak_power, kwh_change, users_change, peak_power_change
 
 

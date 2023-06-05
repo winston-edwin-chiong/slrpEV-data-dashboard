@@ -1,19 +1,22 @@
 import dash
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
-import pandas as pd 
-import pickle
-from plotting import plottingfunctions as pltf
+import dash_auth
+import os
 from tasks.schedule import redis_client 
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
-from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME], suppress_callback_exceptions=True, use_pages=True)
 app.title = "slrpEV Dashboard"
 
+load_dotenv()
+auth = dash_auth.BasicAuth(
+    app,
+    {os.getenv("dash_username"): os.getenv("dash_password")}
+)
 
 # app layout
 app.layout = \
@@ -63,31 +66,15 @@ app.layout = \
         dash.page_container,
         # --> <-- #
 
-
-        # --> Footer <-- #
-        html.Footer([
-            html.Div([
-                html.Div([
-                    html.Div(
-                        id="last_updated_timer",
-                    ),
-                    html.Div(
-                        id="last_validated_timer",
-                    ),
-                ], className="d-inline-flex flex-column"),
-                html.Div([
-                    html.Div("Made with ❤️ by Winston"),
-                    html.Div("Icons by Bootstrap Icons and Icons8"),
-                    html.Div([
-                        html.A(html.I(className="bi bi-github m-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
-                        html.A(html.I(className="bi bi-linkedin m-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
-                    ], className="d-flex"),
-                ], className="d-inline-flex flex-column align-items-center")
-            ], className="d-flex justify-content-between align-items-center")
-        ], className="my-footer p-2 mt-5 bg-secondary border-top border-2 shadow-top"),
-        # --> <-- #
-
-
+        html.Div([
+            html.Div(
+                id="last_updated_timer",
+            ),
+            html.Div(
+                id="last_validated_timer",
+            ),
+        ], className="d-inline-flex flex-column"),
+        
         # --> Interval Components, Refresh/Validation Timestamps <-- #
         html.Div([
             html.Div([

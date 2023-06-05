@@ -44,7 +44,9 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X["finishChargeTime"] = X.apply(self.__get_finishChargeTime, axis=1)
         X["trueDurationHrs"] = X.apply(self.__get_duration, axis=1)
-        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0) # "cumEnergy_Wh" is seen as a column of truth
+        # "cumEnergy_Wh" is seen as a column of truth
+        X["true_peakPower_W"] = round(
+            X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
         X = X.loc[X["trueDurationHrs"] <= 24].copy()
@@ -59,21 +61,21 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X.to_csv("data/raw_data.csv")
 
         return X
-    
+
     @staticmethod
     def __get_duration(row):
         if row["regular"] == 1:
             return round(((row["lastUpdate"] - row["startChargeTime"]).seconds/3600), 3)
-        else: 
+        else:
             return round(((row["Deadline"] - row["startChargeTime"]).seconds/3600), 3)
-        
+
     @staticmethod
     def __get_finishChargeTime(row):
         if row["regular"] == 1:
             return row["lastUpdate"]
         else:
             return row["Deadline"]
-        
+
 
 class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
     """
@@ -103,28 +105,29 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         self.rows.append(temp_df)
 
 
-
 class ImputeZero(BaseEstimator, TransformerMixin):
     """
     The way the data is pulled means data is only updated when there is a session ongoing. This class imputes zero 
     to makes the data feel more like real time. 
     """
-    
+
     def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X) -> pd.DataFrame:
         # get start and end dates
         start = X.index[-1]
         end = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         end = pd.to_datetime(end).floor("5T").strftime('%Y-%m-%d %H:%M:%S')
 
-        if str(start) == end: # data up to date 
-            return X 
-        
+        if str(start) == end:  # data up to date
+            return X
+
         # "missing chunk"
-        missing_dates = pd.date_range(start=X.index[-1], end=end, freq="5MIN", inclusive="right")
-        missing = pd.DataFrame(index=missing_dates, columns=["avg_power_demand_W"], data=0) # impute zero 
+        missing_dates = pd.date_range(
+            start=X.index[-1], end=end, freq="5MIN", inclusive="right")
+        missing = pd.DataFrame(index=missing_dates, columns=[
+                               "avg_power_demand_W"], data=0)  # impute zero
         imputed = pd.concat([X, missing], axis=0)
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
         return imputed[imputed.index <= end].copy()
@@ -140,7 +143,6 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-
     def transform(self, X) -> pd.DataFrame:
         X["energy_demand_kWh"] = (X["avg_power_demand_W"]/1000)/12
         # for the highest granularity, peak power is equal to the power demand
@@ -150,7 +152,7 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
         X["day"] = X.index.day_name()
         X["month"] = X.index.month_name()
         return X
-    
+
 
 class SaveToCsv(BaseEstimator, TransformerMixin):
     """

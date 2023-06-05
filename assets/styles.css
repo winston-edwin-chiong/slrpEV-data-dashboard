@@ -12,16 +12,15 @@
   }
 
 
-.body {
-    min-height: 100%;
+
+/* Timers */
+
+#last_updated_timer, #last_validated_timer {
+    display: none;
 }
 
 
 /* Footer */
-
-#_pages_content {
-    height: 100vh;
-}
 
 .my-footer {
     bottom: 0;

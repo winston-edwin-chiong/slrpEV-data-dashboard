@@ -48,7 +48,8 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X["finishChargeTime"] = X.apply(self.__get_finishChargeTime, axis=1)
         X["trueDurationHrs"] = X.apply(self.__get_duration, axis=1)
-        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
+        X["true_peakPower_W"] = round(
+            X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
         X = X[X["finishChargeTime"] >= datetime.now().strftime("%D")].copy()
 
@@ -58,18 +59,18 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X['temp_0'] = pd.Timedelta(days=0, seconds=0)
         X['Overstay'] = X["lastUpdate"] - X['Deadline']
         X["Overstay"] = X[["Overstay", "temp_0"]].max(axis=1)
-        X['Overstay_h'] = X['Overstay'].dt.seconds / 3600   
+        X['Overstay_h'] = X['Overstay'].dt.seconds / 3600
         X.drop(columns=['temp_0'], inplace=True)
 
         return X
-    
+
     @staticmethod
     def __get_duration(row):
         if row["regular"] == 1:
             return round(((row["lastUpdate"] - row["startChargeTime"]).seconds/3600), 3)
-        else: 
+        else:
             return round(((row["Deadline"] - row["startChargeTime"]).seconds/3600), 3)
-        
+
     @staticmethod
     def __get_finishChargeTime(row):
         if row["regular"] == 1:
@@ -101,7 +102,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
 
         X = X[(X["Time"] >= datetime.now().strftime("%D"))
               ].copy()  # keep sessions within today
-        
+
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         now = pd.to_datetime(now).floor("5T").strftime('%Y-%m-%d %H:%M:%S')

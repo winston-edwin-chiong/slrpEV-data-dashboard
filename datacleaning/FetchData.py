@@ -18,7 +18,7 @@ class FetchData:
     # TODO: Could be in __init__; does the table ever change? Don't need to call this every time?
     @classmethod
     def __get_table(cls, table_id):
-        cls.__configure() # load environment variables
+        cls.__configure()  # load environment variables
         dynamodb = boto3.resource(
             "dynamodb",
             aws_access_key_id=os.getenv("access_key_id"),

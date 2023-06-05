@@ -132,14 +132,16 @@ def display_today_graph(value):
                 dbc.Container([
                     dbc.Row([
                         dbc.Col([
-                            dcc.Graph(
-                                id="daily_time_series",
-                                config={
-                                    "displaylogo": False,
-                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                                },
-                                className="p-1 border border-dark rounded"
-                            ),
+                            dcc.Loading([
+                                dcc.Graph(
+                                    id="daily_time_series",
+                                    config={
+                                        "displaylogo": False,
+                                        "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                    },
+                                    className="p-1 border border-dark rounded"
+                                ),
+                            ]),
                         ], className="col-md-10 col-sm-12 px-2"),
                         dbc.Col([
                             html.Div("User Information", className="fw-bold"),
@@ -169,13 +171,15 @@ def display_today_graph(value):
     elif value == "today-energy-dist":
         return (
             html.Div([
-                dcc.Graph(
-                    id="vehicle_pie_chart",
-                    config={
-                        "displaylogo": False
-                    },
-                    className="p-1 border border-dark rounded"
-                ),
+                dcc.Loading([
+                    dcc.Graph(
+                        id="vehicle_pie_chart",
+                        config={
+                            "displaylogo": False
+                        },
+                        className="p-1 border border-dark rounded"
+                    ),
+                ])
             ], className="mx-2"),
         )
 
