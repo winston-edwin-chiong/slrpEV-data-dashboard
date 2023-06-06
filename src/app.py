@@ -7,9 +7,9 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 
-
+pages_folder=os.path.join(os.path.dirname(__name__), "pages")
 # app instantiation
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME], suppress_callback_exceptions=True, use_pages=True, pages_folder="slrpev-data-dashboard")
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME], suppress_callback_exceptions=True, use_pages=True, pages_folder=pages_folder)
 server = app.server
 app.title = "slrpEV Dashboard"
 
