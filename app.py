@@ -2,7 +2,7 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_auth
 import os
-from tasks.schedule import redis_client 
+import redis
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME], suppress_callback_exceptions=True, use_pages=True)
 server = app.server
 app.title = "slrpEV Dashboard"
+
+redis_client = redis.Redis(host='localhost', port=6360)
 
 load_dotenv()
 auth = dash_auth.BasicAuth(

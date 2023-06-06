@@ -142,7 +142,7 @@ def run_startup_tasks(**kwargs):
     if not redis_client.get("raw_data"):
         query_data()
 
-    if not redis_client.get("daily_params"): 
+    if not redis_client.get("daily_params"):
         update_daily_params()
 
     if not redis_client.get("hourly_params"):

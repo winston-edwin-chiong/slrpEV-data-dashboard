@@ -3,7 +3,6 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from datetime import datetime
 from dash import html, dcc, dash_table, Input, Output, State
-import dash_daq as daq
 import redis
 import pickle
 import dash_ag_grid as dag

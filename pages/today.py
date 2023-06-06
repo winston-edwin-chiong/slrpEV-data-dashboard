@@ -1,7 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-import dash_daq as daq
 import pickle
 from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State

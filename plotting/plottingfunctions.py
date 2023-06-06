@@ -3,7 +3,6 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
-import plotly.io as pio 
 
 
 def add_training_end_vline(self, start_date, end_date):
