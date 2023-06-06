@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME], suppress_callback_exceptions=True, use_pages=True)
+server = app.server
 app.title = "slrpEV Dashboard"
 
 load_dotenv()
