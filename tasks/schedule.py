@@ -14,9 +14,9 @@ from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossVal
 
 logger = logging.getLogger(__name__)
 
-redis_client = redis.Redis(host='localhost', port=6360)
+redis_client = redis.Redis(host='red-chvaap82qv2appf1da50', port=6379)
 
-app = Celery("tasks", broker="redis://localhost:6360")
+app = Celery("tasks", broker="redis://red-chvaap82qv2appf1da50:6379")
 app.conf.beat_schedule = {
     "fetch-clean-store-data": {
         "task": "fetch-clean-store-data",
