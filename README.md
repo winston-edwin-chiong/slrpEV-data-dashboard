@@ -1,5 +1,8 @@
 # slrpEV-data-dashboard
 Data dashboard for slrpEV.
 
-WIP: 
-![Alt text](https://media.discordapp.net/attachments/1021905105479532707/1110030495183552612/image.png?width=1394&height=671)
+Start the Celery worker with `celery -A tasks.schedule worker --loglevel=INFO -P eventlet`.
+
+Start Celery beat with `celery -A tasks.schedule beat --loglevel=INFO`. 
+
+Start the Redis server with `redis-server --port 6360`. 
