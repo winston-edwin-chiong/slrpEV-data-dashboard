@@ -9,7 +9,7 @@ class CreateDailyForecasts:
     columns = ["avg_power_demand_W", "energy_demand_kWh", "peak_power_W"]
 
     # connect to Redis
-    redis_client = redis.Redis(host='red-chvaap82qv2appf1da50', port=6379)
+    redis_client = redis.Redis(host='localhost', port=6360)
 
     def __init__():
         pass
