@@ -12,7 +12,10 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTST
 server = app.server
 app.title = "slrpEV Dashboard"
 
-redis_client = redis.Redis(host='localhost', port=6360)
+redis_client = redis.Redis(
+    host='localhost',
+    port=6360,
+)
 
 load_dotenv()
 auth = dash_auth.BasicAuth(

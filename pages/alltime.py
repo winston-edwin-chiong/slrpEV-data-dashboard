@@ -27,6 +27,16 @@ def prediction_to_run(granularity):
         return pickle.loads(redis_client.get("daily_forecasts"))
     elif granularity == "monthlydemand":
         return  # not yet supported
+    
+def get_chunks(name, chunk_size=20):
+    deserialized_chunks = []
+    for i in range(chunk_size):
+        serialized_chunk = redis_client.get(f"{name}_{i}")
+        chunk = pickle.loads(serialized_chunk)
+        deserialized_chunks.append(chunk)
+
+    result = pd.concat(deserialized_chunks)
+    return result
 
 
 tab_one_content = \
@@ -119,7 +129,7 @@ tab_one_content = \
                 ])
             ], fluid=True),
             dbc.Tooltip("Only supported for hourly and daily granularities.",
-                        target="toggle-forecasts", placement="bottom", delay={"show": 1250}),
+                        target="toggle-forecasts", placement="bottom", delay={"show": 2500}),
         ], id="tab-one-settings-collapse", is_open=False),
         html.Div([
         ], id="main-ts-div"),
@@ -208,7 +218,7 @@ layout = \
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal):
     # load data
-    data = pickle.loads(redis_client.get(granularity))
+    data = get_chunks(pickle.loads(redis_client.get(granularity)))
     # plot main time series
     fig = pltf.PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)

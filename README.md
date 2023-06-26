@@ -1,7 +1,7 @@
 # slrpEV-data-dashboard
 Data dashboard for slrpEV.
 
-Activate the Python virtual environment with `.\slrpev-dashboard\Scripts\activate`.
+Activate the Python virtual environment with `.\venv\Scripts\activate`.
 
 Start the Celery worker with `celery -A tasks.schedule worker --loglevel=INFO -P eventlet`.
 

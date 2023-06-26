@@ -9,7 +9,10 @@ import dash_ag_grid as dag
 
 dash.register_page(__name__, path="/data")
 
-redis_client = redis.Redis(host='localhost', port=6360)
+redis_client = redis.Redis(
+    host='localhost',
+    port=6360,
+)
 
 # load data
 df = pickle.loads(redis_client.get("raw_data"))

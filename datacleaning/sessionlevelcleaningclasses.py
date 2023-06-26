@@ -53,8 +53,9 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X = X[X["finishChargeTime"] >= datetime.now().strftime("%D")].copy()
 
-        # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
+        # filter out bad rows (this occurs when there is a very low peak power and high energy delivered). also filter out excessively high duration from raw data
         X = X.loc[X["trueDurationHrs"] <= 24].copy()
+        X = X[~(X["Duration"].str[0].astype(int) >= 2)]
 
         X['temp_0'] = pd.Timedelta(days=0, seconds=0)
         X['Overstay'] = X["lastUpdate"] - X['Deadline']
