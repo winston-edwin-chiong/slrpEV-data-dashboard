@@ -12,6 +12,16 @@ from datetime import datetime
 
 # --> Helper Functions <-- #
 
+def get_chunks(name, chunk_size=20):
+    deserialized_chunks = []
+    for i in range(chunk_size):
+        serialized_chunk = redis_client.get(f"{name}_{i}")
+        chunk = pickle.loads(serialized_chunk)
+        deserialized_chunks.append(chunk)
+
+    result = pd.concat(deserialized_chunks)
+    return result
+
 def calculate_pct_change(after, before):
     '''
     Calculate the percent change between two numbers.
@@ -186,10 +196,10 @@ layout = \
 )
 def update_today_homepage_cards(n):
     # load data
-    today = pickle.loads(redis_client.get("todays_sessions"))
-    monthlydemand = pickle.loads(redis_client.get("monthlydemand"))
-    dailydemand = pickle.loads(redis_client.get("dailydemand"))
-    raw_data = pickle.loads(redis_client.get("raw_data"))
+    today = get_chunks("todays_sessions")
+    monthlydemand = get_chunks("monthlydemand")
+    dailydemand = get_chunks("dailydemand")
+    raw_data = get_chunks("raw_data")
 
     # filter data to just this month
     thismonthdemand = monthlydemand.loc[monthlydemand.index >= datetime.now(
@@ -232,7 +242,7 @@ def update_today_homepage_cards(n):
 )
 def update_cum_homepage_cards(n):
     # load data
-    raw_data = pickle.loads(redis_client.get("raw_data"))
+    raw_data = get_chunks("raw_data")
 
     # calculate cumulative sessions
     cum_sessions_float = len(raw_data)

@@ -218,7 +218,7 @@ layout = \
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal):
     # load data
-    data = get_chunks(pickle.loads(redis_client.get(granularity)))
+    data = get_chunks(granularity)
     # plot main time series
     fig = pltf.PlotMainTimeSeries.plot_main_time_series(
         data, granularity, quantity, start_date, end_date)
@@ -247,8 +247,8 @@ def display_histogram_hover(hoverData, quantity, granularity):
         return pltf.PlotHoverHistogram.default(), pltf.PlotHoverHistogram.default()
 
     # load data
-    hourlydemand = pickle.loads(redis_client.get("hourlydemand"))
-    dailydemand = pickle.loads(redis_client.get("dailydemand"))
+    hourlydemand = get_chunks("hourlydemand")
+    dailydemand = get_chunks("dailydemand")
 
     # create hover histograms
     if granularity == "dailydemand":
@@ -343,7 +343,7 @@ def toggle_tab_two_collapse(button_press, is_open):
 )
 def display_cumulative_graph(start_date, end_date, value):
     # load data
-    data = pickle.loads(redis_client.get("raw_data"))
+    data = get_chunks("raw_data")
     # plot figure
     return pltf.PlotCumulatives.plot_cumulative(value, data, start_date, end_date)
 
@@ -355,7 +355,7 @@ def display_cumulative_graph(start_date, end_date, value):
 )
 def display_cumulative_num_users(signal):
     # load data
-    data = pickle.loads(redis_client.get("raw_data"))
+    data = get_chunks("raw_data")
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data)
     return fig

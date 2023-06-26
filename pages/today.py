@@ -2,6 +2,7 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import pickle
+import pandas as pd
 from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State
 from dash import html, dcc, Patch
@@ -9,6 +10,16 @@ from tasks.schedule import redis_client
 
 dash.register_page(__name__, path="/today")
 
+
+def get_chunks(name, chunk_size=20):
+    deserialized_chunks = []
+    for i in range(chunk_size):
+        serialized_chunk = redis_client.get(f"{name}_{i}")
+        chunk = pickle.loads(serialized_chunk)
+        deserialized_chunks.append(chunk)
+
+    result = pd.concat(deserialized_chunks)
+    return result
 
 layout = \
     html.Div([
@@ -65,12 +76,12 @@ layout = \
 )
 def display_daily_time_series(signal, yesterday, forecast):
     # load data
-    data = pickle.loads(redis_client.get("todays_sessions"))
+    data = get_chunks("todays_sessions")
     # plot figure
     fig = pltf.PlotDailySessions.plot_daily_time_series(data)
     # plot yesterday's time series
     if yesterday:
-        fivemindemand = pickle.loads(redis_client.get("fivemindemand"))
+        fivemindemand = get_chunks("fivemindemand")
         fig = pltf.PlotDailySessions.plot_yesterday(fig, fivemindemand)
     if forecast:
         daily_forecast = pickle.loads(redis_client.get("daily_forecasts"))
@@ -84,7 +95,7 @@ def display_daily_time_series(signal, yesterday, forecast):
 )
 def display_vehicle_pie_chart(signal):
     # load data
-    data = pickle.loads(redis_client.get("todays_sessions"))
+    data = get_chunks("todays_sessions")
     # plot figure
     fig = pltf.PlotDailySessions.plot_daily_energy_breakdown(data)
     return fig
@@ -103,7 +114,7 @@ def display_user_hover(hoverData):
     if hoverData is None:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
-    data = pickle.loads(redis_client.get("raw_data"))
+    data = get_chunks("raw_data")
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
     # get user hover data

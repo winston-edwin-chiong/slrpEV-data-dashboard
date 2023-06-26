@@ -13,11 +13,11 @@ class CreateHourlyForecasts:
     # connect to Redis
     redis_client = redis.Redis(host='localhost', port=6360)
 
-    redis_client = redis.Redis(
-        host= 'great-goblin-39318.upstash.io',
-        port= '39318',
-        password= '660d94cf0b7f4b568d33d4e543982c42'
-    )
+    # redis_client = redis.Redis(
+    #     host= 'great-goblin-39318.upstash.io',
+    #     port= '39318',
+    #     password= '660d94cf0b7f4b568d33d4e543982c42'
+    # )
 
     def __init__():
         pass
