@@ -19,18 +19,18 @@ from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossVal
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-redis_client = redis.Redis(
-    host='localhost',
-    port=6360,
-)
-
 # redis_client = redis.Redis(
-#   host=os.getenv("REDIS_HOST"),
-#   port=os.getenv("REDIS_PORT"),
-#   password=os.getenv("REDIS_PASSWORD")
+#     host='localhost',
+#     port=6360,
 # )
 
-app = Celery("tasks", broker="redis://localhost:6360")
+
+redis_client = redis.Redis(
+  host='redis-10912.c53.west-us.azure.cloud.redislabs.com',
+  port=10912,
+  password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2')
+
+app = Celery("tasks", broker="redis://default:gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2@redis-10912.c53.west-us.azure.cloud.redislabs.com:10912", broker_connection_retry_on_startup=True)
 # app = Celery("tasks", broker=os.getenv("REDIS_URI"))
 
 app.conf.beat_schedule = {
@@ -171,14 +171,14 @@ def run_startup_tasks(**kwargs):
         forecast_hourly()
 
 
-def send_chunks(df, name, chunk_size=20):
+def send_chunks(df, name, chunk_size=30):
     chunks = np.array_split(df, chunk_size)
 
     for i, chunk in enumerate(chunks):
         serialized_chunk = pickle.dumps(chunk)  
         redis_client.set(f"{name}_{i}", serialized_chunk)
 
-def get_chunks(name, chunk_size=20):
+def get_chunks(name, chunk_size=30):
     deserialized_chunks = []
     for i in range(chunk_size):
         serialized_chunk = redis_client.get(f"{name}_{i}")

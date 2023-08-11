@@ -9,12 +9,18 @@ import dash_ag_grid as dag
 
 dash.register_page(__name__, path="/data")
 
-redis_client = redis.Redis(
-    host='localhost',
-    port=6360,
-)
+# redis_client = redis.Redis(
+#     host='localhost',
+#     port=6360,
+# )
 
-def get_chunks(name, chunk_size=20):
+
+redis_client = redis.Redis(
+  host='redis-10912.c53.west-us.azure.cloud.redislabs.com',
+  port=10912,
+  password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2')
+
+def get_chunks(name, chunk_size=30):
     deserialized_chunks = []
     for i in range(chunk_size):
         serialized_chunk = redis_client.get(f"{name}_{i}")

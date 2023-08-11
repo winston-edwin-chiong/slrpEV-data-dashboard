@@ -11,13 +11,18 @@ from sklearn.model_selection import train_test_split
 class CreateHourlyForecasts:
 
     # connect to Redis
-    redis_client = redis.Redis(host='localhost', port=6360)
+    # redis_client = redis.Redis(host='localhost', port=6360)
 
     # redis_client = redis.Redis(
-    #     host= 'great-goblin-39318.upstash.io',
-    #     port= '39318',
-    #     password= '660d94cf0b7f4b568d33d4e543982c42'
-    # )
+    #     host='redis-11349.c60.us-west-1-2.ec2.cloud.redislabs.com',
+    #     port=11349,
+    #     username="default",
+    #     password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2',
+    #     socket_keepalive=True,)
+    redis_client = redis.Redis(
+        host='redis-10912.c53.west-us.azure.cloud.redislabs.com',
+        port=10912,
+        password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2')
 
     def __init__():
         pass
@@ -30,8 +35,10 @@ class CreateHourlyForecasts:
         ])
         new_forecasts = hourly_forecast_pipeline.fit_transform(df)
         # existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)
-        existing_forecasts = pickle.loads(
-            cls.redis_client.get("hourly_forecasts"))
+        if not cls.redis_client.get("hourly_forecasts"):
+            existing_forecasts = pickle.loads(cls.redis_client.get("hourly_forecasts"))
+        else:
+            existing_forecasts = pd.DataFrame()
 
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample(
             "1H").last()  # get more recent forecast
@@ -41,8 +48,7 @@ class CreateHourlyForecasts:
 
     @classmethod
     def save_empty_prediction_df(cls):
-        empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions",
-                                "peak_power_W_predictions"], index=pd.Index([], name="time"))
+        empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
         empty_df.to_csv("forecastdata/hourlyforecasts.csv")
         cls.redis_client.set("hourly_forecasts", pickle.dumps(empty_df))
         return empty_df

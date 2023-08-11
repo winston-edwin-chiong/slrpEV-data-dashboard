@@ -7,15 +7,27 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 
+
 # app instantiation
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME], suppress_callback_exceptions=True, use_pages=True)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME,], suppress_callback_exceptions=True, use_pages=True)
 server = app.server
 app.title = "slrpEV Dashboard"
 
+# redis_client = redis.Redis(
+#     host='localhost',
+#     port=6360,
+# )
+
+# redis_client = redis.Redis(
+#   host='redis-11349.c60.us-west-1-2.ec2.cloud.redislabs.com',
+#   port=11349,
+#   username="default",
+#   password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2',
+#   socket_keepalive=True,)
 redis_client = redis.Redis(
-    host='localhost',
-    port=6360,
-)
+  host='redis-10912.c53.west-us.azure.cloud.redislabs.com',
+  port=10912,
+  password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2')
 
 load_dotenv()
 auth = dash_auth.BasicAuth(
@@ -31,44 +43,42 @@ app.layout = \
         dbc.Navbar([
             dbc.Container([
                 html.A([
-                    dbc.Row([
-                        dbc.Col([
-                            html.Img(src="/assets/images/ChartLogo.png", height="40px", className="me-2")
-                        ]),
-                    ])
+                    html.Img(src="/assets/images/ChartLogo.png", height="40px", className="me-2")
                 ], href="/"),
                 dbc.NavbarToggler(id="navbar-toggler"),
                 dbc.Collapse([
                     dbc.Nav([
                         dbc.NavItem([
-                            html.I(className="navbar-icon bi bi-house px-1"),
-                            dbc.NavLink("Home", href="/", className="text-start")
-                        ], className="navbar-item d-flex align-items-center"),
+                            html.I(className="navbar-icon bi bi-house px-1 text-primary"),
+                            dbc.NavLink("Home", href="/", className="text-start text-primary")
+                        ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
                         dbc.NavItem([
-                            html.I(className="navbar-icon bi bi-graph-up px-1"),
-                            dbc.NavLink("Alltime", href="/alltime", className="text-start")
-                        ], className="navbar-item d-flex align-items-center"),
+                            html.I(className="navbar-icon bi bi-graph-up px-1 text-primary"),
+                            dbc.NavLink("Alltime", href="/alltime", className="text-start text-primary")
+                        ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
                         dbc.NavItem([
-                            html.I(className="navbar-icon bi bi-table px-1"),
-                            dbc.NavLink("Datatable", href="/data", className="text-start")
-                        ], className="navbar-item d-flex align-items-center"),
+                            html.I(className="navbar-icon bi bi-table px-1 text-primary"),
+                            dbc.NavLink("Datatable", href="/data", className="text-start text-primary")
+                        ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
                         dbc.NavItem([
-                            html.I(className="navbar-icon bi bi-calendar-event px-1"),
-                            dbc.NavLink("Today", href="/today", className="text-start")
-                        ], className="navbar-item d-flex align-items-center"),
+                            html.I(className="navbar-icon bi bi-calendar-event px-1 text-primary"),
+                            dbc.NavLink("Today", href="/today", className="text-start text-primary")
+                        ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
                         dbc.NavItem([
-                            html.I(className="navbar-icon bi bi-info-circle px-1"),
-                            dbc.NavLink("About", href="/about", className="text-start")
-                        ], className="navbar-item d-flex align-items-center"),
-                    ], horizontal="center")
-                ], id="navbar-collapse", is_open=False, navbar=True)
+                            html.I(className="navbar-icon bi bi-info-circle px-1 text-primary"),
+                            dbc.NavLink("About", href="/about", className="text-start text-primary")
+                        ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
+                    ])
+                ], id="navbar-collapse", className="my-2", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
-        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 border-2 bg-secondary shadow-sm", sticky="top", expand="lg"),
+        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 border-2 bg-secondary shadow-sm", expand="lg"),
         # --> <---#
 
 
         # --> Page Content <-- #
-        dash.page_container,
+        html.Div([
+            dash.page_container,
+        ], className="d-flex flex-column flex-grow-1"),
         # --> <-- #
 
         html.Div([
@@ -98,10 +108,25 @@ app.layout = \
                 ),
                 dcc.Store(id="CV_signal"),
             ]),
-        ])
+        ]),
         # --> <-- #
 
-    ])
+        # --> Footer <-- #
+        html.Footer([
+            html.Div([
+                html.Div([
+                    html.Div("Made with ❤️ by Winston"),
+                    html.Div("Icons by Bootstrap Icons and Icons8"),
+                    html.Div([
+                        html.A(html.I(className="bi bi-github m-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
+                        html.A(html.I(className="bi bi-linkedin m-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
+                    ], className="d-flex"),
+                ], className="d-inline-flex flex-column align-items-center")
+            ], className="d-flex justify-content-center align-items-center")
+        ], className="fs-6 mt-5 p-2 bg-secondary border-top border-2 shadow-top"),
+        # --> <-- #
+
+    ], className="d-flex flex-column min-vh-100")
 
 # callback for toggling the collpase on small screens 
 @app.callback(

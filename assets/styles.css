@@ -20,18 +20,6 @@
 }
 
 
-/* Footer */
-
-.my-footer {
-    bottom: 0;
-    right: 0;
-    left: 0;
-    position: fixed;
-    font-size: 10px;
-    width: 100%;
-}
-
-
 /* Today Options */
 
 #today-graph-picker {
@@ -78,22 +66,6 @@
 }
 
 
-/* All Time Tab Controls */
-
-#cumulative-graph-picker {
-    width: 375px;
-    font-size: 80%;
-}
-
-#quantity-picker, #dataframe-picker {
-    width: 215px;
-}
-
-.analytics-control-box {
-    width: 335px;
-}
-
-
 #toggle-forecasts:hover, #toggle-histograms:hover{
     cursor: pointer;
 }
@@ -103,28 +75,6 @@
     border-color: var(--berkeley-blue);
 }
 
-
-/* Navbar Styles */
-
-.nav-link {
-    color:black;
-}
-
-.navbar-icon {
-    color:black;
-    transition: all 0.3s;
-}
-
-.navbar-item:hover {
-    color: black;
-    transition: all 0.3s;
-    background-color: lightgray;
-    border-radius: 10px;
-}
-
-.navbar-item:hover .navbar-icon {
-    color: black;
-}
 
 
 /* Calendar Element */
@@ -154,4 +104,29 @@
 
 .DateInput_input__focused {
     border-bottom: 2px solid var(--berkeley-blue) !important;
+}
+
+
+/* Alltime Options */
+
+#dataframe-picker, #quantity-picker {
+    width: 140px;
+    font-size: 10px;
+}
+
+#cumulative-graph-picker {
+    width: 200px;
+    font-size: 10px;
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media screen and (min-width: 768px) {
+    #dataframe-picker, #quantity-picker {
+        width: 200px;
+        font-size: 12px;
+    }
+    #cumulative-graph-picker {
+        width:250px;
+        font-size: 12px;
+    }
 }

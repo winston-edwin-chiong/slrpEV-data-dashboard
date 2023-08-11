@@ -9,13 +9,18 @@ class CreateDailyForecasts:
     columns = ["avg_power_demand_W", "energy_demand_kWh", "peak_power_W"]
 
     # connect to Redis
-    redis_client = redis.Redis(host='localhost', port=6360)
+    # redis_client = redis.Redis(host='localhost', port=6360)
 
     # redis_client = redis.Redis(
-    #     host= 'great-goblin-39318.upstash.io',
-    #     port= '39318',
-    #     password= '660d94cf0b7f4b568d33d4e543982c42'
-    # )
+    #     host='redis-11349.c60.us-west-1-2.ec2.cloud.redislabs.com',
+    #     port=11349,
+    #     username="default",
+    #     password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2',
+    #     socket_keepalive=True,)
+    redis_client = redis.Redis(
+        host='redis-10912.c53.west-us.azure.cloud.redislabs.com',
+        port=10912,
+        password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2')
 
     def __init__():
         pass
@@ -24,8 +29,11 @@ class CreateDailyForecasts:
     def run_daily_forecast(cls, df, best_params: dict):
 
         # existing_forecasts = pd.read_csv("forecastdata/dailyforecasts.csv", index_col="time", parse_dates=True)
-        existing_forecasts = pickle.loads(
-            cls.redis_client.get("daily_forecasts"))
+        if not cls.redis_client.get("daily_forecasts"):
+            existing_forecasts = pickle.loads(cls.redis_client.get("daily_forecasts"))
+        else:
+            existing_forecasts = pd.DataFrame()
+
         new_forecasts = pd.DataFrame()
 
         for column in cls.columns:
@@ -40,15 +48,12 @@ class CreateDailyForecasts:
             # forecast on day ahead, convert to a dataframe
             one_column_forecast = best_model_arima.forecast(7)
             one_column_forecast = pd.DataFrame(one_column_forecast)
-            one_column_forecast.rename(
-                columns={one_column_forecast.columns[0]: column+'_predictions'}, inplace=True)
-            new_forecasts = pd.concat(
-                [new_forecasts, one_column_forecast], axis=1)
+            one_column_forecast.rename(columns={one_column_forecast.columns[0]: column+'_predictions'}, inplace=True)
+            new_forecasts = pd.concat([new_forecasts, one_column_forecast], axis=1)
             new_forecasts.index.name = "time"
 
         # append new forecasts existing set of forecasts
-        forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample(
-            "1D").last()  # get more recent forecast
+        forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1D").last()  # get more recent forecast
         forecasts.to_csv("forecastdata/dailyforecasts.csv")
 
         return forecasts

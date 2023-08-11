@@ -11,7 +11,7 @@ from tasks.schedule import redis_client
 dash.register_page(__name__, path="/today")
 
 
-def get_chunks(name, chunk_size=20):
+def get_chunks(name, chunk_size=30):
     deserialized_chunks = []
     for i in range(chunk_size):
         serialized_chunk = redis_client.get(f"{name}_{i}")

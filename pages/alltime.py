@@ -11,6 +11,7 @@ from tasks.schedule import redis_client
 
 dash.register_page(__name__, path="/alltime")
 
+###
 
 def get_last_days_datetime(n=7):
     current_time = pd.to_datetime("today") - timedelta(days=n)
@@ -28,7 +29,7 @@ def prediction_to_run(granularity):
     elif granularity == "monthlydemand":
         return  # not yet supported
     
-def get_chunks(name, chunk_size=20):
+def get_chunks(name, chunk_size=30):
     deserialized_chunks = []
     for i in range(chunk_size):
         serialized_chunk = redis_client.get(f"{name}_{i}")
@@ -38,172 +39,258 @@ def get_chunks(name, chunk_size=20):
     result = pd.concat(deserialized_chunks)
     return result
 
+###
 
 tab_one_content = \
     html.Div([
-        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded",
-                    id="tab-one-open-settings-btn"),
-        dbc.Collapse([
-            dbc.Container([
-                dbc.Row([
-                    dbc.Col([
-                        html.Div([
-                            html.Div("Date Picker"),
-                            dcc.DatePickerRange(
-                                id="maints-date-picker",
-                                clearable=True,
-                                start_date=get_last_days_datetime(14),
-                                end_date=get_last_days_datetime(0),
-                                start_date_placeholder_text="mm/dd/yyyy",
-                                end_date_placeholder_text="mm/dd/yyyy",
-                                with_portal=False,
-                            ),
-                        ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
-                    ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center"),
-                    dbc.Col([
-                        html.Div([
-                            html.Div("Granularity & Units"),
-                            dcc.Dropdown(
-                                id="dataframe-picker",
-                                options=[
-                                    {'label': '5-Min', 'value': 'fivemindemand'},
-                                    {'label': 'Hourly', 'value': 'hourlydemand'},
-                                    {'label': 'Daily', 'value': "dailydemand"},
-                                    {'label': 'Monthly', 'value': 'monthlydemand'}
-                                ],
-                                value='hourlydemand',  # default value
-                                clearable=False,
-                                searchable=False,
-                                className="py-1"
-                            ),
-                            dcc.Dropdown(
-                                id="quantity-picker",
-                                options=[
-                                    {'label': 'Energy Demand',
-                                     'value': 'energy_demand_kWh'},
-                                    {'label': 'Average Power Demand',
-                                     'value': 'avg_power_demand_W'},
-                                    {'label': 'Peak Power Demand',
-                                     'value': 'peak_power_W'}
-                                ],
-                                value='energy_demand_kWh',  # default value
-                                clearable=False,
-                                searchable=False,
-                                className="py-1"
-                            ),
-                        ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
-                    ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center"),
-                    dbc.Col([
-                        html.Div([
-                            html.Div("Jump to..."),
-                            html.Div([
-                                html.Button(
-                                    "Last 7 Days", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_last_seven_days_btn"),
-                                html.Button(
-                                    "This Month", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_month_btn"),
-                                html.Button(
-                                    "YTD", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_year_btn"),
-                                html.Button(
-                                    "All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_alltime_btn")
-                            ], className="d-grid gap-2 d-md-block"),
-                        ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
-                    ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center"),
-                    dbc.Col([
-                        html.Div([
-                            html.Div("Toggle Forecasts"),
-                            dmc.Switch(
-                                size="md",
-                                radius="lg",
-                                checked=False,
-                                id="toggle-forecasts",
-                            ),
-                            html.Div("Toggle Histograms"),
-                            dmc.Switch(
-                                size="md",
-                                radius="lg",
-                                checked=True,
-                                id="toggle-histograms",
-                            ),
-                        ], className="analytics-control-box d-inline-flex flex-column px-2 py-2 border rounded mx-0 my-2")
-                    ], className="col-lg-3 col-sm-6 d-flex justify-content-center align-items-center")
-                ])
-            ], fluid=True),
-            dbc.Tooltip("Only supported for hourly and daily granularities.",
-                        target="toggle-forecasts", placement="bottom", delay={"show": 2500}),
-        ], id="tab-one-settings-collapse", is_open=False),
-        html.Div([
-        ], id="main-ts-div"),
+        dbc.Container([
+            ### --> Tab One Control Box <-- ###
+            dbc.Row([
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1"),
+                dbc.Col([
+                    html.Div([
+                        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 rounded", id="tab-one-open-settings-btn"),
+                        ], className="d-inline-block"),
+                    dbc.Collapse([
+                        dbc.Container([
+                            dbc.Row([
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div(["Date Picker"]),
+                                        dcc.DatePickerRange(
+                                            id="maints-date-picker",
+                                            clearable=True,
+                                            start_date=get_last_days_datetime(14),
+                                            end_date=get_last_days_datetime(0),
+                                            start_date_placeholder_text="mm/dd/yyyy",
+                                            end_date_placeholder_text="mm/dd/yyyy",
+                                            with_portal=False,
+                                        ),
+                                    ], className="d-flex flex-column px-2 py-2 border rounded mx-0 my-2")
+                                ], className="col-lg-3 col-sm-6 col-12 d-flex justify-content-center"),
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div(["Granularity & Units"]),
+                                        dcc.Dropdown(
+                                            id="dataframe-picker",
+                                            options=[
+                                                {'label': '5-Min', 'value': 'fivemindemand'},
+                                                {'label': 'Hourly', 'value': 'hourlydemand'},
+                                                {'label': 'Daily', 'value': "dailydemand"},
+                                                {'label': 'Monthly', 'value': 'monthlydemand'}
+                                            ],
+                                            value='hourlydemand',  # default value
+                                            clearable=False,
+                                            searchable=False,
+                                            className="py-1"
+                                        ),
+                                        dcc.Dropdown(
+                                            id="quantity-picker",
+                                            options=[
+                                                {'label': 'Energy Demand',
+                                                'value': 'energy_demand_kWh'},
+                                                {'label': 'Average Power Demand',
+                                                'value': 'avg_power_demand_W'},
+                                                {'label': 'Peak Power Demand',
+                                                'value': 'peak_power_W'}
+                                            ],
+                                            value='energy_demand_kWh',  # default value
+                                            clearable=False,
+                                            searchable=False,
+                                            className="py-1"
+                                        ),
+                                    ], className="d-flex flex-column px-2 py-2 border rounded mx-0 my-2")
+                                ], className="col-lg-3 col-sm-6 col-4 d-flex justify-content-center"),
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div("Jump to..."),
+                                        html.Div([
+                                            html.Button( "Last 7 Days", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_last_seven_days_btn"), 
+                                            html.Button( "This Month", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_month_btn"),
+                                            html.Button( "YTD", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_year_btn"),
+                                            html.Button( "All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_alltime_btn")
+                                        ], className="gap-2 d-block"),
+                                    ], className="d-flex flex-column px-2 py-2 border rounded mx-0 my-2")
+                                ], className="col-lg-3 col-sm-6 col-4 d-flex justify-content-center"),
+                                dbc.Col([ 
+                                    html.Div([
+                                        html.Div(["Toggle Forecasts"]),
+                                        dmc.Switch( size="md", radius="lg", checked=False, id="toggle-forecasts",),
+                                        html.Div(["Toggle Histograms"]),
+                                        dmc.Switch( size="md", radius="lg", checked=True, id="toggle-histograms",),
+                                    ], className="justify-content-center align-items-center flex-column px-2 py-2 border rounded mx-0 my-2")
+                                ], className="col-lg-3 col-sm-6 col-4 d-flex justify-content-center")
+                            ])
+                        ], fluid=True),
+                    ], id="tab-one-settings-collapse", is_open=False),
+                    ### --> <-- ###
+
+                    ### --> Tab One Main Graphs <-- ###
+                    html.Div([            
+                        dbc.Container([
+                            dbc.Row([
+                                dbc.Col([
+                                    html.Div([
+                                        dcc.Loading([
+                                            dcc.Graph(
+                                                id="time-series-plot",
+                                                style={"height": "70vh"},
+                                                config={
+                                                    "displaylogo": False,
+                                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                                },
+                                                className="p-1"
+                                            ),
+                                        ])
+                                    ], className="border rounded shadow")
+                                ], className="col-lg-9 col-12 px-2 flex-grow-1"),
+                                dbc.Col([
+                                    html.Div([
+                                        dcc.Graph(
+                                            id="hour-histogram",
+                                            style={"height": "35vh"},
+                                            config={
+                                                "displaylogo": False
+                                            },
+                                            className="p-1"
+                                        ),
+                                        dcc.Graph(
+                                            id="day-histogram",
+                                            style={"height": "35vh"},
+                                            config={
+                                                "displaylogo": False
+                                            },
+                                            className="p-1"
+                                        )
+                                    ], className="d-flex flex-column border rounded shadow")
+                                ], className="col-lg-3 col-12 px-2", id="hover-histogram-col")
+                            ])
+                        ], className="mt-2", fluid=True),
+                    ],),
+                ], className="col-12 col-lg-10"),
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1")
+            ]),
+        ], fluid=True)
     ])
 
 tab_two_content = \
     html.Div([
-        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded",
-                    id="tab-two-open-settings-btn"),
-        dbc.Collapse([
-            dbc.Container([
-                dbc.Row([
-                    dbc.Col([
-                        html.Div([
-                            html.Div("Date Picker"),
-                            dcc.DatePickerRange(
-                                id="cumulative-date-picker",
-                                clearable=True,
-                                start_date_placeholder_text="mm/dd/yyyy",
-                                end_date_placeholder_text="mm/dd/yyyy",
-                                with_portal=False,
-                            ),
-                        ], className="d-inline-flex flex-column px-2 py-2 border rounded mx-2 my-2"),
-                    ], className="col-md-3 col-sm-12"),
-                    dbc.Col([
-                        html.Div([
-                            html.Div("Graph Picker"),
-                            dcc.Dropdown(
-                                id="cumulative-graph-picker",
-                                options=[
-                                    {"label": "Cumulative Energy Demand",
-                                        "value": "cumulative-energy-delivered"},
-                                    {"label": "Cumulative Number of Unique Users",
-                                        "value": "cumulative-num-users"},
-                                    {"label": "Cumulative Energy Consumption by Vehicle Model",
-                                        "value": "cumulative-vehicle-model-energy"},
-                                ],
-                                value="cumulative-energy-delivered",
-                                clearable=False,
-                                searchable=False,
-                            )
-                        ], className="d-inline-flex flex-column px-2 py-2 border rounded mx-2 my-2"),
-                    ], className="col-md-3 col-sm-12")
-                ], className="justify-content-start"),
-            ], fluid=True),
-        ], id="tab-two-settings-collapse", is_open=False),
-        dcc.Loading([
-            dcc.Graph(
-                id="cumulative-graph",
-                config={
-                    "displaylogo": False
-                },
-                className="vh-50 border m-2 p-1 border border-dark rounded"
-            ),
-        ])
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1"),
+                dbc.Col([
+                    html.Div([
+                        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 rounded", id="tab-two-open-settings-btn"),
+                    ], className="d-inline-block"),
+                    dbc.Collapse([
+                        dbc.Container([
+                            dbc.Row([
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div(["Date Picker"]),
+                                        dcc.DatePickerRange(
+                                            id="cumulative-date-picker",
+                                            clearable=True,
+                                            start_date_placeholder_text="mm/dd/yyyy",
+                                            end_date_placeholder_text="mm/dd/yyyy",
+                                            with_portal=False,
+                                        ),
+                                    ], className="d-flex flex-column px-2 py-2 border rounded mx-0 my-2"),
+                                ], className="col-6 d-flex justify-content-center"),
+                                dbc.Col([
+                                    html.Div([
+                                        html.Div(["Graph Picker"]),
+                                        dcc.Dropdown(
+                                            id="cumulative-graph-picker",
+                                            options=[
+                                                {"label": "Cumulative Energy Demand", "value": "cumulative-energy-delivered"},
+                                                {"label": "Cumulative Number of Unique Users", "value": "cumulative-num-users"},
+                                                {"label": "Cumulative Energy Consumption\n by Vehicle Model", "value": "cumulative-vehicle-model-energy"},
+                                            ],
+                                            value="cumulative-energy-delivered",
+                                            clearable=False,
+                                            searchable=False,
+                                        )
+                                    ], className="d-flex flex-column px-2 py-2 border rounded mx-0 my-2"),
+                                ], className="col-6 d-flex justify-content-center")
+                            ]),
+                        ], fluid=True),
+                    ], id="tab-two-settings-collapse", is_open=False),
+                    html.Div([
+                        dbc.Container([
+                            html.Div([
+                                dcc.Loading([
+                                    dcc.Graph(
+                                        id="cumulative-graph",
+                                        style={"height": "70vh"},
+                                        config={
+                                            "displaylogo": False
+                                        },
+                                        className="p-1"
+                                    ),
+                                ])
+                            ], className="border rounded shadow")
+                        ], className="mt-2", fluid=True)
+                    ],),
+                ], className="col-12 col-lg-10"),
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1")
+            ])
+        ], fluid=True)
     ])
 
 tab_three_content = \
     html.Div([
-        dcc.Graph(
-            id="sched-vs-reg-scatter",
-            config={
-                "displaylogo": False
-            },
-            className="vh-50 border m-2 p-1 border border-dark rounded"
-        ),
-    ],)
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1"),
+                dbc.Col([
+                    html.Div([
+                        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 rounded", id="tab-three-open-settings-btn"),
+                    ], className="d-inline-block"),
+                    dbc.Collapse([
+                        dbc.Container([
+                        ], fluid=True),
+                    ], id="tab-three-settings-collapse", is_open=False),
+                    html.Div([
+                        dbc.Container([
+                            html.Div([
+                                dcc.Loading([
+                                    dcc.Graph(
+                                        id="sched-vs-reg-scatter",
+                                        style={"height": "70vh"},
+                                        config={
+                                            "displaylogo": False
+                                        },
+                                        className="p-1"
+                                    ),
+                                ])
+                            ], className="border rounded shadow")
+                        ], className="mt-2", fluid=True)
+                    ],),
+                ], className="col-12 col-lg-10"),
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1")
+            ])
+        ], fluid=True)
+    ])
 
 layout = \
     dbc.Tabs([
         dbc.Tab(tab_one_content, label="Demand Analytics"),
         dbc.Tab(tab_two_content, label="Cumulative Demand"),
         dbc.Tab(tab_three_content, label="Choice Analytics")
-    ], className="pt-1")
+    ], className="my-3")
 
 
 # update main time series callback
@@ -220,14 +307,12 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     # load data
     data = get_chunks(granularity)
     # plot main time series
-    fig = pltf.PlotMainTimeSeries.plot_main_time_series(
-        data, granularity, quantity, start_date, end_date)
+    fig = pltf.PlotMainTimeSeries.plot_main_time_series(data, granularity, quantity, start_date, end_date)
 
     # plot predictions (if supported)
     if forecasts and granularity != "fivemindemand" and granularity != "monthlydemand":
         forecast_df = prediction_to_run(granularity)
-        fig = pltf.PlotForecasts.plot_forecasts(
-            fig, forecast_df, quantity, granularity)
+        fig = pltf.PlotForecasts.plot_forecasts(fig, forecast_df, quantity, granularity)
 
     return fig
 
@@ -249,21 +334,20 @@ def display_histogram_hover(hoverData, quantity, granularity):
     # load data
     hourlydemand = get_chunks("hourlydemand")
     dailydemand = get_chunks("dailydemand")
+    # hourlydemand = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
+    # dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
 
     # create hover histograms
     if granularity == "dailydemand":
-        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
-            hoverData, dailydemand, quantity)
+        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(hoverData, dailydemand, quantity)
         return day_hist, pltf.PlotHoverHistogram.empty_histogram_figure()
 
     elif granularity == "monthlydemand":
         return pltf.PlotHoverHistogram.empty_histogram_figure(), pltf.PlotHoverHistogram.empty_histogram_figure()
 
     else:
-        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(
-            hoverData, dailydemand, quantity)
-        hour_hist = pltf.PlotHoverHistogram.plot_hour_hover_histogram(
-            hoverData, hourlydemand, quantity)
+        day_hist = pltf.PlotHoverHistogram.plot_day_hover_histogram(hoverData, dailydemand, quantity)
+        hour_hist = pltf.PlotHoverHistogram.plot_hour_hover_histogram(hoverData, hourlydemand, quantity)
         return day_hist, hour_hist
 
 
@@ -310,7 +394,7 @@ def jump_to_alltime(button_press):
     return None, None
 
 
-# toggle settings collapse
+# toggle settings collapse one
 @dash.callback(
     Output("tab-one-settings-collapse", "is_open"),
     Input("tab-one-open-settings-btn", "n_clicks"),
@@ -322,13 +406,24 @@ def toggle_tab_one_collapse(button_press, is_open):
     return is_open
 
 
-# toggle settings collapse
+# toggle settings collapse two
 @dash.callback(
     Output("tab-two-settings-collapse", "is_open"),
     Input("tab-two-open-settings-btn", "n_clicks"),
     State("tab-two-settings-collapse", "is_open"),
 )
 def toggle_tab_two_collapse(button_press, is_open):
+    if button_press:
+        return not is_open
+    return is_open
+
+# toggle settings collapse three
+@dash.callback(
+    Output("tab-three-settings-collapse", "is_open"),
+    Input("tab-three-open-settings-btn", "n_clicks"),
+    State("tab-three-settings-collapse", "is_open"),
+)
+def toggle_tab_three_collapse(button_press, is_open):
     if button_press:
         return not is_open
     return is_open
@@ -353,7 +448,7 @@ def display_cumulative_graph(start_date, end_date, value):
     Output("sched-vs-reg-scatter", "figure"),
     Input("data_refresh_signal", "data")
 )
-def display_cumulative_num_users(signal):
+def display_reg_vs_sched_scatter(signal):
     # load data
     data = get_chunks("raw_data")
     # plot figure
@@ -362,65 +457,10 @@ def display_cumulative_num_users(signal):
 
 
 @dash.callback(
-    Output("main-ts-div", "children"),
+    Output("hover-histogram-col", "style"),
     Input("toggle-histograms", "checked")
 )
 def toggle_histograms(checked):
-    if checked:  # main ts w/ histograms
-        return (
-            dbc.Container([
-                dbc.Row([
-                    dbc.Col([
-                        dcc.Loading([
-                            dcc.Graph(
-                                id="time-series-plot",
-                                style={"height": "600px"},
-                                config={
-                                    "displaylogo": False,
-                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                                },
-                                className="p-1 border border-dark rounded"
-                            ),
-                        ])
-                    ], className="col-md-9 col-sm-12 col-12 px-2"),
-                    dbc.Col([
-                        dcc.Graph(
-                            id="hour-histogram",
-                            style={"height": "300px"},
-                            config={
-                                "displaylogo": False
-                            },
-                            className="p-1 border border-dark border-bottom-0 rounded-top"
-                        ),
-                        dcc.Graph(
-                            id="day-histogram",
-                            style={"height": "300px"},
-                            config={
-                                "displaylogo": False
-                            },
-                            className="p-1 border border-dark border-top-0 rounded-bottom"
-                        )
-                    ], className="col-md-3 col-sm-12 col-12 px-2")
-                ])
-            ], className="mt-2", fluid=True),
-        )
-    else:  # main ts w/o histograms
-        return (
-            dbc.Container([
-                dbc.Row([
-                    dbc.Col([
-                        dcc.Loading([
-                            dcc.Graph(
-                                id="time-series-plot",
-                                style={"height": "600px"},
-                                config={
-                                    "displaylogo": False,
-                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                                },
-                                className="p-1 border border-dark rounded"
-                            ),
-                        ])
-                    ], className="col-12 px-2"),
-                ])
-            ], className="mt-2", fluid=True),
-        )
+    if checked: 
+        return {"display": "inline"}
+    return {"display": "none"}
