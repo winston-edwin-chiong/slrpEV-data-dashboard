@@ -1,10 +1,3 @@
-.Mac {
-    height: auto;
-    width: auto;
-    max-height: 450px;
-}
-
-
 /* Root */
 
 :root {
@@ -20,28 +13,17 @@
 }
 
 
-/* Today Options */
-
-#today-graph-picker {
-    width: 365px;
-    font-size: 80%;
-}
-
-
 /* Datatable */
 
 .ag-theme-alpine {
-    --ag-font-family: var(--bs-body-font-family) !important;
-    --ag-font-size: var(--bs-body-font-size) !important;
-}
-
-#raw-data-grid {
-    height: 800px !important;
+    --ag-font-family: var(--bs-body-font-family);
+    --ag-font-size: var(--bs-body-font-size);
 }
 
 .ag-cell, .ag-header-cell, #raw-data-grid {
     font-size: x-small;
 }
+
 
 
 /* Grid Options */
@@ -70,7 +52,7 @@
     cursor: pointer;
 }
 
-#toggle-histograms:checked, #toggle-forecasts:checked, #toggle-rolling-avg:checked {
+#toggle-histograms:checked, #toggle-forecasts:checked {
     background-color: var(--berkeley-blue);
     border-color: var(--berkeley-blue);
 }
@@ -107,26 +89,15 @@
 }
 
 
-/* Alltime Options */
+/* Options Dropdowns */
 
-#dataframe-picker, #quantity-picker {
-    width: 140px;
-    font-size: 10px;
-}
-
-#cumulative-graph-picker {
-    width: 200px;
+#dataframe-picker, #quantity-picker, #cumulative-graph-picker, #today-graph-picker {
     font-size: 10px;
 }
 
 /* Medium devices (tablets, 768px and up) */
 @media screen and (min-width: 768px) {
-    #dataframe-picker, #quantity-picker {
-        width: 200px;
-        font-size: 12px;
-    }
-    #cumulative-graph-picker {
-        width:250px;
+    #dataframe-picker, #quantity-picker, #cumulative-graph-picker, #today-graph-picker {
         font-size: 12px;
     }
 }

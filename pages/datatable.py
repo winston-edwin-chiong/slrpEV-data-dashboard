@@ -49,41 +49,53 @@ df = df[::-1]
 grid = dag.AgGrid(
     id="raw-data-grid",
     columnDefs=[{"field": i} for i in df.columns],
-    defaultColDef={"resizable": True, "sortable": True,
-                   "filter": True, "minWidth": 125},
+    defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
     columnSize="sizeToFit",
     rowModelType="infinite",
     dashGridOptions={
         "rowBuffer": 0,
         "maxBlocksInCache": 1,
         "rowSelection": "multiple",
-        "pagination": True
+        "pagination": True,
+        "paginationAutoPageSize": True
     },
+    style={"height": "70vh"},
+    className="shadow-sm"
 )
 
 layout = \
     html.Div([
-        html.Button(
-            "Options", className="btn btn-outline-primary btn-lg py-1 px-2 ms-2 mt-1 rounded", id="grid-settings-btn"),
-        dbc.Collapse([
-            html.Div([
-                html.Div("Select Columns"),
-                html.Button(
-                    "Reset Columns", className="btn btn-outline-secondary btn-sm py-1 px-2 ms-2 mt-1 rounded", id="reset-btn"),
-                dcc.Dropdown(
-                    id='data-column-dropdown',
-                    options=[{'label': col, 'value': col}
-                             for col in df.columns],
-                    multi=True,
-                    value=[option["value"] for option in [
-                        {'label': col, 'value': col} for col in df.columns]],
-                    className='m-2',
-                )
-            ], className="px-2 py-2 border rounded mx-2 my-2")
-        ], id="grid-settings-collapse", is_open=False),
-        html.Div([
-            grid,
-        ], className="p-3")
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1"),
+                dbc.Col([
+                    html.Div([
+                        html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 rounded mt-3 mb-1", id="grid-settings-btn"), 
+                    ], className="d-inline-block"),
+                    dbc.Collapse([
+                        html.Div([
+                            html.Div(["Select Columns"]),
+                            html.Button("Reset Columns", className="btn btn-outline-secondary btn-sm py-1 px-2 ms-2 mt-1 rounded", id="reset-btn"),
+                            dcc.Dropdown(
+                                id='data-column-dropdown',
+                                options=[{'label': col, 'value': col} for col in df.columns],
+                                multi=True,
+                                value=[option["value"] for option in [{'label': col, 'value': col} for col in df.columns]],
+                                className='m-2',
+                            )
+                        ], className="px-2 py-2 border rounded mx-2 my-2")
+                    ], id="grid-settings-collapse", is_open=False),
+                    html.Div([
+                        grid,
+                    ], className="p-3"),
+                ], className="col-12 col-lg-10"),
+                dbc.Col([
+                    html.Div([])
+                ], className="col-0 col-lg-1")
+            ])
+        ], fluid=True),
     ])
 
 

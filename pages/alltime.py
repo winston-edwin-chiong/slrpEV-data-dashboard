@@ -217,7 +217,7 @@ tab_two_content = \
                                             clearable=False,
                                             searchable=False,
                                         )
-                                    ], className="d-flex flex-column px-2 py-2 border rounded mx-0 my-2"),
+                                    ], className="w-100 d-flex flex-column px-2 py-2 border rounded mx-0 my-2"),
                                 ], className="col-6 d-flex justify-content-center")
                             ]),
                         ], fluid=True),
@@ -434,9 +434,10 @@ def toggle_tab_three_collapse(button_press, is_open):
     Output("cumulative-graph", "figure"),
     Input("cumulative-date-picker", "start_date"),
     Input("cumulative-date-picker", "end_date"),
-    Input("cumulative-graph-picker", "value")
+    Input("cumulative-graph-picker", "value"),
+    Input("data_refresh_signal", "data"),
 )
-def display_cumulative_graph(start_date, end_date, value):
+def display_cumulative_graph(start_date, end_date, value, data_signal):
     # load data
     data = get_chunks("raw_data")
     # plot figure
@@ -448,14 +449,14 @@ def display_cumulative_graph(start_date, end_date, value):
     Output("sched-vs-reg-scatter", "figure"),
     Input("data_refresh_signal", "data")
 )
-def display_reg_vs_sched_scatter(signal):
+def display_reg_vs_sched_scatter(data_signal):
     # load data
     data = get_chunks("raw_data")
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data)
     return fig
 
-
+# hide histograms
 @dash.callback(
     Output("hover-histogram-col", "style"),
     Input("toggle-histograms", "checked")

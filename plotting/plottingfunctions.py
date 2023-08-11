@@ -171,9 +171,76 @@ class PlotDailySessions:
         )
         return fig
 
+    @classmethod
+    def plot_daily(cls, df: pd.DataFrame, quantity: str, yesterday: bool, fivemindemand: pd.DataFrame, daily_forecasts: pd.DataFrame, forecast: bool) -> go.Figure:
+        if quantity == "today-aggregate-power":
+            if len(df) == 0:
+                return cls.empty_session_figure()
+
+            fig = go.Figure()
+
+            for dcosId in df["dcosId"].unique():
+                fig.add_trace(
+                    go.Bar(
+                        x=df[df["dcosId"] == dcosId]["Time"],
+                        y=df[df["dcosId"] == dcosId]["Power (W)"],
+                        customdata=df[df["dcosId"] == dcosId][[
+                            "vehicle_model", "choice", "userId"]],
+                        name="User ID: " + df[df["dcosId"]
+                                            == dcosId]["userId"].iloc[0],
+                        offsetgroup=1,
+                        hovertemplate="<br>Date: %{x}" +
+                        "<br>Power: %{y} Watts" +
+                        "<br>Vehicle Model: %{customdata[0]}" +
+                        "<br>Choice: %{customdata[1]}",
+                        hoverlabel={"font":{"size":10}},
+                    )
+                )
+            fig.update_layout(
+                {
+                    "title": "Today's Sessions",
+                    "xaxis_title": "Time",
+                    "yaxis_title": "Power (W)",
+                    "barmode": "stack",
+                    "showlegend": True,
+                    "xaxis_range": [datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
+                }
+            )
+
+            if yesterday:
+                fig = cls.plot_yesterday(fig, fivemindemand)
+        
+            if forecast:
+                fig = cls.plot_today_forecast(fig, daily_forecasts)
+
+            return fig
+
+        elif quantity == "today-energy-dist":
+            if len(df) == 0:
+                return cls.empty_session_figure()
+
+            df = df[["dcosId", "cumEnergy_Wh", "vehicle_model"]
+                    ].groupby("dcosId").first().copy()
+
+            fig = go.Figure(data=[go.Pie(
+                labels=df["vehicle_model"],
+                values=df["cumEnergy_Wh"]/1000,
+                hole=0.6,
+                hovertemplate="<extra></extra>" +
+                "Vehicle Model: %{label}" +
+                "<br>Energy Consumed Today: %{value} kWh")
+            ]
+            )
+
+            fig.update_layout(
+                title_text=f'Total Energy Delivered Today: {df["cumEnergy_Wh"].sum(axis=0) / 1000} kWh',
+            )
+            return fig
+
+
 
     @classmethod
-    def plot_daily_time_series(cls, df: pd.DataFrame) -> go.Figure:
+    def plot_daily_time_series(cls, df: pd.DataFrame, ) -> go.Figure:
 
         if len(df) == 0:
             return cls.empty_session_figure()
