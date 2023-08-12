@@ -11,18 +11,7 @@ from sklearn.model_selection import train_test_split
 class CreateHourlyForecasts:
 
     # connect to Redis
-    # redis_client = redis.Redis(host='localhost', port=6360)
-
-    # redis_client = redis.Redis(
-    #     host='redis-11349.c60.us-west-1-2.ec2.cloud.redislabs.com',
-    #     port=11349,
-    #     username="default",
-    #     password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2',
-    #     socket_keepalive=True,)
-    redis_client = redis.Redis(
-        host='redis-10912.c53.west-us.azure.cloud.redislabs.com',
-        port=10912,
-        password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2')
+    redis_client = redis.Redis(host='localhost', port=6360)
 
     def __init__():
         pass

@@ -9,16 +9,10 @@ import dash_ag_grid as dag
 
 dash.register_page(__name__, path="/data")
 
-# redis_client = redis.Redis(
-#     host='localhost',
-#     port=6360,
-# )
-
-
 redis_client = redis.Redis(
-  host='redis-10912.c53.west-us.azure.cloud.redislabs.com',
-  port=10912,
-  password='gnfYJxa4j7KG9tNcsLqRyq8aQ4Bwgzu2')
+    host='localhost',
+    port=6360,
+)
 
 def get_chunks(name, chunk_size=30):
     deserialized_chunks = []
@@ -60,16 +54,19 @@ grid = dag.AgGrid(
         "paginationAutoPageSize": True
     },
     style={"height": "70vh"},
-    className="shadow-sm"
 )
 
 layout = \
     html.Div([
         dbc.Container([
             dbc.Row([
+                ### --> Left Gutter <-- ###
                 dbc.Col([
                     html.Div([])
                 ], className="col-0 col-lg-1"),
+                ### --> <-- ###
+
+                ### --> Main Content <-- ###
                 dbc.Col([
                     html.Div([
                         html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 rounded mt-3 mb-1", id="grid-settings-btn"), 
@@ -83,17 +80,23 @@ layout = \
                                 options=[{'label': col, 'value': col} for col in df.columns],
                                 multi=True,
                                 value=[option["value"] for option in [{'label': col, 'value': col} for col in df.columns]],
-                                className='m-2',
+                                className='dbc m-2',
                             )
                         ], className="px-2 py-2 border rounded mx-2 my-2")
                     ], id="grid-settings-collapse", is_open=False),
+                    ### --> Grid <-- ###
                     html.Div([
                         grid,
-                    ], className="p-3"),
+                    ], className="m-3 mt-2 shadow-sm"),
+                    ### --> <-- ###
                 ], className="col-12 col-lg-10"),
+                ### --> <-- ###
+
+                ### --> Right Gutter <-- ###
                 dbc.Col([
                     html.Div([])
                 ], className="col-0 col-lg-1")
+                ### --> <-- ###
             ])
         ], fluid=True),
     ])

@@ -1,99 +1,22 @@
 /* Root */
-
 :root {
     --berkeley-blue: rgba(0, 50, 98, 1);
   }
 
-
-
-/* Timers */
-
-#last_updated_timer, #last_validated_timer {
-    display: none;
-}
-
-
 /* Datatable */
-
 .ag-theme-alpine {
-    --ag-font-family: var(--bs-body-font-family);
-    --ag-font-size: var(--bs-body-font-size);
+    --ag-font-family: var(--bs-body-font-family) !important;
+    --ag-font-size: var(--bs-body-font-size) !important;
 }
-
 .ag-cell, .ag-header-cell, #raw-data-grid {
-    font-size: x-small;
+    font-size: x-small !important;
 }
-
-
-
-/* Grid Options */
-
-.Select-control {
-    padding-top: 7px;
-}
-
-.Select--multi .Select-value {
-    background-color: rgba(0, 50, 98, 0.15);
-    border: 1px solid rgba(0, 50, 98, 0.25);
-    color: rgba(0, 50, 98, 1);
-}
-
-.Select--multi .Select-value-icon {
-    border-right: 1px solid rgba(0, 50, 98, 0.25);
-}
-
-.Select--multi .Select-value-icon:focus, .Select--multi .Select-value-icon:hover {
-    background-color: rgba(0, 50, 98, 0.08);
-    color: rgba(0, 50, 98, 1);
-}
-
-
-#toggle-forecasts:hover, #toggle-histograms:hover{
-    cursor: pointer;
-}
-
-#toggle-histograms:checked, #toggle-forecasts:checked {
-    background-color: var(--berkeley-blue);
-    border-color: var(--berkeley-blue);
-}
-
-
-
-/* Calendar Element */
-
-.CalendarDay__selected {
-    background: var(--berkeley-blue) !important;
-    border: 1px double #15284B !important;
-}
-
-
-.CalendarDay__selected:active, .CalendarDay__selected:hover {
-    background: var(--berkeley-blue) !important;
-    border: 1px double #15284B !important;
-}
-
-.CalendarDay__selected_span {
-    background: var(--berkeley-blue) !important;
-    opacity: 50%;
-    border: 1px double var(--berkeley-blue) !important;
-}
-
-.CalendarDay__selected_span:hover {
-    background: var(--berkeley-blue) !important;
-    opacity: 100% !important;
-    border: 1px double var(--berkeley-blue) !important; 
-}
-
-.DateInput_input__focused {
-    border-bottom: 2px solid var(--berkeley-blue) !important;
-}
-
 
 /* Options Dropdowns */
-
 #dataframe-picker, #quantity-picker, #cumulative-graph-picker, #today-graph-picker {
     font-size: 10px;
 }
+
 
 /* Medium devices (tablets, 768px and up) */
 @media screen and (min-width: 768px) {
