@@ -151,7 +151,7 @@ tab_one_content = \
                                             ),
                                         ], className="dbc")
                                     ], className="border rounded shadow")
-                                ], className="col-lg-9 col-12 px-2 flex-grow-1"),
+                                ], className="col-xl-9 col-12 px-2 flex-grow-1"),
                                 dbc.Col([
                                     html.Div([
                                         dcc.Graph(
@@ -171,7 +171,7 @@ tab_one_content = \
                                             className="p-1"
                                         )
                                     ], className="d-flex flex-column border rounded shadow")
-                                ], className="col-lg-3 col-12 px-2", id="hover-histogram-col")
+                                ], className="col-xl-3 col-12 px-2", id="hover-histogram-col")
                             ])
                         ], className="mt-2", fluid=True),
                     ],),

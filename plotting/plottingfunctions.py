@@ -186,10 +186,8 @@ class PlotDaily:
                 go.Bar(
                     x=df[df["dcosId"] == dcosId]["Time"],
                     y=df[df["dcosId"] == dcosId]["Power (W)"],
-                    customdata=df[df["dcosId"] == dcosId][[
-                        "vehicle_model", "choice", "userId"]],
-                    name="User ID: " + df[df["dcosId"]
-                                        == dcosId]["userId"].iloc[0],
+                    customdata=df[df["dcosId"] == dcosId][["vehicle_model", "choice", "userId"]],
+                    name="User ID: " + df[df["dcosId"] == dcosId]["userId"].iloc[0],
                     offsetgroup=1,
                     hovertemplate="<br>Date: %{x}" +
                     "<br>Power: %{y} Watts" +
@@ -208,7 +206,7 @@ class PlotDaily:
                     "xaxis_range": [datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
                     "xaxis_autorange": True
                 },
-            template=template_from_url(theme)        
+                template=template_from_url(theme)        
             )
 
         if yesterday:
@@ -277,7 +275,7 @@ class PlotDaily:
                 line_dash="dot",
                 annotation_text=f"Peak Power Forecast: {round(peak, 1)} W"
             )
-            return fig
+        return fig
 
 
     @staticmethod
@@ -663,10 +661,10 @@ class PlotSchedVsReg:
                          color="choice", 
                          size="counts", 
                          size_max=100,
-                         labels={"choice": "Choice"},
+                         custom_data=["choice"],
                          template=template_from_url(theme)  
                          )
-        fig.update_traces(hovertemplate="Scheduled ¢/Hr: %{x}<br>Regular ¢/Hr: %{y}<br>Count: %{marker.size:,}<br>Choice: %{text}<extra></extra>", text=df['choice'])
+        fig.update_traces(hovertemplate="Scheduled ¢/Hr: %{x}<br>Regular ¢/Hr: %{y}<br>Count: %{marker.size:,}<br>Choice: %{customdata}<extra></extra>")
         fig.update_layout(
             title="Choice On Different Price / Charge Offerings",
             xaxis_title="REGULAR PRICE (cents/hour)",

@@ -4,12 +4,10 @@
   }
 
 /* Datatable */
-.ag-theme-alpine {
+.ag-theme-balham, .ag-theme-balham-dark, .ag-theme-alpine, .ag-theme-alpine-dark {
     --ag-font-family: var(--bs-body-font-family) !important;
-    --ag-font-size: var(--bs-body-font-size) !important;
-}
-.ag-cell, .ag-header-cell, #raw-data-grid {
-    font-size: x-small !important;
+    /* --ag-font-size: var(--bs-body-font-size) !important; */
+    --ag-font-size: x-small !important;
 }
 
 /* Options Dropdowns */
@@ -17,10 +15,21 @@
     font-size: 10px;
 }
 
-
 /* Medium devices (tablets, 768px and up) */
 @media screen and (min-width: 768px) {
     #dataframe-picker, #quantity-picker, #cumulative-graph-picker, #today-graph-picker {
         font-size: 12px;
     }
 }
+
+/* Small devices (below 768px) */
+@media screen and (max-width: 768px) {
+    .navbar-flex {
+        display: flex;
+        flex-direction: column;
+        }
+    .theme-change-flex {
+        margin-left: 0.75rem;
+        margin-top: 0.5rem;
+        }
+    }

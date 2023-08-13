@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from datetime import datetime
 from dash import html, dcc, dash_table, Input, Output, State
+from dash_bootstrap_templates import ThemeChangerAIO
 import redis
 import pickle
 import dash_ag_grid as dag
@@ -54,6 +55,7 @@ grid = dag.AgGrid(
         "paginationAutoPageSize": True
     },
     style={"height": "70vh"},
+    className="ag-theme-balham",
 )
 
 layout = \
@@ -253,3 +255,13 @@ def update_data(signal):
     df = df[::-1]
 
     return df.to_dict("records")
+
+
+@dash.callback(
+    Output("raw-data-grid", "className"),
+    Input(ThemeChangerAIO.ids.radio("theme"), "value")
+)
+def update_grid_theme(theme):
+    if theme in [dbc.themes.DARKLY, dbc.themes.CYBORG, dbc.themes.SOLAR, dbc.themes.SUPERHERO, dbc.themes.VAPOR]:
+        return "ag-theme-balham-dark"
+    return "ag-theme-balham"

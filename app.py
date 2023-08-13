@@ -31,30 +31,30 @@ auth = dash_auth.BasicAuth(
 
 # theme options
 themes_options = [
-    {"label": "Bootstrap (OG.)", "value": dbc.themes.BOOTSTRAP},
-    {"label": "Cerulean", "value": dbc.themes.CERULEAN},
-    {"label": "Cosmo", "value": dbc.themes.COSMO},
-    {"label": "Cyborg", "value": dbc.themes.CYBORG},
-    {"label": "Darkly (Yes, it's dark.)", "value": dbc.themes.DARKLY},
-    {"label": "Journal", "value": dbc.themes.JOURNAL},
-    {"label": "Litera", "value": dbc.themes.LITERA},
-    {"label": "Lumen (3D!)", "value": dbc.themes.LUMEN},
-    {"label": "Lux (Winston's favorite.)", "value": dbc.themes.LUX},
-    {"label": "Materia", "value": dbc.themes.MATERIA},
-    {"label": "Minty (Sweet!)", "value": dbc.themes.MINTY},
-    {"label": "Morph", "value": dbc.themes.MORPH},
-    {"label": "Pulse", "value": dbc.themes.PULSE},
-    {"label": "Quartz (Gradients, gradients.)", "value": dbc.themes.QUARTZ},
-    {"label": "Sandstone (🏜️😎)", "value": dbc.themes.SANDSTONE},
-    {"label": "Simplex", "value": dbc.themes.SIMPLEX},
-    {"label": "Sketchy (Winston's 2nd favorite!)", "value": dbc.themes.SKETCHY},
-    {"label": "Spacelab", "value": dbc.themes.SPACELAB},
-    {"label": "Superhero", "value": dbc.themes.SUPERHERO},
-    {"label": "United", "value": dbc.themes.UNITED},
-    {"label": "Solar (Best dark.)", "value": dbc.themes.SOLAR},
-    {"label": "Vapor (2077!)", "value": dbc.themes.VAPOR},
-    {"label": "Yeti", "value": dbc.themes.YETI},
-    {"label": "Zephyr", "value": dbc.themes.ZEPHYR},
+    {"label": "Bootstrap, the OG 🚼", "value": dbc.themes.BOOTSTRAP},
+    {"label": "Cerulean, a calm blue sky ⛱️", "value": dbc.themes.CERULEAN},
+    {"label": "Cosmo, an ode to Metro 🗔", "value": dbc.themes.COSMO},
+    {"label": "Cyborg, jet black and electric blue ⚫+⚡🔵", "value": dbc.themes.CYBORG},
+    {"label": "Darkly, flatly in night mode 🌕", "value": dbc.themes.DARKLY},
+    {"label": "Journal, crisp like a new sheet of paper 📃", "value": dbc.themes.JOURNAL},
+    {"label": "Litera, the medium is the message 📰", "value": dbc.themes.LITERA},
+    {"label": "Lumen, light and shadow ☀️/🌑", "value": dbc.themes.LUMEN},
+    {"label": "Lux, a touch of class 👔", "value": dbc.themes.LUX},
+    {"label": "Materia, material is the metaphor 📖", "value": dbc.themes.MATERIA},
+    {"label": "Minty, a fresh feel 🍭", "value": dbc.themes.MINTY},
+    {"label": "Morph, a neomorphic layer 🧬", "value": dbc.themes.MORPH},
+    {"label": "Pulse, a trace of purple 💜", "value": dbc.themes.PULSE},
+    {"label": "Quartz, a glassmorphic layer 🪟", "value": dbc.themes.QUARTZ},
+    {"label": "Sandstone, a touch of warmth 🏜️", "value": dbc.themes.SANDSTONE},
+    {"label": "Simplex, mini and minimalist ▫️", "value": dbc.themes.SIMPLEX},
+    {"label": "Sketchy, a hand-drawn look for mockups and mirth ✏️", "value": dbc.themes.SKETCHY},
+    {"label": "Solar, a spin on Solarized 🌞", "value": dbc.themes.SOLAR},
+    {"label": "Spacelab, silvery and sleek 🥈", "value": dbc.themes.SPACELAB},
+    {"label": "Superhero, the brave and the blue 🫡", "value": dbc.themes.SUPERHERO},
+    {"label": "United, Ubuntu orange and unique font 🟠", "value": dbc.themes.UNITED},
+    {"label": "Vapor, a cyberpunk aesthetic 🤖", "value": dbc.themes.VAPOR},
+    {"label": "Yeti, a friendly foundation ❄️", "value": dbc.themes.YETI},
+    {"label": "Zephyr, breezy and beautiful 💨", "value": dbc.themes.ZEPHYR},
 ]
 
 # app layout
@@ -65,7 +65,7 @@ app.layout = \
         dbc.Navbar([
             dbc.Container([
                 html.A([
-                    html.Img(src="/assets/images/ChartLogo.png", height="40px", className="me-2")
+                    html.Img(src="/assets/images/chartlogo.png", height="40px", className="me-2")
                 ], href="/"),
                 dbc.NavbarToggler(id="navbar-toggler"),
                 dbc.Collapse([
@@ -93,9 +93,13 @@ app.layout = \
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
                         ]),
                         html.Div([
-                            ThemeChangerAIO(aio_id="theme", radio_props={"value":dbc.themes.LUX, "options":themes_options}, button_props={"className":"px-1 py-0 rounded"})
-                        ], className="d-flex justify-content-center align-items-center"),
-                    ], className="d-flex flex-grow-1 justify-content-between")
+                            ThemeChangerAIO(aio_id="theme", 
+                                            radio_props={"value":dbc.themes.LUX, "options":themes_options}, 
+                                            button_props={"className":"px-1 py-0 rounded"},
+                                            offcanvas_props={"title":"Select a theme!", "style":{"width":"25%"}}
+                                            )
+                        ], className="theme-change-flex d-flex justify-content-start align-items-center"),
+                    ], className="navbar-flex d-flex flex-grow-1 justify-content-between")
                 ], id="navbar-collapse", className="my-2", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
         ], className="py-2 nav-fill w-100 border-start-0 border-end-0 border-2 bg-secondary shadow-sm", expand="md"),
@@ -142,15 +146,15 @@ app.layout = \
         html.Footer([
             html.Div([
                 html.Div([
-                    html.Div(["Made with ❤️ & 🍵 by Winston"]),
-                    html.Div(["Icons by Bootstrap Icons and Icons8"]),
                     html.Div([
-                        html.A(html.I(className="bi bi-github m-1 text-dark"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
-                        html.A(html.I(className="bi bi-linkedin m-1 text-dark"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
+                        html.Div(["Made with ❤️ & 🍵 by Winston"]),
+                        html.A(html.I(className="bi bi-github ms-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
+                        html.A(html.I(className="bi bi-linkedin ms-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
                     ], className="d-flex"),
-                ], className="d-flex flex-column align-items-center")
+                    html.Div(["Icons by Bootstrap Icons and Icons8"])
+                ], className="d-flex flex-column justify-content-center align-items-center"),
             ], className="d-flex justify-content-center align-items-center")
-        ], className="fs-6 mt-5 p-2 bg-light shadow-top"),
+        ], className="fs-6 mt-5 p-2 bg-light text-dark shadow-top"),
         # --> <-- #
 
     ], className="d-flex flex-column min-vh-100")

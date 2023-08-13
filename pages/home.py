@@ -178,7 +178,7 @@ def update_today_homepage_cards(n):
     # filter data to just this month
     thismonthdemand = monthlydemand.loc[monthlydemand.index >= datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
 
-    # extract peak power
+    # extract peak power, convert to kW
     peak_power_float = thismonthdemand["peak_power_W"][0] / 1000
     peak_power = f'{peak_power_float:,}' + " kW"
 
