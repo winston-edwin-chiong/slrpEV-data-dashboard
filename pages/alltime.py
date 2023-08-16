@@ -102,7 +102,7 @@ tab_one_content = \
                                             className="dbc py-1"
                                         ),
                                     ], className="w-100 d-flex flex-column w-100 px-2 py-2 border rounded mx-0 my-2")
-                                ], className="col-lg-3 col-sm-6 col-4 d-flex"),
+                                ], className="col-lg-3 col-sm-6 col-12 d-flex"),
                                 dbc.Col([
                                     html.Div([
                                         html.Div("Jump to..."),
@@ -113,7 +113,7 @@ tab_one_content = \
                                             html.Button( "All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_alltime_btn")
                                         ], className="gap-2 d-block"),
                                     ], className="w-100 d-flex flex-column px-2 py-2 border rounded mx-0 my-2")
-                                ], className="col-lg-3 col-sm-6 col-4 d-flex"),
+                                ], className="col-lg-3 col-sm-6 col-12 d-flex"),
                                 dbc.Col([ 
                                     html.Div([
                                         html.Div(["Toggle Forecasts"]),
@@ -121,7 +121,7 @@ tab_one_content = \
                                         html.Div(["Toggle Histograms"]),
                                         dmc.Switch(size="md", radius="lg", checked=True, id="toggle-histograms", color="gray"),
                                     ], className="w-100 d-flex justify-content-center flex-column px-2 py-2 border rounded mx-0 my-2")
-                                ], className="col-lg-3 col-sm-6 col-4 d-flex")
+                                ], className="col-lg-3 col-sm-6 col-12 d-flex")
                             ])
                         ], fluid=True),
                     ], id="tab-one-settings-collapse", is_open=False),
