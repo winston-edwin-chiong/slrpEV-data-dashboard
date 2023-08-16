@@ -18,10 +18,10 @@ class CreateDailyForecasts:
     def run_daily_forecast(cls, df, best_params: dict):
 
         # existing_forecasts = pd.read_csv("forecastdata/dailyforecasts.csv", index_col="time", parse_dates=True)
-        if not cls.r.get("daily_forecasts"):
-            existing_forecasts = pickle.loads(cls.r.get("daily_forecasts"))
-        else:
+        if cls.r.get("daily_forecasts") is None:
             existing_forecasts = pd.DataFrame()
+        else:
+            existing_forecasts = pickle.loads(cls.r.get("daily_forecasts"))
 
         new_forecasts = pd.DataFrame()
 
@@ -42,13 +42,14 @@ class CreateDailyForecasts:
 
         # append new forecasts existing set of forecasts
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1D").last()  # get more recent forecast
-        forecasts.to_csv("forecastdata/dailyforecasts.csv")
+        # forecasts.to_csv("../data/dailyforecasts.csv")
 
         return forecasts
 
     @classmethod
     def save_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
-        empty_df.to_csv("forecastdata/dailyforecasts.csv")
+        # empty_df.to_csv("../data/dailyforecasts.csv")
         cls.r.set("daily_forecasts", pickle.dumps(empty_df))
         return empty_df
+

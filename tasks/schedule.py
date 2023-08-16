@@ -1,5 +1,6 @@
 import logging
 import pickle
+import os
 from dotenv import load_dotenv
 from datetime import datetime
 from celery import Celery
@@ -18,7 +19,7 @@ load_dotenv()
 
 r = db.get_redis_connection()
 
-app = Celery("tasks", broker="redis://localhost:6360", broker_connection_retry_on_startup=True)
+app = Celery("tasks", broker=os.getenv("REDIS_URI"), broker_connection_retry_on_startup=True)
 
 app.conf.beat_schedule = {
     "fetch-clean-store-data": {

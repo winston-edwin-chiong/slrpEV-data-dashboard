@@ -24,20 +24,20 @@ class CreateHourlyForecasts:
         ])
         new_forecasts = hourly_forecast_pipeline.fit_transform(df)
         # existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)
-        if not cls.redis_client.get("hourly_forecasts"):
-            existing_forecasts = pickle.loads(cls.r.get("hourly_forecasts"))
-        else:
+        if cls.r.get("hourly_forecasts") is None:
             existing_forecasts = pd.DataFrame()
+        else:
+            existing_forecasts = pickle.loads(cls.r.get("hourly_forecasts"))
 
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1H").last()  # get more recent forecast
-        forecasts.to_csv("forecastdata/hourlyforecasts.csv")
+        # forecasts.to_csv("../data/hourlyforecasts.csv")
 
         return forecasts
 
     @classmethod
     def save_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
-        empty_df.to_csv("forecastdata/hourlyforecasts.csv")
+        # empty_df.to_csv("../data/hourlyforecasts.csv")
         cls.r.set("hourly_forecasts", pickle.dumps(empty_df))
         return empty_df
 
@@ -65,13 +65,11 @@ class kNNPredict(BaseEstimator, TransformerMixin):
             params = self.best_params.get(column)
 
             # create regressor
-            regressor = KNeighborsRegressor(
-                n_neighbors=params["best_n_neighbors"])
+            regressor = KNeighborsRegressor(n_neighbors=params["best_n_neighbors"])
 
             # isolate column, create features
             df = X[[column]].copy()
-            df = self.__create_lag_features(
-                df, params["best_depth"], col_name=column)
+            df = self.__create_lag_features(df, params["best_depth"], col_name=column)
 
             # split into training set and test set
             X_train, X_test, y_train, y_test = self.__train_test_split(
@@ -79,8 +77,7 @@ class kNNPredict(BaseEstimator, TransformerMixin):
 
             # train regressor and predict 24 hours ahead
             regressor.fit(X_train, y_train)
-            forecasts[column +
-                      "_predictions"] = regressor.predict(X_test).reshape(-1)
+            forecasts[column + "_predictions"] = regressor.predict(X_test).reshape(-1)
 
         return forecasts
 
@@ -113,8 +110,3 @@ class kNNPredict(BaseEstimator, TransformerMixin):
         )
         return X_train, X_test, y_train, y_test
 
-
-if __name__ == "__main__":
-    empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions",
-                            "peak_power_W_predictions"], index=pd.Index([], name="time"))
-    empty_df.to_csv("forecastdata/hourlyforecasts.csv")
