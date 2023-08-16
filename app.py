@@ -7,6 +7,7 @@ from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 from dash_bootstrap_templates import ThemeChangerAIO
+from db.utils import db
 
 
 # styles
@@ -14,19 +15,15 @@ dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
-server = app.server
 app.title = "slrpEV Dashboard"
 
-# connec to Redis
-redis_client = redis.Redis(
-    host='localhost',
-    port=6360,
-)
+# connect to Redis
+r = db.get_redis_connection()
 
 load_dotenv()
 auth = dash_auth.BasicAuth(
     app,
-    {os.getenv("dash_username"): os.getenv("dash_password")}
+    {os.getenv("DASH_USERNAME"): os.getenv("DASH_PASSWORD")}
 )
 
 # theme options
@@ -96,7 +93,7 @@ app.layout = \
                             ThemeChangerAIO(aio_id="theme", 
                                             radio_props={"value":dbc.themes.LUX, "options":themes_options}, 
                                             button_props={"className":"px-1 py-0 rounded"},
-                                            offcanvas_props={"title":"Select a theme!", "style":{"width":"25%"}}
+                                            offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}}
                                             )
                         ], className="theme-change-flex d-flex justify-content-start align-items-center"),
                     ], className="navbar-flex d-flex flex-grow-1 justify-content-between")
@@ -148,10 +145,12 @@ app.layout = \
                 html.Div([
                     html.Div([
                         html.Div(["Made with ❤️ & 🍵 by Winston"]),
-                        html.A(html.I(className="bi bi-github ms-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
+                    ]),
+                    html.Div(["Icons by Bootstrap Icons and Icons8"]),
+                    html.Div([
+                        html.A(html.I(className="bi bi-github me-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
                         html.A(html.I(className="bi bi-linkedin ms-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
-                    ], className="d-flex"),
-                    html.Div(["Icons by Bootstrap Icons and Icons8"])
+                    ], className="d-flex")
                 ], className="d-flex flex-column justify-content-center align-items-center"),
             ], className="d-flex justify-content-center align-items-center")
         ], className="fs-6 mt-5 p-2 bg-light text-dark shadow-top"),
@@ -184,7 +183,7 @@ def data_refresh_interval(n):
     This callback polls the Redis database at regular intervals for data refresh. 
     '''
     # update data refresh timestamp
-    last_updated = redis_client.get('last_updated_time').decode("utf-8")
+    last_updated = r.get('last_updated_time').decode("utf-8")
     return n, f"Data last updated at {last_updated}."
 
 
@@ -198,7 +197,7 @@ def CV_interval(n):
     This callback polls the Redis database at regular intervals for ML parameter refresh. 
     '''
     # update CV timestamp 
-    last_validated = redis_client.get("last_validated_time").decode("utf-8")
+    last_validated = r.get("last_validated_time").decode("utf-8")
     return n, f"Parameters last validated at {last_validated}." 
 
 # --> <-- #

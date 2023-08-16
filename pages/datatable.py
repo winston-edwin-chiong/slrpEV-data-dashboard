@@ -1,32 +1,19 @@
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
-from datetime import datetime
-from dash import html, dcc, dash_table, Input, Output, State
-from dash_bootstrap_templates import ThemeChangerAIO
 import redis
 import pickle
 import dash_ag_grid as dag
+from dash import html, dcc, Input, Output, State
+from dash_bootstrap_templates import ThemeChangerAIO
+from db.utils import db
 
 dash.register_page(__name__, path="/data")
 
-redis_client = redis.Redis(
-    host='localhost',
-    port=6360,
-)
-
-def get_chunks(name, chunk_size=30):
-    deserialized_chunks = []
-    for i in range(chunk_size):
-        serialized_chunk = redis_client.get(f"{name}_{i}")
-        chunk = pickle.loads(serialized_chunk)
-        deserialized_chunks.append(chunk)
-
-    result = pd.concat(deserialized_chunks)
-    return result
+r = db.get_redis_connection()
 
 # load data
-df = get_chunks("raw_data")
+df = db.get_chunks(r, "raw_data")
 
 # drop helper columns
 df = df.drop(
@@ -240,7 +227,7 @@ def toggle_grid_collapse(button_press, is_open):
 )
 def update_data(signal):
     # load data
-    df = get_chunks("raw_data")
+    df = db.get_chunks(r, "raw_data")
     # drop helper columns
     df = df.drop(
         columns=[

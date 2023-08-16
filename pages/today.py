@@ -7,20 +7,12 @@ from dash_bootstrap_templates import ThemeChangerAIO
 from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State
 from dash import html, dcc, Patch
-from tasks.schedule import redis_client
+from db.utils import db
 
 dash.register_page(__name__, path="/today")
 
 
-def get_chunks(name, chunk_size=30):
-    deserialized_chunks = []
-    for i in range(chunk_size):
-        serialized_chunk = redis_client.get(f"{name}_{i}")
-        chunk = pickle.loads(serialized_chunk)
-        deserialized_chunks.append(chunk)
-
-    result = pd.concat(deserialized_chunks)
-    return result
+r = db.get_redis_connection()
 
 layout = \
     html.Div([
@@ -143,7 +135,7 @@ def display_user_hover(hoverData, value):
     if hoverData is None or value != "today-aggregate-power":
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
-    data = get_chunks("raw_data")
+    data = db.get_chunks(r, "raw_data")
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
     # get user hover data
@@ -170,11 +162,11 @@ def display_user_hover(hoverData, value):
 )
 def display_today_graph(value, yesterday, forecast, data_signal, theme):
     # load data
-    data = get_chunks("todays_sessions")
+    data = db.get_chunks(r, "todays_sessions")
 
     if value == "today-aggregate-power":
-        fivemindemand = get_chunks("fivemindemand")
-        daily_forecasts = pickle.loads(redis_client.get("daily_forecasts"))
+        fivemindemand = db.get_chunks(r, "fivemindemand")
+        daily_forecasts = pickle.loads(r.get("daily_forecasts"))
         return pltf.PlotDaily.plot_daily_time_series(data, yesterday, fivemindemand, daily_forecasts, forecast, theme), {"display": "inline"}
 
     elif value == "today-energy-dist":

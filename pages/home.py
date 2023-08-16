@@ -1,26 +1,16 @@
 import dash
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 import pickle
 import pandas as pd
 from dash.dependencies import Output, Input, State
 from plotting import plottingfunctions as pltf
 from dash import html, dcc
-from tasks.schedule import redis_client
+from db.utils import db
 from datetime import datetime
 
+r = db.get_redis_connection()
 
-# --> Helper Functions <-- #
-
-def get_chunks(name, chunk_size=30):
-    deserialized_chunks = []
-    for i in range(chunk_size):
-        serialized_chunk = redis_client.get(f"{name}_{i}")
-        chunk = pickle.loads(serialized_chunk)
-        deserialized_chunks.append(chunk)
-
-    result = pd.concat(deserialized_chunks)
-    return result
+### --> Helper Functions <-- ###
 
 def calculate_pct_change(after, before):
     '''
@@ -170,10 +160,10 @@ layout = \
 )
 def update_today_homepage_cards(n):
     # load data
-    today = get_chunks("todays_sessions")
-    monthlydemand = get_chunks("monthlydemand")
-    dailydemand = get_chunks("dailydemand")
-    raw_data = get_chunks("raw_data")
+    today = db.get_chunks(r, "todays_sessions")
+    monthlydemand = db.get_chunks(r, "monthlydemand")
+    dailydemand = db.get_chunks(r, "dailydemand")
+    raw_data = db.get_chunks(r, "raw_data")
 
     # filter data to just this month
     thismonthdemand = monthlydemand.loc[monthlydemand.index >= datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
@@ -212,7 +202,7 @@ def update_today_homepage_cards(n):
 )
 def update_cum_homepage_cards(n):
     # load data
-    raw_data = get_chunks("raw_data")
+    raw_data = db.get_chunks(r, "raw_data")
 
     # calculate cumulative sessions
     cum_sessions_float = len(raw_data)

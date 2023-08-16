@@ -38,8 +38,7 @@ class CleanData:
             ]
         )
 
-        cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(
-            raw_data)
+        cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(raw_data)
         cleaned_dataframes["raw_data"] = pd.read_csv("data/raw_data.csv")
 
         return cleaned_dataframes

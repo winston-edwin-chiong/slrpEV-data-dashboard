@@ -1,9 +1,5 @@
 import logging
-import redis
 import pickle
-import numpy as np 
-import pandas as pd
-import os
 from dotenv import load_dotenv
 from datetime import datetime
 from celery import Celery
@@ -15,17 +11,14 @@ from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
 from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValidator
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
 from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
+from db.utils import db
 
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-redis_client = redis.Redis(
-    host='localhost',
-    port=6360,
-)
+r = db.get_redis_connection()
 
 app = Celery("tasks", broker="redis://localhost:6360", broker_connection_retry_on_startup=True)
-# app = Celery("tasks", broker=os.getenv("REDIS_URI"))
 
 app.conf.beat_schedule = {
     "fetch-clean-store-data": {
@@ -66,9 +59,9 @@ def query_data():
 
     logger.info("Serializiing data...")
     for key in cleaned_dataframes.keys():
-        send_chunks(cleaned_dataframes.get(key), key)
+        db.send_chunks(r, cleaned_dataframes.get(key), key)
 
-    redis_client.set("last_updated_time", datetime.now().strftime('%H:%M:%S'))
+    r.set("last_updated_time", datetime.now().strftime('%H:%M:%S'))
 
     logger.info("Done!")
 
@@ -76,14 +69,14 @@ def query_data():
 @app.task(name="forecast-daily")
 def forecast_daily():
     logger.info("Loading data...")
-    data = get_chunks("dailydemand")
+    data = db.get_chunks(r, "dailydemand")
 
     logger.info("Forecasting daily demand...")
-    best_params = pickle.loads(redis_client.get("daily_params"))
+    best_params = pickle.loads(r.get("daily_params"))
     forecasts = CreateDailyForecasts.run_daily_forecast(data, best_params)
 
     logger.info("Serializing data...")
-    redis_client.set("daily_forecasts", pickle.dumps(forecasts))
+    r.set("daily_forecasts", pickle.dumps(forecasts))
 
     logger.info("Done!")
 
@@ -91,14 +84,14 @@ def forecast_daily():
 @app.task(name="forecast-hourly")
 def forecast_hourly():
     logger.info("Loading data...")
-    data = get_chunks("hourlydemand")
+    data = db.get_chunks(r, "hourlydemand")
 
     logger.info("Forecasting hourly demand...")
-    best_params = pickle.loads(redis_client.get("hourly_params"))
+    best_params = pickle.loads(r.get("hourly_params"))
     forecasts = CreateHourlyForecasts.run_hourly_forecast(data, best_params)
 
     logger.info("Serializing data...")
-    redis_client.set("hourly_forecasts", pickle.dumps(forecasts))
+    r.set("hourly_forecasts", pickle.dumps(forecasts))
 
     logger.info("Done!")
 
@@ -106,13 +99,13 @@ def forecast_hourly():
 @app.task(name="update-daily-params")
 def update_daily_params():
     logger.info("Loading data...")
-    data = get_chunks("dailydemand")
+    data = db.get_chunks(r, "dailydemand")
 
     logger.info("Cross validating daily forecast parameters...")
     params = DailyCrossValidator.cross_validate(data)
 
     logger.info("Serializing data..")
-    redis_client.set("daily_params", pickle.dumps(params))
+    r.set("daily_params", pickle.dumps(params))
 
     logger.info("Clearing Forecasts...")
     CreateDailyForecasts.save_empty_prediction_df()
@@ -126,14 +119,13 @@ def update_daily_params():
 @app.task(name="update-hourly-params")
 def update_hourly_params():
     logger.info("Loading data...")
-    data = get_chunks("hourlydemand")
+    data = db.get_chunks(r, "hourlydemand")
 
     logger.info("Cross validating hourly forecast parameters...")
-    params = HourlyCrossValidator(
-        max_neighbors=25, max_depth=60).cross_validate(data)
+    params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data)
 
     logger.info("Serializing data...")
-    redis_client.set("hourly_params", pickle.dumps(params))
+    r.set("hourly_params", pickle.dumps(params))
 
     logger.info("Clearing Forecasts...")
     CreateHourlyForecasts.save_empty_prediction_df()
@@ -141,43 +133,24 @@ def update_hourly_params():
     logger.info("Forecasting hourly demand...")
     forecast_hourly()
 
-    redis_client.set("last_validated_time",
-                     datetime.now().strftime('%m/%d/%y %H:%M:%S'))
+    r.set("last_validated_time", datetime.now().strftime('%m/%d/%y %H:%M:%S'))
 
     logger.info("Done!")
 
 
 @beat_init.connect
 def run_startup_tasks(**kwargs):
-    if not redis_client.get("raw_data_0"):
+    if not r.get("raw_data_0"):
         query_data()
 
-    if not redis_client.get("daily_params"):
+    if not r.get("daily_params"):
         update_daily_params()
 
-    if not redis_client.get("hourly_params"):
+    if not r.get("hourly_params"):
         update_hourly_params()
 
-    if not redis_client.get("daily_forecasts"):
+    if not r.get("daily_forecasts"):
         forecast_daily()
 
-    if not redis_client.get("hourly_forecasts"):
+    if not r.get("hourly_forecasts"):
         forecast_hourly()
-
-
-def send_chunks(df, name, chunk_size=30):
-    chunks = np.array_split(df, chunk_size)
-
-    for i, chunk in enumerate(chunks):
-        serialized_chunk = pickle.dumps(chunk)  
-        redis_client.set(f"{name}_{i}", serialized_chunk)
-
-def get_chunks(name, chunk_size=30):
-    deserialized_chunks = []
-    for i in range(chunk_size):
-        serialized_chunk = redis_client.get(f"{name}_{i}")
-        chunk = pickle.loads(serialized_chunk)
-        deserialized_chunks.append(chunk)
-
-    result = pd.concat(deserialized_chunks)
-    return result

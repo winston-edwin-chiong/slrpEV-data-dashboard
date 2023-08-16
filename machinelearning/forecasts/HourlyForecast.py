@@ -1,17 +1,17 @@
 import numpy as np
 import pandas as pd
 import pickle
-import redis
 from sklearn.pipeline import Pipeline
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import train_test_split
+from db.utils import db
 
 
 class CreateHourlyForecasts:
 
     # connect to Redis
-    redis_client = redis.Redis(host='localhost', port=6360)
+    r = db.get_redis_connection()
 
     def __init__():
         pass
@@ -25,12 +25,11 @@ class CreateHourlyForecasts:
         new_forecasts = hourly_forecast_pipeline.fit_transform(df)
         # existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)
         if not cls.redis_client.get("hourly_forecasts"):
-            existing_forecasts = pickle.loads(cls.redis_client.get("hourly_forecasts"))
+            existing_forecasts = pickle.loads(cls.r.get("hourly_forecasts"))
         else:
             existing_forecasts = pd.DataFrame()
 
-        forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample(
-            "1H").last()  # get more recent forecast
+        forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1H").last()  # get more recent forecast
         forecasts.to_csv("forecastdata/hourlyforecasts.csv")
 
         return forecasts
@@ -39,7 +38,7 @@ class CreateHourlyForecasts:
     def save_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
         empty_df.to_csv("forecastdata/hourlyforecasts.csv")
-        cls.redis_client.set("hourly_forecasts", pickle.dumps(empty_df))
+        cls.r.set("hourly_forecasts", pickle.dumps(empty_df))
         return empty_df
 
 
@@ -97,8 +96,7 @@ class kNNPredict(BaseEstimator, TransformerMixin):
         df_with_lags = df.copy(deep=True)
         for lag_depth in np.arange(1, num_lag_depths+1):
             column = df_with_lags[col_name].shift(24*lag_depth)
-            df_with_lags = pd.concat(
-                [df_with_lags, column.rename("lag" + f"{lag_depth}")], axis=1)
+            df_with_lags = pd.concat([df_with_lags, column.rename("lag" + f"{lag_depth}")], axis=1)
         # only rows with NaN as features, NaN in true value column is OK
         return df_with_lags.dropna(subset=df_with_lags.columns.drop(col_name))
 

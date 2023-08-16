@@ -8,11 +8,13 @@ from plotting import plottingfunctions as pltf
 from datetime import timedelta, datetime
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
-from tasks.schedule import redis_client
+from db.utils import db
 
 dash.register_page(__name__, path="/alltime")
 
-###
+r = db.get_redis_connection()
+
+### --> Helper Functions <-- ###
 
 def get_last_days_datetime(n=7):
     current_time = pd.to_datetime("today") - timedelta(days=n)
@@ -24,23 +26,13 @@ def prediction_to_run(granularity):
     if granularity == "fivemindemand":
         return  # not yet supported
     elif granularity == "hourlydemand":
-        return pickle.loads(redis_client.get("hourly_forecasts"))
+        return pickle.loads(r.get("hourly_forecasts"))
     elif granularity == "dailydemand":
-        return pickle.loads(redis_client.get("daily_forecasts"))
+        return pickle.loads(r.get("daily_forecasts"))
     elif granularity == "monthlydemand":
         return  # not yet supported
     
-def get_chunks(name, chunk_size=30):
-    deserialized_chunks = []
-    for i in range(chunk_size):
-        serialized_chunk = redis_client.get(f"{name}_{i}")
-        chunk = pickle.loads(serialized_chunk)
-        deserialized_chunks.append(chunk)
-
-    result = pd.concat(deserialized_chunks)
-    return result
-
-###
+### --> <-- ###
 
 tab_one_content = \
     html.Div([
@@ -344,7 +336,7 @@ layout = \
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, theme):
     # load data
-    data = get_chunks(granularity)
+    data = db.get_chunks(r, granularity)
     # plot main time series
     fig = pltf.PlotMainTimeSeries.plot_main_time_series(data, granularity, quantity, start_date, end_date, theme)
 
@@ -372,8 +364,8 @@ def display_histogram_hover(hoverData, quantity, granularity, theme):
         return pltf.PlotHoverHistogram.default(theme), pltf.PlotHoverHistogram.default(theme)
 
     # load data
-    hourlydemand = get_chunks("hourlydemand")
-    dailydemand = get_chunks("dailydemand")
+    hourlydemand = db.get_chunks(r, "hourlydemand")
+    dailydemand = db.get_chunks(r, "dailydemand")
     # hourlydemand = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
     # dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
 
@@ -480,7 +472,7 @@ def toggle_tab_three_collapse(button_press, is_open):
 )
 def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
     # load data
-    data = get_chunks("raw_data")
+    data = db.get_chunks(r, "raw_data")
     # plot figure
     if value == "cumulative-energy-delivered":
         return pltf.PlotCumulatives.plot_cumulative_energy_delivered(data, start_date, end_date, theme)
@@ -498,7 +490,7 @@ def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
 )
 def display_reg_vs_sched_scatter(data_signal, theme):
     # load data
-    data = get_chunks("raw_data")
+    data = db.get_chunks(r, "raw_data")
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data, theme)
     return fig
