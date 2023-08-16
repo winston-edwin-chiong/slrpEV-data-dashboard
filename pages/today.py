@@ -78,7 +78,7 @@ layout = \
                                                 },
                                                 className="p-1"
                                             ),
-                                        ], className="dbc"),
+                                        ], type="graph", className="dbc"),
                                     ], className="border rounded shadow")
                                 ], className="col-md-10 col-12 px-2 flex flex-grow-1"),
                                 dbc.Col([
@@ -168,7 +168,7 @@ def display_today_graph(value, yesterday, forecast, data_signal, theme):
 
     if value == "today-aggregate-power":
         # fivemindemand = db.get_chunks(r, "fivemindemand")
-        fivemindemand = pd.read_csv("data/fivemindemand.csv")
+        fivemindemand = pd.read_csv("data/fivemindemand.csv", index_col="time", parse_dates=True)
         daily_forecasts = pickle.loads(r.get("daily_forecasts"))
         return pltf.PlotDaily.plot_daily_time_series(data, yesterday, fivemindemand, daily_forecasts, forecast, theme), {"display": "inline"}
 

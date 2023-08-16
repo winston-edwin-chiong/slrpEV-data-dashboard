@@ -82,10 +82,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Cumulative Energy Delivered", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-cum-kwh"),
-                            html.Div(className="my-3", id="homepage-cum-kwh-stats")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-cum-kwh"),
+                                html.Div(className="my-3", id="homepage-cum-kwh-stats")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -93,10 +95,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Energy Delivered Today", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-kwh"),
-                            html.Div(className="my-3", id="homepage-kwh-change")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-kwh"),
+                                html.Div(className="my-3", id="homepage-kwh-change")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -104,10 +108,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Cumulative E-Miles Delivered", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-cum-emiles"),
-                            html.Div(className="my-3", id="homepage-cum-emiles-stats")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-cum-emiles"),
+                                html.Div(className="my-3", id="homepage-cum-emiles-stats")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -115,10 +121,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Users Today", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-users"),
-                            html.Div(className="my-3", id="homepage-users-change")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-users"),
+                                html.Div(className="my-3", id="homepage-users-change")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -126,10 +134,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Cumulative Number of Sessions", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-cum-sessions"),
-                            html.Div(className="my-3", id="homepage-cum-sessions-stats")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-cum-sessions"),
+                                html.Div(className="my-3", id="homepage-cum-sessions-stats")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -137,10 +147,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Peak Power This Month", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-peak-power"),
-                            html.Div(className="my-3", id="homepage-peak-power-change")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-peak-power"),
+                                html.Div(className="my-3", id="homepage-peak-power-change")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
             ], className="row-cols-1 rows-cols-sm-2 gx-4 gy-4"),
