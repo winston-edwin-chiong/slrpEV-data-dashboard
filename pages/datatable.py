@@ -13,7 +13,8 @@ dash.register_page(__name__, path="/data")
 r = db.get_redis_connection()
 
 # load data
-df = db.get_chunks(r, "raw_data")
+# df = db.get_chunks(r, "raw_data")
+df = pd.read_csv("data/raw_data.csv")
 
 # drop helper columns
 df = df.drop(
@@ -227,7 +228,8 @@ def toggle_grid_collapse(button_press, is_open):
 )
 def update_data(signal):
     # load data
-    df = db.get_chunks(r, "raw_data")
+    # df = db.get_chunks(r, "raw_data")
+    df = pd.read_csv("data/raw_data.csv")
     # drop helper columns
     df = df.drop(
         columns=[

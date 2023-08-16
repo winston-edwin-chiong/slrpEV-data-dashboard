@@ -160,10 +160,14 @@ layout = \
 )
 def update_today_homepage_cards(n):
     # load data
-    today = db.get_chunks(r, "todays_sessions")
-    monthlydemand = db.get_chunks(r, "monthlydemand")
-    dailydemand = db.get_chunks(r, "dailydemand")
-    raw_data = db.get_chunks(r, "raw_data")
+    # today = db.get_chunks(r, "todays_sessions")
+    # monthlydemand = db.get_chunks(r, "monthlydemand")
+    # dailydemand = db.get_chunks(r, "dailydemand")
+    # raw_data = db.get_chunks(r, "raw_data")
+    today = pd.read_csv("data/todays_sessions.csv")
+    monthlydemand = pd.read_csv("data/monthlydemand.csv", index_col="time", parse_dates=True)
+    dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
+    raw_data = pd.read_csv("data/raw_data.csv")
 
     # filter data to just this month
     thismonthdemand = monthlydemand.loc[monthlydemand.index >= datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
@@ -202,7 +206,8 @@ def update_today_homepage_cards(n):
 )
 def update_cum_homepage_cards(n):
     # load data
-    raw_data = db.get_chunks(r, "raw_data")
+    # raw_data = db.get_chunks(r, "raw_data")
+    raw_data = pd.read_csv("data/raw_data.csv")
 
     # calculate cumulative sessions
     cum_sessions_float = len(raw_data)

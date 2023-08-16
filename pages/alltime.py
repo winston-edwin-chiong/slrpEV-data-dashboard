@@ -26,9 +26,11 @@ def prediction_to_run(granularity):
     if granularity == "fivemindemand":
         return  # not yet supported
     elif granularity == "hourlydemand":
-        return pickle.loads(r.get("hourly_forecasts"))
+        # return pickle.loads(r.get("hourly_forecasts"))
+        return pd.read_csv("data/hourlyforecasts.csv", index_col="time", parse_dates=True)
     elif granularity == "dailydemand":
-        return pickle.loads(r.get("daily_forecasts"))
+        # return pickle.loads(r.get("daily_forecasts"))
+        return pd.read_csv("data/dailyforecasts.csv", index_col="time", parse_dates=True)
     elif granularity == "monthlydemand":
         return  # not yet supported
     
@@ -336,7 +338,8 @@ layout = \
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, theme):
     # load data
-    data = db.get_chunks(r, granularity)
+    # data = db.get_chunks(r, granularity)
+    data = pd.read_csv(f"data/{granularity}.csv", index_col="time", parse_dates=True)
     # plot main time series
     fig = pltf.PlotMainTimeSeries.plot_main_time_series(data, granularity, quantity, start_date, end_date, theme)
 
@@ -364,10 +367,10 @@ def display_histogram_hover(hoverData, quantity, granularity, theme):
         return pltf.PlotHoverHistogram.default(theme), pltf.PlotHoverHistogram.default(theme)
 
     # load data
-    hourlydemand = db.get_chunks(r, "hourlydemand")
-    dailydemand = db.get_chunks(r, "dailydemand")
-    # hourlydemand = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
-    # dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
+    # hourlydemand = db.get_chunks(r, "hourlydemand")
+    # dailydemand = db.get_chunks(r, "dailydemand")
+    hourlydemand = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
+    dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
 
     # create hover histograms
     if granularity == "dailydemand":
@@ -472,7 +475,8 @@ def toggle_tab_three_collapse(button_press, is_open):
 )
 def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
     # load data
-    data = db.get_chunks(r, "raw_data")
+    # data = db.get_chunks(r, "raw_data")
+    data = pd.read_csv("data/raw_data.csv")
     # plot figure
     if value == "cumulative-energy-delivered":
         return pltf.PlotCumulatives.plot_cumulative_energy_delivered(data, start_date, end_date, theme)
@@ -490,7 +494,8 @@ def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
 )
 def display_reg_vs_sched_scatter(data_signal, theme):
     # load data
-    data = db.get_chunks(r, "raw_data")
+    # data = db.get_chunks(r, "raw_data")
+    data = pd.read_csv("data/raw_data.csv")
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data, theme)
     return fig
