@@ -6,7 +6,7 @@ from dash.dependencies import Output, Input, State
 from plotting import plottingfunctions as pltf
 from dash import html, dcc
 from db.utils import db
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 ### --> Helper Functions <-- ###
@@ -30,7 +30,7 @@ def calculate_pct_change(after, before):
 def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_data, monthlydemand):
 
     # calculate daily kWh change
-    yesterday = pd.to_datetime(pd.Timestamp.now().normalize() - pd.DateOffset(days=1))
+    yesterday = pd.to_datetime(datetime.now(pytz.timezone("America/Los_Angeles")) - timedelta(days=1)).strftime("%Y-%m-%d")
     yesterday_kwh = dailydemand.loc[dailydemand.index == yesterday]["energy_demand_kWh"].iloc[0]
     kwh_change = calculate_pct_change(kwh_today, yesterday_kwh)
 
