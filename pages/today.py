@@ -84,24 +84,26 @@ layout = \
                                 dbc.Col([
                                     html.Div([
                                         html.Div(["User Information"], className="p-3 fw-bold"),
-                                        html.Div([
-                                            html.Ul([
-                                                html.Span("Lifetime number of sessions: ", className="fst-italic"),
-                                                html.Span(id="num_sessions_user")
-                                                ], className="p-1"),
-                                            html.Ul([
-                                                html.Span("Average charge duration: ", className="fst-italic"), 
-                                                html.Span(id="avg_duration_user")
-                                                ], className="p-1"),
-                                            html.Ul([
-                                                html.Span("Usual charge time: ", className="fst-italic"), 
-                                                html.Span(id="freq_connect_time_user")
-                                                ], className="p-1"),
-                                            html.Ul([
-                                                html.Span("Lifetime energy consumption: ", className="fst-italic"), 
-                                                html.Span(id="total_nrg_consumed_user")
-                                                ], className="p-1")
-                                        ], id='user-information', className="p-3 text-break"),
+                                        dcc.Loading(
+                                            html.Div([
+                                                html.Ul([
+                                                    html.Span("Lifetime number of sessions: ", className="fst-italic"),
+                                                    html.Span(id="num_sessions_user")
+                                                    ], className="p-1"),
+                                                html.Ul([
+                                                    html.Span("Average charge duration: ", className="fst-italic"), 
+                                                    html.Span(id="avg_duration_user")
+                                                    ], className="p-1"),
+                                                html.Ul([
+                                                    html.Span("Usual charge time: ", className="fst-italic"), 
+                                                    html.Span(id="freq_connect_time_user")
+                                                    ], className="p-1"),
+                                                html.Ul([
+                                                    html.Span("Lifetime energy consumption: ", className="fst-italic"), 
+                                                    html.Span(id="total_nrg_consumed_user")
+                                                    ], className="p-1")
+                                            ], id='user-information', className="p-3 text-break"),
+                                        type="circle")
                                     ], className="border rounded shadow"),
                                 ], className="col-md-2 col-12 px-2", id="hover-user-col")
                             ],)
@@ -167,7 +169,7 @@ def display_today_graph(value, yesterday, forecast, data_signal, theme):
     if value == "today-aggregate-power":
         fivemindemand = pd.read_csv("data/fivemindemand.csv", index_col="time", parse_dates=True)
         daily_forecasts = pd.read_csv("data/dailyforecasts.csv", index_col="time", parse_dates=True)
-        
+
         return pltf.PlotDaily.plot_daily_time_series(data, yesterday, fivemindemand, daily_forecasts, forecast, theme), {"display": "inline"}
 
     elif value == "today-energy-dist":

@@ -146,22 +146,24 @@ tab_one_content = \
                                 ], className="col-xl-9 col-12 px-2 flex-grow-1"),
                                 dbc.Col([
                                     html.Div([
-                                        dcc.Graph(
-                                            id="hour-histogram",
-                                            style={"height": "35vh"},
-                                            config={
-                                                "displaylogo": False
-                                            },
-                                            className="p-1"
-                                        ),
-                                        dcc.Graph(
-                                            id="day-histogram",
-                                            style={"height": "35vh"},
-                                            config={
-                                                "displaylogo": False
-                                            },
-                                            className="p-1"
-                                        )
+                                        dcc.Loading([
+                                            dcc.Graph(
+                                                id="hour-histogram",
+                                                style={"height": "35vh"},
+                                                config={
+                                                    "displaylogo": False
+                                                },
+                                                className="p-1"
+                                            ),
+                                            dcc.Graph(
+                                                id="day-histogram",
+                                                style={"height": "35vh"},
+                                                config={
+                                                    "displaylogo": False
+                                                },
+                                                className="p-1"
+                                            )
+                                        ], type="circle")
                                     ], className="d-flex flex-column border rounded shadow")
                                 ], className="col-xl-3 col-12 px-2", id="hover-histogram-col")
                             ])

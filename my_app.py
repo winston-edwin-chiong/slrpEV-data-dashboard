@@ -178,6 +178,7 @@ def toggle_navbar_collapse(n, is_open):
     Output("data_refresh_signal", "data"),
     Output("last_updated_timer", "children"),
     Input("data_refresh_interval_component", "n_intervals"),
+    prevent_initial_call=True
 )
 def data_refresh_interval(n):
     '''
