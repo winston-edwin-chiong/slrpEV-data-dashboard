@@ -106,7 +106,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
               ].copy()  # keep sessions within today
 
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.now(pytz.timezone("America/Los_Angeles")).strftime('%Y-%m-%d %H:%M:%S')
         now = pd.to_datetime(now).floor("5T").strftime('%Y-%m-%d %H:%M:%S')
         X = X[X["Time"] <= now].copy()
         return X

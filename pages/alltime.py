@@ -2,7 +2,7 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import pandas as pd
-import pickle
+import pytz
 from dash_bootstrap_templates import ThemeChangerAIO
 from plotting import plottingfunctions as pltf
 from datetime import timedelta, datetime
@@ -402,7 +402,7 @@ def jump_to_present(button_press):
     prevent_initial_call=True
 )
 def jump_to_month(button_press):
-    return pd.Timestamp.now().date().replace(day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
+    return pd.Timestamp.now(pytz.timezone("America/Los_Angeles")).date().replace(day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
 
 
 # jump to this year button
@@ -413,7 +413,7 @@ def jump_to_month(button_press):
     prevent_initial_call=True
 )
 def jump_to_year(button_press):
-    return pd.Timestamp.now().date().replace(month=1, day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
+    return pd.Timestamp.now(pytz.timezone("America/Los_Angeles")).date().replace(month=1, day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
 
 
 # jump to this alltime button
