@@ -1,14 +1,13 @@
 import dash
 import dash_bootstrap_components as dbc
-import pickle
 import pandas as pd
+import pytz
 from dash.dependencies import Output, Input, State
 from plotting import plottingfunctions as pltf
 from dash import html, dcc
 from db.utils import db
 from datetime import datetime
 
-r = db.get_redis_connection()
 
 ### --> Helper Functions <-- ###
 
@@ -73,7 +72,7 @@ dash.register_page(__name__, path="/")
 
 layout = \
     html.Div([
-        html.H1(datetime.now().strftime("%A, %B %d, %Y"),
+        html.H1(datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%A, %B %d, %Y"),
                 className="d-flex justify-content-center text-center my-5 mx-2 text-bolder"),
         dbc.Container([
             dbc.Row([

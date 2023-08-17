@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+import pytz
 from datetime import datetime, timedelta
 from dash_bootstrap_templates import template_from_url
 
@@ -244,8 +245,8 @@ class PlotDaily:
     @classmethod
     def plot_yesterday(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query dataframe
-        start_date = datetime.strftime(datetime.now() - timedelta(1), "%Y-%m-%d")
-        end_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
+        start_date = datetime.strftime(datetime.now(pytz.timezone("America/Los_Angeles")) - timedelta(1), "%Y-%m-%d")
+        end_date = datetime.strftime(datetime.now(pytz.timezone("America/Los_Angeles")), "%Y-%m-%d")
         df = cls.__query_date_df(df, start_date, end_date)
         df.index = df.index + pd.Timedelta('1 day')
 

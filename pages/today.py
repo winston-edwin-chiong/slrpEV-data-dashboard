@@ -12,7 +12,6 @@ from db.utils import db
 dash.register_page(__name__, path="/today")
 
 
-r = db.get_redis_connection()
 
 layout = \
     html.Div([

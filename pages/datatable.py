@@ -1,8 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
-import redis
-import pickle
 import dash_ag_grid as dag
 from dash import html, dcc, Input, Output, State
 from dash_bootstrap_templates import ThemeChangerAIO
@@ -75,7 +73,7 @@ layout = \
                     ], id="grid-settings-collapse", is_open=False),
                     ### --> Grid <-- ###
                     html.Div([
-                        grid,
+                        dcc.Loading([ grid ], type="graph")
                     ], className="m-3 mt-2 shadow-sm"),
                     ### --> <-- ###
                 ], className="col-12 col-lg-10"),
