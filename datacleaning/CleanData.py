@@ -12,9 +12,6 @@ class CleanData:
     @staticmethod
     def clean_save_raw_data(raw_data) -> dict:
 
-        # load data
-        __raw_data = pd.read_csv("data/raw_data.csv")
-
         # full time series pipeline
         full_ts_pipeline = Pipeline(
             [

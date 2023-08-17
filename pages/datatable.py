@@ -8,7 +8,6 @@ from db.utils import db
 
 dash.register_page(__name__, path="/data")
 
-r = db.get_redis_connection()
 
 # load data
 df = pd.read_csv("data/raw_data.csv")
@@ -73,7 +72,7 @@ layout = \
                     ], id="grid-settings-collapse", is_open=False),
                     ### --> Grid <-- ###
                     html.Div([
-                        dcc.Loading([ grid ], type="graph")
+                        grid
                     ], className="m-3 mt-2 shadow-sm"),
                     ### --> <-- ###
                 ], className="col-12 col-lg-10"),

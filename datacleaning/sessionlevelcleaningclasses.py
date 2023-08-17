@@ -1,6 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
 import numpy as np
+import pytz
 from datetime import datetime, timedelta
 
 
@@ -51,7 +52,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X["true_peakPower_W"] = round(
             X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
-        X = X[X["finishChargeTime"] >= datetime.now().strftime("%D")].copy()
+        X = X[X["finishChargeTime"] >= datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%D")].copy()
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered). also filter out excessively high duration from raw data
         X = X.loc[X["trueDurationHrs"] <= 24].copy()
@@ -101,7 +102,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
         X.rename(columns={"time_vals": "Time",
                  "power_vals": "Power (W)"}, inplace=True)
 
-        X = X[(X["Time"] >= datetime.now().strftime("%D"))
+        X = X[(X["Time"] >= datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%D"))
               ].copy()  # keep sessions within today
 
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"

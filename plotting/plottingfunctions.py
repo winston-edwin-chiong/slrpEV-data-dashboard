@@ -204,7 +204,7 @@ class PlotDaily:
                     "yaxis_title": "Power (W)",
                     "barmode": "stack",
                     "showlegend": True,
-                    "xaxis_range": [datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
+                    "xaxis_range": [datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
                     "xaxis_autorange": True
                 },
                 template=template_from_url(theme)        
@@ -267,8 +267,8 @@ class PlotDaily:
     @classmethod
     def plot_today_forecast(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query today's forecast
-        if not df.loc[df.index == datetime.now().strftime("%Y-%m-%d")].empty:
-            peak = df.loc[df.index == datetime.now().strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
+        if not df.loc[df.index == datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d")].empty:
+            peak = df.loc[df.index == datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
 
             # add horizontal line to figure 
             fig.add_hline(
@@ -456,7 +456,9 @@ class PlotHoverHistogram:
         if hoverData["points"][0]["curveNumber"] == 0:
             day_name = hoverData["points"][0]["customdata"][0]
             # get point to hover on (if it exists in dailydemand)    
-            point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] if pd.to_datetime(hoverData["points"][0]["x"]) < pd.to_datetime((datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")) else None
+            point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] \
+                if pd.to_datetime(hoverData["points"][0]["x"]) < pd.to_datetime((datetime.now(pytz.timezone("America/Los_Angeles")) + timedelta(days=1)).strftime("%Y-%m-%d")) \
+                else None
 
         # prediction curve
         elif hoverData["points"][0]["curveNumber"] == 1:

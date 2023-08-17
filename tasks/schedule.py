@@ -1,6 +1,7 @@
 import logging
 import pickle
 import os
+import pytz
 from dotenv import load_dotenv
 from datetime import datetime
 from celery import Celery
@@ -62,7 +63,7 @@ def query_data():
     for key in cleaned_dataframes.keys():
         db.send_chunks(r, cleaned_dataframes.get(key), key)
 
-    r.set("last_updated_time", datetime.now().strftime('%H:%M:%S'))
+    r.set("last_updated_time", datetime.now(pytz.timezone("America/Los_Angeles")).strftime('%H:%M:%S'))
 
     logger.info("Done!")
 
@@ -134,7 +135,7 @@ def update_hourly_params():
     logger.info("Forecasting hourly demand...")
     forecast_hourly()
 
-    r.set("last_validated_time", datetime.now().strftime('%m/%d/%y %H:%M:%S'))
+    r.set("last_validated_time", datetime.now(pytz.timezone("America/Los_Angeles")).strftime('%m/%d/%y %H:%M:%S'))
 
     logger.info("Done!")
 
