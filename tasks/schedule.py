@@ -19,7 +19,7 @@ def START_SCHEDULER():
 
     scheduler = BackgroundScheduler()
 
-    @scheduler.scheduled_job('cron', minute=35, coalesce=True)
+    @scheduler.scheduled_job('cron', minute=5, coalesce=True)
     def query_data():
         logger.info("Fetching data...")
         raw_data = FetchData.scan_save_all_records()
