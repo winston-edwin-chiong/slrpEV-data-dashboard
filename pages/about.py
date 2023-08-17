@@ -8,8 +8,17 @@ layout = \
     html.Div([
         ### --> Dashboard Descripton & Contact <-- ###
         html.Div([
-            html.P("Visualizing and analyzing slrpEV demand!."),
-            html.P("Please reach out for suggestions, comments, questions, or requests!"),
+            dbc.Alert("This app is still under development! There may be some bugs 🐛...", color="warning"),
+            html.P("The intent of the app is visualizing and analyzing slrpEV demand. \nARIMA and k-NN based models are used to generate the daily and hourly forecasts."),
+            html.P("Data is refreshed hourly, and model hyperparameters are recalculated every two weeks. This resets all past predictions and starts a new cycle."),
+            html.Br(),
+            html.P([
+                "Please reach out for suggestions, comments, questions, or requests at ",
+                html.Span([
+                    html.A("winstonchiong@berkeley.edu!", href="mailto:winstonchiong@berkeley.edu", className="fw-italic fw-bold text-info")
+                ])
+            ]),
+            html.Br(),
         ], className="text-center m-2"),
         ### --> <-- ###
 
