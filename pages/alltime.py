@@ -26,9 +26,9 @@ def prediction_to_run(granularity):
     if granularity == "fivemindemand":
         return  # not yet supported
     elif granularity == "hourlydemand":
-        return pickle.loads(r.get("hourly_forecasts"))
+        return pd.read_csv("data/hourlyforecasts.csv", index_col="time", parse_dates=True)
     elif granularity == "dailydemand":
-        return pickle.loads(r.get("daily_forecasts"))
+        return pd.read_csv("data/dailyforecasts.csv", index_col="time", parse_dates=True)
     elif granularity == "monthlydemand":
         return  # not yet supported
     
@@ -100,7 +100,7 @@ tab_one_content = \
                                             className="dbc py-1"
                                         ),
                                     ], className="w-100 d-flex flex-column w-100 px-2 py-2 border rounded mx-0 my-2")
-                                ], className="col-lg-3 col-sm-6 col-4 d-flex"),
+                                ], className="col-lg-3 col-sm-6 col-12 d-flex"),
                                 dbc.Col([
                                     html.Div([
                                         html.Div("Jump to..."),
@@ -111,7 +111,7 @@ tab_one_content = \
                                             html.Button( "All Time", className="btn btn-outline-secondary btn-sm py-1 px-2 me-1 mt-1 rounded", id="jump_to_alltime_btn")
                                         ], className="gap-2 d-block"),
                                     ], className="w-100 d-flex flex-column px-2 py-2 border rounded mx-0 my-2")
-                                ], className="col-lg-3 col-sm-6 col-4 d-flex"),
+                                ], className="col-lg-3 col-sm-6 col-12 d-flex"),
                                 dbc.Col([ 
                                     html.Div([
                                         html.Div(["Toggle Forecasts"]),
@@ -119,7 +119,7 @@ tab_one_content = \
                                         html.Div(["Toggle Histograms"]),
                                         dmc.Switch(size="md", radius="lg", checked=True, id="toggle-histograms", color="gray"),
                                     ], className="w-100 d-flex justify-content-center flex-column px-2 py-2 border rounded mx-0 my-2")
-                                ], className="col-lg-3 col-sm-6 col-4 d-flex")
+                                ], className="col-lg-3 col-sm-6 col-12 d-flex")
                             ])
                         ], fluid=True),
                     ], id="tab-one-settings-collapse", is_open=False),
@@ -141,27 +141,29 @@ tab_one_content = \
                                                 },
                                                 className="p-1"
                                             ),
-                                        ], className="dbc")
+                                        ], type="graph", className="dbc")
                                     ], className="border rounded shadow")
                                 ], className="col-xl-9 col-12 px-2 flex-grow-1"),
                                 dbc.Col([
                                     html.Div([
-                                        dcc.Graph(
-                                            id="hour-histogram",
-                                            style={"height": "35vh"},
-                                            config={
-                                                "displaylogo": False
-                                            },
-                                            className="p-1"
-                                        ),
-                                        dcc.Graph(
-                                            id="day-histogram",
-                                            style={"height": "35vh"},
-                                            config={
-                                                "displaylogo": False
-                                            },
-                                            className="p-1"
-                                        )
+                                        dcc.Loading([
+                                            dcc.Graph(
+                                                id="hour-histogram",
+                                                style={"height": "35vh"},
+                                                config={
+                                                    "displaylogo": False
+                                                },
+                                                className="p-1"
+                                            ),
+                                            dcc.Graph(
+                                                id="day-histogram",
+                                                style={"height": "35vh"},
+                                                config={
+                                                    "displaylogo": False
+                                                },
+                                                className="p-1"
+                                            )
+                                        ], type="circle")
                                     ], className="d-flex flex-column border rounded shadow")
                                 ], className="col-xl-3 col-12 px-2", id="hover-histogram-col")
                             ])
@@ -248,7 +250,7 @@ tab_two_content = \
                                         },
                                         className="p-1"
                                     ),
-                                ], className="dbc")
+                                ], type="graph", className="dbc")
                             ], className="border rounded shadow")
                         ], className="mt-2", fluid=True)
                     ],),
@@ -298,7 +300,7 @@ tab_three_content = \
                                         },
                                         className="p-1"
                                     ),
-                                ], className="dbc")
+                                ], type="graph", className="dbc")
                             ], className="border rounded shadow")
                         ], className="mt-2", fluid=True)
                     ],),
@@ -336,7 +338,8 @@ layout = \
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, theme):
     # load data
-    data = db.get_chunks(r, granularity)
+    data = pd.read_csv(f"data/{granularity}.csv", index_col="time", parse_dates=True)
+
     # plot main time series
     fig = pltf.PlotMainTimeSeries.plot_main_time_series(data, granularity, quantity, start_date, end_date, theme)
 
@@ -364,10 +367,8 @@ def display_histogram_hover(hoverData, quantity, granularity, theme):
         return pltf.PlotHoverHistogram.default(theme), pltf.PlotHoverHistogram.default(theme)
 
     # load data
-    hourlydemand = db.get_chunks(r, "hourlydemand")
-    dailydemand = db.get_chunks(r, "dailydemand")
-    # hourlydemand = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
-    # dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
+    hourlydemand = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
+    dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
 
     # create hover histograms
     if granularity == "dailydemand":
@@ -472,7 +473,7 @@ def toggle_tab_three_collapse(button_press, is_open):
 )
 def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
     # load data
-    data = db.get_chunks(r, "raw_data")
+    data = pd.read_csv("data/raw_data.csv")
     # plot figure
     if value == "cumulative-energy-delivered":
         return pltf.PlotCumulatives.plot_cumulative_energy_delivered(data, start_date, end_date, theme)
@@ -490,7 +491,8 @@ def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
 )
 def display_reg_vs_sched_scatter(data_signal, theme):
     # load data
-    data = db.get_chunks(r, "raw_data")
+    data = pd.read_csv("data/raw_data.csv")
+
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data, theme)
     return fig

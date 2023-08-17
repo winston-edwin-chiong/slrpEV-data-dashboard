@@ -182,10 +182,6 @@ cmake-build-*/
 # flask-caching
 cache/
 
-# data
-data/
-forecastdata/
-
 # Celery 
 celerybeat-schedule.bak
 celerybeat-schedule.dat

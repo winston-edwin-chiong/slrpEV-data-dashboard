@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pickle
+import os 
 from sklearn.pipeline import Pipeline
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.neighbors import KNeighborsRegressor
@@ -13,6 +14,10 @@ class CreateHourlyForecasts:
     # connect to Redis
     r = db.get_redis_connection()
 
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    data_folder = os.path.abspath(os.path.join(current_dir, '..', '..', 'data'))
+    csv_path = os.path.join(data_folder, 'hourlyforecasts.csv')
+
     def __init__():
         pass
 
@@ -23,22 +28,22 @@ class CreateHourlyForecasts:
             ("estimator", kNNPredict(best_params=best_params))
         ])
         new_forecasts = hourly_forecast_pipeline.fit_transform(df)
-        # existing_forecasts = pd.read_csv("forecastdata/hourlyforecasts.csv", index_col="time", parse_dates=True)
-        if cls.r.get("hourly_forecasts") is None:
+        
+        if cls.r.get("hourlyforecasts") is None:
             existing_forecasts = pd.DataFrame()
         else:
-            existing_forecasts = pickle.loads(cls.r.get("hourly_forecasts"))
+            existing_forecasts = db.get_item(cls.r, "hourlyforecasts")
 
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1H").last()  # get more recent forecast
-        # forecasts.to_csv("../data/hourlyforecasts.csv")
+        forecasts.to_csv(cls.csv_path)
 
         return forecasts
 
     @classmethod
     def save_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
-        # empty_df.to_csv("../data/hourlyforecasts.csv")
-        cls.r.set("hourly_forecasts", pickle.dumps(empty_df))
+        empty_df.to_csv(cls.csv_path)
+        cls.r.set("hourlyforecasts", pickle.dumps(empty_df))
         return empty_df
 
 

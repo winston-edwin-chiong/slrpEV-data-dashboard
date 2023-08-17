@@ -1,14 +1,13 @@
 import dash
 import dash_bootstrap_components as dbc
-import pickle
 import pandas as pd
+import pytz
 from dash.dependencies import Output, Input, State
 from plotting import plottingfunctions as pltf
 from dash import html, dcc
 from db.utils import db
 from datetime import datetime
 
-r = db.get_redis_connection()
 
 ### --> Helper Functions <-- ###
 
@@ -73,7 +72,7 @@ dash.register_page(__name__, path="/")
 
 layout = \
     html.Div([
-        html.H1(datetime.now().strftime("%A, %B %d, %Y"),
+        html.H1(datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%A, %B %d, %Y"),
                 className="d-flex justify-content-center text-center my-5 mx-2 text-bolder"),
         dbc.Container([
             dbc.Row([
@@ -82,10 +81,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Cumulative Energy Delivered", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-cum-kwh"),
-                            html.Div(className="my-3", id="homepage-cum-kwh-stats")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-cum-kwh"),
+                                html.Div(className="my-3", id="homepage-cum-kwh-stats")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -93,10 +94,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Energy Delivered Today", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-kwh"),
-                            html.Div(className="my-3", id="homepage-kwh-change")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-kwh"),
+                                html.Div(className="my-3", id="homepage-kwh-change")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -104,10 +107,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Cumulative E-Miles Delivered", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-cum-emiles"),
-                            html.Div(className="my-3", id="homepage-cum-emiles-stats")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-cum-emiles"),
+                                html.Div(className="my-3", id="homepage-cum-emiles-stats")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -115,10 +120,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Users Today", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-users"),
-                            html.Div(className="my-3", id="homepage-users-change")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-users"),
+                                html.Div(className="my-3", id="homepage-users-change")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -126,10 +133,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Cumulative Number of Sessions", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-cum-sessions"),
-                            html.Div(className="my-3", id="homepage-cum-sessions-stats")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-cum-sessions"),
+                                html.Div(className="my-3", id="homepage-cum-sessions-stats")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
                 dbc.Col([
@@ -137,10 +146,12 @@ layout = \
                         dbc.CardHeader([
                             html.H5("Peak Power This Month", className="card-title"),
                         ]),
-                        dbc.CardBody([
-                            html.H2(id="homepage-peak-power"),
-                            html.Div(className="my-3", id="homepage-peak-power-change")
-                        ])
+                        dcc.Loading(
+                            dbc.CardBody([
+                                html.H2(id="homepage-peak-power"),
+                                html.Div(className="my-3", id="homepage-peak-power-change")
+                            ]),
+                        type="circle")
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
             ], className="row-cols-1 rows-cols-sm-2 gx-4 gy-4"),
@@ -160,13 +171,13 @@ layout = \
 )
 def update_today_homepage_cards(n):
     # load data
-    today = db.get_chunks(r, "todays_sessions")
-    monthlydemand = db.get_chunks(r, "monthlydemand")
-    dailydemand = db.get_chunks(r, "dailydemand")
-    raw_data = db.get_chunks(r, "raw_data")
+    today = pd.read_csv("data/todays_sessions.csv")
+    monthlydemand = pd.read_csv("data/monthlydemand.csv", index_col="time", parse_dates=True)
+    dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
+    raw_data = pd.read_csv("data/raw_data.csv")
 
     # filter data to just this month
-    thismonthdemand = monthlydemand.loc[monthlydemand.index >= datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
+    thismonthdemand = monthlydemand.loc[monthlydemand.index >= datetime.now(pytz.timezone("America/Los_Angeles")).replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
 
     # extract peak power, convert to kW
     peak_power_float = thismonthdemand["peak_power_W"][0] / 1000
@@ -202,7 +213,7 @@ def update_today_homepage_cards(n):
 )
 def update_cum_homepage_cards(n):
     # load data
-    raw_data = db.get_chunks(r, "raw_data")
+    raw_data = pd.read_csv("data/raw_data.csv")
 
     # calculate cumulative sessions
     cum_sessions_float = len(raw_data)

@@ -1,8 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
-import redis
-import pickle
 import dash_ag_grid as dag
 from dash import html, dcc, Input, Output, State
 from dash_bootstrap_templates import ThemeChangerAIO
@@ -10,10 +8,9 @@ from db.utils import db
 
 dash.register_page(__name__, path="/data")
 
-r = db.get_redis_connection()
 
 # load data
-df = db.get_chunks(r, "raw_data")
+df = pd.read_csv("data/raw_data.csv")
 
 # drop helper columns
 df = df.drop(
@@ -75,7 +72,7 @@ layout = \
                     ], id="grid-settings-collapse", is_open=False),
                     ### --> Grid <-- ###
                     html.Div([
-                        grid,
+                        grid
                     ], className="m-3 mt-2 shadow-sm"),
                     ### --> <-- ###
                 ], className="col-12 col-lg-10"),
@@ -227,7 +224,7 @@ def toggle_grid_collapse(button_press, is_open):
 )
 def update_data(signal):
     # load data
-    df = db.get_chunks(r, "raw_data")
+    df = pd.read_csv("data/raw_data.csv")
     # drop helper columns
     df = df.drop(
         columns=[

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+import pytz
 from datetime import datetime, timedelta
 from dash_bootstrap_templates import template_from_url
 
@@ -187,7 +188,7 @@ class PlotDaily:
                     x=df[df["dcosId"] == dcosId]["Time"],
                     y=df[df["dcosId"] == dcosId]["Power (W)"],
                     customdata=df[df["dcosId"] == dcosId][["vehicle_model", "choice", "userId"]],
-                    name="User ID: " + df[df["dcosId"] == dcosId]["userId"].iloc[0],
+                    name="User ID: " + str(df[df["dcosId"] == dcosId]["userId"].iloc[0]),
                     offsetgroup=1,
                     hovertemplate="<br>Date: %{x}" +
                     "<br>Power: %{y} Watts" +
@@ -203,7 +204,7 @@ class PlotDaily:
                     "yaxis_title": "Power (W)",
                     "barmode": "stack",
                     "showlegend": True,
-                    "xaxis_range": [datetime.now().strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
+                    "xaxis_range": [datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
                     "xaxis_autorange": True
                 },
                 template=template_from_url(theme)        
@@ -244,8 +245,8 @@ class PlotDaily:
     @classmethod
     def plot_yesterday(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query dataframe
-        start_date = datetime.strftime(datetime.now() - timedelta(1), "%Y-%m-%d")
-        end_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
+        start_date = datetime.strftime(datetime.now(pytz.timezone("America/Los_Angeles")) - timedelta(1), "%Y-%m-%d")
+        end_date = datetime.strftime(datetime.now(pytz.timezone("America/Los_Angeles")), "%Y-%m-%d")
         df = cls.__query_date_df(df, start_date, end_date)
         df.index = df.index + pd.Timedelta('1 day')
 
@@ -266,8 +267,8 @@ class PlotDaily:
     @classmethod
     def plot_today_forecast(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query today's forecast
-        if not df.loc[df.index == datetime.now().strftime("%Y-%m-%d")].empty:
-            peak = df.loc[df.index == datetime.now().strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
+        if not df.loc[df.index == datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d")].empty:
+            peak = df.loc[df.index == datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
 
             # add horizontal line to figure 
             fig.add_hline(
@@ -455,7 +456,9 @@ class PlotHoverHistogram:
         if hoverData["points"][0]["curveNumber"] == 0:
             day_name = hoverData["points"][0]["customdata"][0]
             # get point to hover on (if it exists in dailydemand)    
-            point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] if pd.to_datetime(hoverData["points"][0]["x"]) < pd.to_datetime((datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")) else None
+            point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] \
+                if pd.to_datetime(hoverData["points"][0]["x"]) < pd.to_datetime((datetime.now(pytz.timezone("America/Los_Angeles")) + timedelta(days=1)).strftime("%Y-%m-%d")) \
+                else None
 
         # prediction curve
         elif hoverData["points"][0]["curveNumber"] == 1:

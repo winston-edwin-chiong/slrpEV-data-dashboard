@@ -1,5 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
+import pytz
 from datetime import datetime
 
 
@@ -120,7 +121,7 @@ class ImputeZero(BaseEstimator, TransformerMixin):
     def transform(self, X) -> pd.DataFrame:
         # get start and end dates
         start = X.index[-1]
-        end = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        end = datetime.now(pytz.timezone("America/Los_Angeles")).strftime('%Y-%m-%d %H:%M:%S')
         end = pd.to_datetime(end).floor("5T").strftime('%Y-%m-%d %H:%M:%S')
 
         if str(start) == end:  # data up to date

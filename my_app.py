@@ -63,7 +63,11 @@ app.layout = \
         dbc.Navbar([
             dbc.Container([
                 html.A([
+<<<<<<< HEAD
                     html.Img(src=r"/assets/images/chartlogo.png", height="40px", className="me-2")
+=======
+                    html.Img(src=r"/assets/images/ChartLogo.png", height="40px", className="me-2")
+>>>>>>> filesystem-data-read
                 ], href="/"),
                 dbc.NavbarToggler(id="navbar-toggler"),
                 dbc.Collapse([
@@ -178,12 +182,14 @@ def toggle_navbar_collapse(n, is_open):
     Output("data_refresh_signal", "data"),
     Output("last_updated_timer", "children"),
     Input("data_refresh_interval_component", "n_intervals"),
+    prevent_initial_call=True
 )
 def data_refresh_interval(n):
     '''
     This callback polls the Redis database at regular intervals for data refresh. 
     '''
     # update data refresh timestamp
+    db.update_data(r)
     last_updated = r.get('last_updated_time').decode("utf-8")
     return n, f"Data last updated at {last_updated}."
 
