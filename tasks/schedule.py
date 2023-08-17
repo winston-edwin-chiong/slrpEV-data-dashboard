@@ -73,11 +73,11 @@ def forecast_daily():
     data = db.get_chunks(r, "dailydemand")
 
     logger.info("Forecasting daily demand...")
-    best_params = pickle.loads(r.get("daily_params"))
+    best_params = db.get_item(r, "daily_params")
     forecasts = CreateDailyForecasts.run_daily_forecast(data, best_params)
 
     logger.info("Serializing data...")
-    r.set("daily_forecasts", pickle.dumps(forecasts))
+    r.set("dailyforecasts", pickle.dumps(forecasts))
 
     logger.info("Done!")
 
@@ -88,11 +88,11 @@ def forecast_hourly():
     data = db.get_chunks(r, "hourlydemand")
 
     logger.info("Forecasting hourly demand...")
-    best_params = pickle.loads(r.get("hourly_params"))
+    best_params = db.get_item(r, "hourly_params")
     forecasts = CreateHourlyForecasts.run_hourly_forecast(data, best_params)
 
     logger.info("Serializing data...")
-    r.set("hourly_forecasts", pickle.dumps(forecasts))
+    r.set("hourlyforecasts", pickle.dumps(forecasts))
 
     logger.info("Done!")
 
@@ -150,8 +150,8 @@ def run_startup_tasks(**kwargs):
     if not r.get("hourly_params"):
         update_hourly_params()
 
-    if not r.get("daily_forecasts"):
+    if not r.get("dailyforecasts"):
         forecast_daily()
 
-    if not r.get("hourly_forecasts"):
+    if not r.get("hourlyforecasts"):
         forecast_hourly()

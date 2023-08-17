@@ -23,11 +23,10 @@ class CreateDailyForecasts:
     @classmethod
     def run_daily_forecast(cls, df, best_params: dict):
 
-        # existing_forecasts = pd.read_csv("forecastdata/dailyforecasts.csv", index_col="time", parse_dates=True)
-        if cls.r.get("daily_forecasts") is None:
+        if cls.r.get("dailyforecasts") is None:
             existing_forecasts = pd.DataFrame()
         else:
-            existing_forecasts = pickle.loads(cls.r.get("daily_forecasts"))
+            existing_forecasts = db.get_item(cls.r, "dailyforecasts")
 
         new_forecasts = pd.DataFrame()
 
@@ -56,6 +55,6 @@ class CreateDailyForecasts:
     def save_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
         empty_df.to_csv(cls.csv_path)
-        cls.r.set("daily_forecasts", pickle.dumps(empty_df))
+        cls.r.set("dailyforecasts", pickle.dumps(empty_df))
         return empty_df
 

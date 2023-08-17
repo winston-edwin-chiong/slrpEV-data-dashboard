@@ -135,7 +135,6 @@ def display_user_hover(hoverData, value):
     if hoverData is None or value != "today-aggregate-power":
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
-    # data = db.get_chunks(r, "raw_data")
     data = pd.read_csv("data/raw_data.csv")
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
@@ -163,13 +162,12 @@ def display_user_hover(hoverData, value):
 )
 def display_today_graph(value, yesterday, forecast, data_signal, theme):
     # load data
-    # data = db.get_chunks(r, "todays_sessions")
     data = pd.read_csv("data/todays_sessions.csv")
 
     if value == "today-aggregate-power":
-        # fivemindemand = db.get_chunks(r, "fivemindemand")
         fivemindemand = pd.read_csv("data/fivemindemand.csv", index_col="time", parse_dates=True)
-        daily_forecasts = pickle.loads(r.get("daily_forecasts"))
+        daily_forecasts = pd.read_csv("data/dailyforecasts.csv", index_col="time", parse_dates=True)
+        
         return pltf.PlotDaily.plot_daily_time_series(data, yesterday, fivemindemand, daily_forecasts, forecast, theme), {"display": "inline"}
 
     elif value == "today-energy-dist":

@@ -184,6 +184,7 @@ def data_refresh_interval(n):
     This callback polls the Redis database at regular intervals for data refresh. 
     '''
     # update data refresh timestamp
+    db.update_data(r)
     last_updated = r.get('last_updated_time').decode("utf-8")
     return n, f"Data last updated at {last_updated}."
 
