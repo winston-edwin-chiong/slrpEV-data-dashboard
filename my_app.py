@@ -8,6 +8,7 @@ from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 from dash_bootstrap_templates import ThemeChangerAIO
 from db.utils import db
+from tasks.schedule_1 import start_scheduler
 
 
 # styles
@@ -208,4 +209,5 @@ def CV_interval(n):
 
 # running the app
 if __name__ == '__main__':
+    start_scheduler()
     app.run_server(debug=True)

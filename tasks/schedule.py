@@ -156,3 +156,4 @@ def run_startup_tasks(**kwargs):
 
     if not r.get("hourlyforecasts"):
         forecast_hourly()
+
