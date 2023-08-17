@@ -1,21 +1,15 @@
 import pandas as pd
 import statsmodels.api as sm
 import os
-import pickle
-from db.utils import db
 
 
 class CreateDailyForecasts:
 
     columns = ["avg_power_demand_W", "energy_demand_kWh", "peak_power_W"]
 
-    # connect to Redis
-    r = db.get_redis_connection()
-
     current_dir = os.path.dirname(os.path.abspath(__file__))
     data_folder = os.path.abspath(os.path.join(current_dir, '..', '..', 'data'))
     csv_path = os.path.join(data_folder, 'dailyforecasts.csv')
-
 
     def __init__():
         pass
@@ -23,10 +17,10 @@ class CreateDailyForecasts:
     @classmethod
     def run_daily_forecast(cls, df, best_params: dict):
 
-        if cls.r.get("dailyforecasts") is None:
+        try: 
+            existing_forecasts = pd.read_csv("data/dailyforecasts.csv", index_col="time", parse_dates=True)
+        except:
             existing_forecasts = pd.DataFrame()
-        else:
-            existing_forecasts = db.get_item(cls.r, "dailyforecasts")
 
         new_forecasts = pd.DataFrame()
 
@@ -55,6 +49,5 @@ class CreateDailyForecasts:
     def save_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
         empty_df.to_csv(cls.csv_path)
-        cls.r.set("dailyforecasts", pickle.dumps(empty_df))
         return empty_df
 

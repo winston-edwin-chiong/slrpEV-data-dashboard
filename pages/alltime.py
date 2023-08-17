@@ -8,11 +8,9 @@ from plotting import plottingfunctions as pltf
 from datetime import timedelta, datetime
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
-from db.utils import db
 
 dash.register_page(__name__, path="/alltime")
 
-r = db.get_redis_connection()
 
 ### --> Helper Functions <-- ###
 

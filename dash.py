@@ -2,13 +2,11 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_auth
 import os
-import redis
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 from dash_bootstrap_templates import ThemeChangerAIO
-from db.utils import db
-from tasks.schedule_1 import start_scheduler
+from tasks.schedule import START_SCHEDULER
 
 
 # styles
@@ -19,8 +17,6 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTST
 server = app.server
 app.title = "slrpEV Dashboard"
 
-# connect to Redis
-r = db.get_redis_connection()
 
 load_dotenv()
 auth = dash_auth.BasicAuth(
@@ -111,16 +107,8 @@ app.layout = \
         ], className="d-flex flex-column flex-grow-1"),
         # --> <-- #
 
-        html.Div([
-            html.Div(
-                id="last_updated_timer",
-            ),
-            html.Div(
-                id="last_validated_timer",
-            ),
-        ], className="d-none flex-column"),
         
-        # --> Interval Components, Refresh/Validation Timestamps <-- #
+        # --> Interval Components <-- #
         html.Div([
             html.Div([
                 dcc.Interval(
@@ -129,14 +117,6 @@ app.layout = \
                     n_intervals=0
                 ),
                 dcc.Store(id="data_refresh_signal"),
-            ]),
-            html.Div([
-                dcc.Interval(
-                    id="CV_interval_component",
-                    interval=2 * 24 * 60 * 60 * 1000,  # poll db every two days
-                    n_intervals=0
-                ),
-                dcc.Store(id="CV_signal"),
             ]),
         ]),
         # --> <-- #
@@ -185,29 +165,12 @@ def data_refresh_interval(n):
     '''
     This callback polls the Redis database at regular intervals for data refresh. 
     '''
-    # update data refresh timestamp
-    db.update_data(r)
-    last_updated = r.get('last_updated_time').decode("utf-8")
-    return n, f"Data last updated at {last_updated}."
-
-
-@app.callback(
-    Output("CV_signal", "data"),
-    Output("last_validated_timer", "children"),
-    Input("CV_interval_component", "n_intervals"),
-)
-def CV_interval(n):
-    '''
-    This callback polls the Redis database at regular intervals for ML parameter refresh. 
-    '''
-    # update CV timestamp 
-    last_validated = r.get("last_validated_time").decode("utf-8")
-    return n, f"Parameters last validated at {last_validated}." 
+    return n
 
 # --> <-- #
 
 
 # running the app
 if __name__ == '__main__':
-    start_scheduler()
-    app.run_server(debug=True)
+    START_SCHEDULER()
+    app.run_server()

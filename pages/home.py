@@ -5,7 +5,6 @@ import pytz
 from dash.dependencies import Output, Input, State
 from plotting import plottingfunctions as pltf
 from dash import html, dcc
-from db.utils import db
 from datetime import datetime, timedelta
 
 

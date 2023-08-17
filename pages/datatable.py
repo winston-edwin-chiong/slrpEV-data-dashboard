@@ -4,7 +4,6 @@ import pandas as pd
 import dash_ag_grid as dag
 from dash import html, dcc, Input, Output, State
 from dash_bootstrap_templates import ThemeChangerAIO
-from db.utils import db
 
 dash.register_page(__name__, path="/data")
 
