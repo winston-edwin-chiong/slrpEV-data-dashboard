@@ -63,11 +63,7 @@ app.layout = \
         dbc.Navbar([
             dbc.Container([
                 html.A([
-<<<<<<< HEAD
-                    html.Img(src=r"/assets/images/chartlogo.png", height="40px", className="me-2")
-=======
                     html.Img(src=r"/assets/images/ChartLogo.png", height="40px", className="me-2")
->>>>>>> filesystem-data-read
                 ], href="/"),
                 dbc.NavbarToggler(id="navbar-toggler"),
                 dbc.Collapse([
