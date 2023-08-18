@@ -45,7 +45,7 @@ class SARIMACrossValidator:
                                             max_p=2, max_q=2, max_Q=2, max_P=2,
                                             d=0, D=1, m=7,
                                             X=None,
-                                            seasonal=True, trace=True, stepwise=False)
+                                            seasonal=True, trace=True, stepwise=True, n_jobs=4)
 
         return {"order": stepwise_fit.order, "seasonal_order": stepwise_fit.seasonal_order}
 
