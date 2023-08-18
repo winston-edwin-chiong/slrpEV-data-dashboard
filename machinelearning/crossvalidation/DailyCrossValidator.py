@@ -1,6 +1,5 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from pmdarima.arima import StepwiseContext
 import pmdarima as pm
 
 
@@ -43,8 +42,8 @@ class SARIMACrossValidator:
                                     max_p=2, max_q=2, max_Q=2, max_P=2,
                                     d=0, D=1, m=7,
                                     X=None,
-                                    seasonal=True, trace=True, stepwise=True, maxiter=7)
-
+                                    seasonal=True, trace=True, stepwise=True)
+        # TODO: Instead of returning parameters, maybe return the whole model?
         return {"order": stepwise_fit.order, "seasonal_order": stepwise_fit.seasonal_order}
 
     def __train_test_split(self, df: pd.DataFrame):

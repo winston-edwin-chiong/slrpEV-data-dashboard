@@ -29,8 +29,7 @@ class SortDropCastSessions(BaseEstimator, TransformerMixin):
 
         X = X.loc[(X["peakPower_W"] != 0) & (X["cumEnergy_Wh"] != 0)].copy()
 
-        X = X.sort_values(by="connectTime").drop(
-            columns=["user_email", "slrpPaymentId"]).reset_index(drop=True)
+        X = X.sort_values(by="connectTime").drop(columns=["user_email", "slrpPaymentId"]).reset_index(drop=True)
 
         return X
 
@@ -99,11 +98,9 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
         X = pd.concat([X.reset_index(), self.ts_df], axis=1)
 
         X = X.explode(["time_vals", "power_vals"])
-        X.rename(columns={"time_vals": "Time",
-                 "power_vals": "Power (W)"}, inplace=True)
+        X.rename(columns={"time_vals": "Time", "power_vals": "Power (W)"}, inplace=True)
 
-        X = X[(X["Time"] >= datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%D"))
-              ].copy()  # keep sessions within today
+        X = X[(X["Time"] >= datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%D"))].copy()  # keep sessions within today
 
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
         now = datetime.now(pytz.timezone("America/Los_Angeles")).strftime('%Y-%m-%d %H:%M:%S')
@@ -130,7 +127,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
 
 class SaveTodaySessionToCSV(BaseEstimator, TransformerMixin):
     """
-    This pipeline step will save session level dataframe to file system. 
+    This pipeline step will save session level dataframe to file system, in a "data/" folder. 
     """
 
     def fit(self, X, y=None):

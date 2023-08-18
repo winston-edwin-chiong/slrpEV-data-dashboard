@@ -15,8 +15,7 @@ class SortDropCast(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X) -> pd.DataFrame:
-        X = X.sort_values(by="connectTime").drop(
-            columns=["user_email", "slrpPaymentId"]).reset_index(drop=True)
+        X = X.sort_values(by="connectTime").drop(columns=["user_email", "slrpPaymentId"]).reset_index(drop=True)
         X["cumEnergy_Wh"] = X["cumEnergy_Wh"].astype(float)
         X["peakPower_W"] = X["peakPower_W"].astype(float)
         return X
@@ -35,8 +34,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X) -> pd.DataFrame:
-        X = X.loc[(X["peakPower_W"] != 0) & (
-            X["cumEnergy_Wh"] != 0)].copy(deep=True)
+        X = X.loc[(X["peakPower_W"] != 0) & (X["cumEnergy_Wh"] != 0)].copy(deep=True)
 
         X["connectTime"] = pd.to_datetime(X["connectTime"])
         X["startChargeTime"] = pd.to_datetime(X["startChargeTime"])
@@ -46,8 +44,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X["finishChargeTime"] = X.apply(self.__get_finishChargeTime, axis=1)
         X["trueDurationHrs"] = X.apply(self.__get_duration, axis=1)
         # "cumEnergy_Wh" is seen as a column of truth
-        X["true_peakPower_W"] = round(
-            X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered). also filter out excessively high duration from raw data
         X = X.loc[X["trueDurationHrs"] <= 24].copy()
@@ -61,8 +58,6 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X['Overstay_h'] = X['Overstay'].dt.seconds / 3600
 
         X.drop(columns=['temp_0'], inplace=True)
-
-        X.to_csv("data/raw_data.csv")
 
         return X
 
@@ -102,8 +97,7 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         This helper function takes in a session, with a "connectTime", "finishChargeTime", and 
         a "peakPower_W" column. Function will return a time series at 5-min granularity. 
         """
-        date_range = pd.date_range(
-            start=session["startChargeTime"].round("5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min")
+        date_range = pd.date_range(start=session["startChargeTime"].round("5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min")
         temp_df = pd.DataFrame(index=date_range)
         temp_df["avg_power_demand_W"] = session["true_peakPower_W"]  # rename
         self.rows.append(temp_df)
@@ -130,8 +124,7 @@ class ImputeZero(BaseEstimator, TransformerMixin):
         # "missing chunk"
         missing_dates = pd.date_range(
             start=X.index[-1], end=end, freq="5MIN", inclusive="right")
-        missing = pd.DataFrame(index=missing_dates, columns=[
-                               "avg_power_demand_W"], data=0)  # impute zero
+        missing = pd.DataFrame(index=missing_dates, columns=["avg_power_demand_W"], data=0)  # impute zero
         imputed = pd.concat([X, missing], axis=0)
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
         return imputed[imputed.index <= end].copy()
@@ -149,8 +142,7 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
 
     def transform(self, X) -> pd.DataFrame:
         X["energy_demand_kWh"] = (X["avg_power_demand_W"]/1000)/12
-        # for the highest granularity, peak power is equal to the power demand
-        # (different for different granularities though)
+        # for the highest granularity, peak power is equal to the power demand (different for different granularities though)
         X["peak_power_W"] = X["avg_power_demand_W"]
         X.index.name = "time"
         X["day"] = X.index.day_name()
@@ -158,13 +150,13 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
         return X
 
 
-class SaveToCsv(BaseEstimator, TransformerMixin):
+class CreateGranularities(BaseEstimator, TransformerMixin):
     """
     This pipeline step takes each dataframe and creates new granularities
-    (hourly, daily, and monthly). Each dataframe is saved to a "data/" file. 
+    (hourly, daily, and monthly). Each dataframe is optionally saved to a "data/" file. 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, save=False) -> None:
         self.agg_key = {
             "avg_power_demand_W": "mean",
             "energy_demand_kWh": "sum",
@@ -178,6 +170,7 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
             "dailydemand",
             "monthlydemand"
         ]
+        self.save = save
         super().__init__()
 
     def fit(self, X, y=None):
@@ -197,6 +190,8 @@ class SaveToCsv(BaseEstimator, TransformerMixin):
         }
 
         # save to file system
-        for idx, dataframe in enumerate(new_dataframes.values()):
-            dataframe.to_csv(f"data/{self.dataframe_names[idx]}.csv")
+        if self.save:
+            for idx, dataframe in enumerate(new_dataframes.values()):
+                dataframe.to_csv(f"data/{self.dataframe_names[idx]}.csv")
+
         return new_dataframes

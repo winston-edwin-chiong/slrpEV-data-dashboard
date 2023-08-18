@@ -1,5 +1,4 @@
 from sklearn.pipeline import Pipeline
-import pandas as pd
 import datacleaning.fullcleaningclasses as fcc
 import datacleaning.sessionlevelcleaningclasses as scc
 
@@ -20,9 +19,10 @@ class CleanData:
                 ("create_session_TS", fcc.CreateSessionTimeSeries()),
                 ("impute_zero", fcc.ImputeZero()),
                 ("create_features", fcc.FeatureCreation()),
-                ("save_to_csv", fcc.SaveToCsv()),
+                ("create_granularities", fcc.CreateGranularities()),
             ]
         )
+        # fivemindemand, hourlydemand, dailydemand, monthlydemand are keys here
         cleaned_dataframes = full_ts_pipeline.fit_transform(raw_data)
 
         # today's sessions pipeline
@@ -31,11 +31,10 @@ class CleanData:
                 ("sort_drop_cast", scc.SortDropCastSessions()),
                 ("create_helpers", scc.HelperFeatureCreation()),
                 ("nested_ts", scc.CreateNestedSessionTimeSeries()),
-                ("save_csv", scc.SaveTodaySessionToCSV())
             ]
         )
 
         cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(raw_data)
-        cleaned_dataframes["raw_data"] = pd.read_csv("data/raw_data.csv")
+        cleaned_dataframes["raw_data"] = raw_data
 
         return cleaned_dataframes

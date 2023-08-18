@@ -9,35 +9,24 @@ from sklearn.model_selection import train_test_split
 
 class CreateHourlyForecasts:
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    data_folder = os.path.abspath(os.path.join(current_dir, '..', '..', 'data'))
-    csv_path = os.path.join(data_folder, 'hourlyforecasts.csv')
-
     def __init__():
         pass
 
     @classmethod
-    def run_hourly_forecast(cls, df, best_params: dict):
+    def run_hourly_forecast(cls, df: pd.DataFrame, best_params: dict, existing_forecasts: pd.DataFrame=pd.DataFrame()):
 
         hourly_forecast_pipeline = Pipeline([
             ("estimator", kNNPredict(best_params=best_params))
         ])
         new_forecasts = hourly_forecast_pipeline.fit_transform(df)
-        
-        try: 
-            existing_forecasts = pd.read_csv("data/hourlyforecasts.csv", index_col="time", parse_dates=True)
-        except:
-            existing_forecasts = pd.DataFrame()
 
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1H").last()  # get more recent forecast
-        forecasts.to_csv(cls.csv_path)
 
         return forecasts
 
     @classmethod
-    def save_empty_prediction_df(cls):
+    def get_empty_prediction_df(cls):
         empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
-        empty_df.to_csv(cls.csv_path)
         return empty_df
 
 

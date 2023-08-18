@@ -61,8 +61,25 @@ class db:
             forecasts.to_csv(csv_path)
 
 
+    @staticmethod
+    def send_item(redis_client: redis.Redis, key: str, item):
+        '''
+        Pickles and sends item to Redis.
+        '''
+        redis_client.set(key, pickle.dumps(item))
+
+    @staticmethod
+    def get_item(redis_client: redis.Redis, key: str):
+        '''
+        Unpickles and returns item from Redis.
+        '''
+        return pickle.loads(redis_client.get(key))
+
     @classmethod
-    def send_chunks(cls, redis_client: redis.Redis, df: pd.DataFrame, name: str):
+    def send_df_chunks(cls, redis_client: redis.Redis, df: pd.DataFrame, name: str):
+        '''
+        Suitable for large dataframes, where a single send operation would exceed memory limit. 
+        '''
         chunks = np.array_split(df, cls.chunk_size)
 
         for i, chunk in enumerate(chunks):
@@ -71,7 +88,7 @@ class db:
 
 
     @classmethod
-    def get_chunks(cls, redis_client: redis.Redis, name):
+    def get_df_chunks(cls, redis_client: redis.Redis, name):
         '''
         All dataframes except forecasts should be retrieved with this method. 
         '''

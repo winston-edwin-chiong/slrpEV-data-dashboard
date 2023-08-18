@@ -12,8 +12,10 @@ from datacleaning.CleanData import CleanData
 from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
 from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValidator
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
-from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
+from machinelearning.crossvalidation.HourlyCrossValidator import HourlyCrossValidator
 from db.utils import db
+
+### THIS FILE IS NOT USED IN THE CURRENT VERSION OF THE APP. IT'S ALSO OUTDATED AND WON'T WORK. DB OPERATIONS WERE CHANGED ###
 
 logger = logging.getLogger(__name__)
 load_dotenv()
@@ -54,7 +56,7 @@ app.conf.beat_schedule = {
 @app.task(name="fetch-clean-store-data")
 def query_data():
     logger.info("Fetching data...")
-    raw_data = FetchData.scan_save_all_records()
+    raw_data = FetchData.scan_all_records()
 
     logger.info("Cleaning data...")
     cleaned_dataframes = CleanData.clean_save_raw_data(raw_data)

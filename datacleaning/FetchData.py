@@ -27,9 +27,9 @@ class FetchData:
         )
         return dynamodb.Table(table_id)
 
-    # TODO: Only query for records I don't have. Currently don't know how, so I'm scanning for all records. It's possible this is impossible with current DB structure.
+
     @classmethod
-    def scan_save_all_records(cls):
+    def scan_all_records(cls):
         scan_results = []
         table = cls.__get_table(cls.table_id)
 
@@ -48,5 +48,5 @@ class FetchData:
             done = start_key is None
 
         raw_data = pd.json_normalize(scan_results)
-        raw_data.to_csv("data/raw_data.csv")
+        
         return raw_data

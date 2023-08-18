@@ -1,101 +1,151 @@
-import logging
-import pickle
-import os
-import pytz
-import pandas as pd
-from apscheduler.schedulers.background import BackgroundScheduler
+import modal
+import logging 
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
-from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
+from db.utils import db
 from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValidator
+from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
+from machinelearning.crossvalidation.HourlyCrossValidator import HourlyCrossValidator
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
-from machinelearning.crossvalidation.HoulrlyCrossValidator import HourlyCrossValidator
-
-def START_SCHEDULER():
-
-    logging.basicConfig()
-    logging.getLogger('apscheduler').setLevel(logging.INFO)
-    logger = logging.getLogger('apscheduler')
-
-    scheduler = BackgroundScheduler()
-
-    @scheduler.scheduled_job('cron', minute=5, coalesce=True)
-    def query_data():
-        logger.info("Fetching data...")
-        raw_data = FetchData.scan_save_all_records()
-
-        logger.info("Cleaning data...")
-        cleaned_dataframes = CleanData.clean_save_raw_data(raw_data)
-
-        logger.info("Done!")
 
 
-    @scheduler.scheduled_job('cron', hour="7,15,23")
-    def forecast_daily():
-        logger.info("Loading data...")
-        data = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
+# create image
+image = modal.Image.debian_slim().pip_install("pandas", "numpy", "redis", "boto3", "python-dotenv", "scikit-learn", "pmdarima", "statsmodels")
 
-        logger.info("Forecasting and saving daily demand...")
-        best_params = pd.read_pickle("data/dailyparams.pkl")
-        
-        forecasts = CreateDailyForecasts.run_daily_forecast(data, best_params)
+stub = modal.Stub()
 
-        logger.info("Done!")
+# logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-    @scheduler.scheduled_job('cron', minute=55)
-    def forecast_hourly():
-        logger.info("Loading data...")
-        data = pd.read_csv("data/hourlydemand.csv")
+# query data
+@stub.function(
+        schedule=modal.Cron('55 * * * *'), 
+        secret=modal.Secret.from_name("slrpEV"), 
+        image=image,
+        mounts=[modal.Mount.from_local_python_packages("datacleaning.FetchData", "datacleaning.CleanData", "db.utils")]
+)
+def query_data():
+    r = db.get_redis_connection()
 
-        logger.info("Forecasting and saving hourly demand...")
-        best_params = pd.read_pickle("data/hourlyparams.pkl")
+    logger.info("Fetching data...")
+    raw_data = FetchData.scan_all_records()
 
-        forecasts = CreateHourlyForecasts.run_hourly_forecast(data, best_params)
+    logger.info("Cleaning data...")
+    cleaned_dataframes = CleanData.clean_save_raw_data(raw_data)
 
-        logger.info("Done!")
+    logger.info("Serializiing data...")
+    for key in cleaned_dataframes.keys():
+        db.send_df_chunks(r, cleaned_dataframes.get(key), key)
 
-
-    @scheduler.scheduled_job('cron', minute=15, hour=3, day="1,15")
-    def update_daily_params():
-        logger.info("Loading data...")
-        data = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
-
-        logger.info("Cross validating daily forecast parameters...")
-        params = DailyCrossValidator.cross_validate(data)
-
-
-        logger.info("Saving parameters...")
-        with open("data/dailyparams.pkl", "wb") as f:
-            pickle.dump(params, f)
-
-        logger.info("Clearing Forecasts...")
-        CreateDailyForecasts.save_empty_prediction_df()
-
-        logger.info("Forecasting daily demand...")
-        forecast_daily()
-
-        logger.info("Done!")
+    logger.info("Done!")
 
 
-    @scheduler.scheduled_job('cron', minute=20, hour=3, day="1,15")
-    def update_hourly_params():
-        logger.info("Loading data...")
-        data = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
+# validate model parameters
+@stub.function(
+        schedule=modal.Cron('5 3 1 * *'), 
+        secret=modal.Secret.from_name("slrpEV"), 
+        image=image, 
+        mounts=[modal.Mount.from_local_python_packages(
+            "db.utils", 
+            "machinelearning.crossvalidation.DailyCrossValidator", 
+            "machinelearning.forecasts.DailyForecast",
+            "machinelearning.crossvalidation.HourlyCrossValidator",
+            "machinelearning.forecasts.HourlyForecast",
+            )]
+        )
+def update_params():
+    r = db.get_redis_connection()
 
-        logger.info("Cross validating hourly forecast parameters...")
-        params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data)
+    ### DAILY PARAMETERS ###
+    logger.info("Loading daily demand data...")
+    data = db.get_df_chunks(r, "dailydemand")
 
-        logger.info("Saving parameters...")
-        with open("data/hourlyparams.pkl", "wb") as f:
-            pickle.dump(params, f)
+    logger.info("Cross validating daily forecast parameters...")
+    params = DailyCrossValidator.cross_validate(data)
 
-        logger.info("Clearing Forecasts...")
-        CreateHourlyForecasts.save_empty_prediction_df()
+    logger.info("Serializing data..")
+    db.send_item(r, "dailyparams", params)
 
-        logger.info("Forecasting hourly demand...")
-        forecast_hourly()
+    logger.info("Clearing Forecasts...")
+    db.send_item(r, "dailyforecasts", CreateDailyForecasts.get_empty_prediction_df())
 
-        logger.info("Done!")
+    logger.info("Forecasting daily demand...")
+    existing_forecasts = db.get_item(r, "dailyforecasts")
+    forecasts = CreateDailyForecasts.run_daily_forecast(data, params, existing_forecasts)
+    db.send_item(r, "dailyforecasts", forecasts)
 
-    scheduler.start()
+    ### HOURLY PARAMETERS ###
+    logger.info("Loading hourly demand data...")
+    data = db.get_df_chunks(r, "hourlydemand")
+
+    logger.info("Cross validating hourly forecast parameters...")
+    params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data)
+
+    logger.info("Serializing data...")
+    db.send_item(r, "hourlyparams", params)
+
+    logger.info("Clearing Forecasts...")
+    db.send_item(r, "hourlyforecasts", CreateHourlyForecasts.get_empty_prediction_df())
+
+    logger.info("Forecasting hourly demand...")
+    existing_forecasts = db.get_item(r, "hourlyforecasts")
+    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, params, existing_forecasts)
+    db.send_item(r, "hourlyforecasts", forecasts)
+
+
+    logger.info("Done!")
+
+
+# forecast hourly demand
+@stub.function(schedule=modal.Cron('5 * * * *'), 
+        secret=modal.Secret.from_name("slrpEV"), 
+        image=image, 
+        mounts=[modal.Mount.from_local_python_packages(
+            "db.utils", 
+            "machinelearning.forecasts.HourlyForecast",
+            )]
+        )
+def forecast_hourly():
+    r = db.get_redis_connection()
+
+    logger.info("Loading data...")
+    data = db.get_df_chunks(r, "hourlydemand")
+
+    logger.info("Forecasting hourly demand...")
+    best_params = db.get_item(r, "hourlyparams")
+    existing_forecasts = db.get_item(r, "hourlyforecasts")
+    forecasts = CreateHourlyForecasts.run_hourly_forecast(data, best_params, existing_forecasts)
+
+    logger.info("Serializing data...")
+    db.send_item(r, "hourlyforecasts", forecasts)
+
+    logger.info("Done!")
+
+
+# forecast daily demand
+@stub.function(schedule=modal.Cron('45 7,15,23 * * *'), 
+        secret=modal.Secret.from_name("slrpEV"), 
+        image=image, 
+        mounts=[modal.Mount.from_local_python_packages(
+            "db.utils", 
+            "machinelearning.forecasts.DailyForecast",
+            )]
+        )
+def forecast_daily():
+    r = db.get_redis_connection()
+
+    logger.info("Loading data...")
+    data = db.get_df_chunks(r, "dailydemand")
+
+    logger.info("Forecasting daily demand...")
+    best_params = db.get_item(r, "dailyparams")
+    existing_forecasts = db.get_item(r, "dailyforecasts")
+    forecasts = CreateDailyForecasts.run_daily_forecast(data, best_params, existing_forecasts)
+
+    logger.info("Serializing data...")
+    db.send_item(r, "dailyforecasts", forecasts)
+
+    logger.info("Done!")
+
