@@ -157,6 +157,7 @@ def toggle_navbar_collapse(n, is_open):
 @app.callback(
     Output("data_refresh_signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
+    prevent_initial_call=True
 )
 def data_refresh_interval(n):
     '''
@@ -170,4 +171,5 @@ def data_refresh_interval(n):
 
 # running the app
 if __name__ == '__main__':
+    db.update_data()
     app.run_server()

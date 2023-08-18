@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # query data
 @stub.function(
         schedule=modal.Cron('55 * * * *'), 
-        secret=modal.Secret.from_name("slrpEV"), 
+        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image,
         mounts=[modal.Mount.from_local_python_packages("datacleaning.FetchData", "datacleaning.CleanData", "db.utils")]
 )
@@ -45,7 +45,7 @@ def query_data():
 # validate model parameters
 @stub.function(
         schedule=modal.Cron('5 3 1 * *'), 
-        secret=modal.Secret.from_name("slrpEV"), 
+        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image, 
         mounts=[modal.Mount.from_local_python_packages(
             "db.utils", 
@@ -100,7 +100,7 @@ def update_params():
 
 # forecast hourly demand
 @stub.function(schedule=modal.Cron('5 * * * *'), 
-        secret=modal.Secret.from_name("slrpEV"), 
+        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image, 
         mounts=[modal.Mount.from_local_python_packages(
             "db.utils", 
@@ -126,7 +126,7 @@ def forecast_hourly():
 
 # forecast daily demand
 @stub.function(schedule=modal.Cron('45 7,15,23 * * *'), 
-        secret=modal.Secret.from_name("slrpEV"), 
+        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image, 
         mounts=[modal.Mount.from_local_python_packages(
             "db.utils", 
