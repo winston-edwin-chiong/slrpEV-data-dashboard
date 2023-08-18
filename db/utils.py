@@ -8,7 +8,6 @@ from redis.retry import Retry
 from redis.exceptions import BusyLoadingError, ConnectionError, TimeoutError
 from dotenv import load_dotenv
 
-load_dotenv()
 
 class db:
 

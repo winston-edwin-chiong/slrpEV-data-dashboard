@@ -12,6 +12,7 @@ from db.utils import db
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
 
 # fill filesystem
+load_dotenv()
 r = db.get_redis_connection()
 db.update_data(r)
 

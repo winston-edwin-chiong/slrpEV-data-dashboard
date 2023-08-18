@@ -7,6 +7,7 @@ from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValida
 from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
 from machinelearning.crossvalidation.HourlyCrossValidator import HourlyCrossValidator
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
+from dotenv import load_dotenv
 
 
 # create image
@@ -18,6 +19,7 @@ stub = modal.Stub()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+load_dotenv()
 
 # query data
 @stub.function(
