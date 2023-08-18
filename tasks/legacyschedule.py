@@ -74,7 +74,7 @@ def forecast_daily():
     data = db.get_chunks(r, "dailydemand")
 
     logger.info("Forecasting daily demand...")
-    best_params = db.get_item(r, "daily_params")
+    best_params = db.get_item(r, "dailyparams")
     forecasts = CreateDailyForecasts.run_daily_forecast(data, best_params)
 
     logger.info("Serializing data...")
@@ -89,7 +89,7 @@ def forecast_hourly():
     data = db.get_chunks(r, "hourlydemand")
 
     logger.info("Forecasting hourly demand...")
-    best_params = db.get_item(r, "hourly_params")
+    best_params = db.get_item(r, "hourlyparams")
     forecasts = CreateHourlyForecasts.run_hourly_forecast(data, best_params)
 
     logger.info("Serializing data...")
@@ -107,7 +107,7 @@ def update_daily_params():
     params = DailyCrossValidator.cross_validate(data)
 
     logger.info("Serializing data..")
-    r.set("daily_params", pickle.dumps(params))
+    r.set("dailyparams", pickle.dumps(params))
 
     logger.info("Clearing Forecasts...")
     CreateDailyForecasts.save_empty_prediction_df()
@@ -127,7 +127,7 @@ def update_hourly_params():
     params = HourlyCrossValidator(max_neighbors=25, max_depth=60).cross_validate(data)
 
     logger.info("Serializing data...")
-    r.set("hourly_params", pickle.dumps(params))
+    r.set("hourlyparams", pickle.dumps(params))
 
     logger.info("Clearing Forecasts...")
     CreateHourlyForecasts.save_empty_prediction_df()
@@ -145,11 +145,11 @@ def run_startup_tasks(**kwargs):
     if not r.get("raw_data_0"):
         query_data()
 
-    if not r.get("daily_params"):
-        update_daily_params()
-
-    if not r.get("hourly_params"):
+    if not r.get("hourlyparams"):
         update_hourly_params()
+
+    if not r.get("dailyparams"):
+        update_daily_params()
 
     if not r.get("dailyforecasts"):
         forecast_daily()
