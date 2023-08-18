@@ -2,12 +2,12 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_auth
 import os
-from dash import html, dcc, CeleryManager
+import diskcache
+from dash import html, dcc, DiskcacheManager
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 from dash_bootstrap_templates import ThemeChangerAIO
 from db.utils import db
-from celery import Celery
 
 # styles
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
@@ -18,8 +18,8 @@ r = db.get_redis_connection()
 db.update_data(r)
 
 # app instantiation
-celery_app = Celery(__name__, broker=os.getenv('REDIS_URI'), backend=os.getenv('REDIS_URI'))
-background_callback_manager = CeleryManager(celery_app)
+cache = diskcache.Cache("./cache")
+background_callback_manager = DiskcacheManager(cache)
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
 server = app.server
