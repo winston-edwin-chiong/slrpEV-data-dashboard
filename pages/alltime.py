@@ -164,7 +164,7 @@ tab_one_content = \
                                         ], type="circle")
                                     ], className="d-flex flex-column border rounded shadow")
                                 ], className="col-xl-3 col-12 px-2", id="hover-histogram-col")
-                            ])
+                            ], className="row-gap-4")
                         ], className="mt-2", fluid=True),
                     ],),
                     ### --> <-- ###

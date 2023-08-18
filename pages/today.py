@@ -105,7 +105,7 @@ layout = \
                                         type="circle")
                                     ], className="border rounded shadow"),
                                 ], className="col-md-2 col-12 px-2", id="hover-user-col")
-                            ],)
+                            ], className="row-gap-4")
                         ], className="mt-2", fluid=True),
                     ]),
                     ### --> <-- ###

@@ -2,11 +2,12 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_auth
 import os
-from dash import html, dcc
+from dash import html, dcc, CeleryManager
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 from dash_bootstrap_templates import ThemeChangerAIO
 from db.utils import db
+from celery import Celery
 
 # styles
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
@@ -17,6 +18,9 @@ r = db.get_redis_connection()
 db.update_data(r)
 
 # app instantiation
+celery_app = Celery(__name__, broker=os.getenv('REDIS_URI'), backend=os.getenv('REDIS_URI'))
+background_callback_manager = CeleryManager(celery_app)
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
 server = app.server
 app.title = "slrpEV Dashboard"
@@ -159,15 +163,18 @@ def toggle_navbar_collapse(n, is_open):
 
 # --> Interval Components <-- #
 
-@app.callback(
+@dash.callback(
     Output("data_refresh_signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
+    background=True,
+    manager=background_callback_manager,
     prevent_initial_call=True
 )
 def data_refresh_interval(n):
     '''
     This callback updates data at regular intervals.
     '''
+    print("Refreshing data...")
     db.update_data(r)
     return n
 
@@ -176,4 +183,4 @@ def data_refresh_interval(n):
 
 # running the app
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
