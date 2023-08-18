@@ -21,8 +21,8 @@ class FetchData:
         cls.__configure()  # load environment variables
         dynamodb = boto3.resource(
             "dynamodb",
-            aws_access_key_id=os.getenv("access_key_id"),
-            aws_secret_access_key=os.getenv("secret_access_key"),
+            aws_access_key_id=os.getenv("ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("SECRET_ACCESS_KEY"),
             region_name="us-east-2",
         )
         return dynamodb.Table(table_id)

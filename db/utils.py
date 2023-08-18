@@ -45,6 +45,9 @@ class db:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         data_folder = os.path.abspath(os.path.join(current_dir, '..', 'data'))
 
+        if not os.path.exists(data_folder):
+            os.makedirs(data_folder)
+
         # update data 
         for name in ["raw_data", "todays_sessions", "fivemindemand", "hourlydemand", "dailydemand", "monthlydemand"]:
             data = cls.get_df_chunks(redis_client, name)
