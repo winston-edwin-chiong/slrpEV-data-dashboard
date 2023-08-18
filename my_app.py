@@ -12,7 +12,8 @@ from db.utils import db
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
 
 # fill filesystem
-db.update_data(db.get_redis_connection())
+r = db.get_redis_connection()
+db.update_data(r)
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
@@ -166,7 +167,7 @@ def data_refresh_interval(n):
     '''
     This callback updates data at regular intervals.
     '''
-    db.update_data()
+    db.update_data(r)
     return n
 
 # --> <-- #

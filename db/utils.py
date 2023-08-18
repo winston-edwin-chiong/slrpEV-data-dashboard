@@ -10,8 +10,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-### DEPRECATED ###
-### THIS CLASS IS NOT USED IN THE CURRENT VERSION OF THE APP ###
 class db:
 
     chunk_size = 30
