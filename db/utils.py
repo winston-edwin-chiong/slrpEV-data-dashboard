@@ -50,7 +50,7 @@ class db:
 
         # update data 
         for name in ["raw_data", "todays_sessions", "fivemindemand", "hourlydemand", "dailydemand", "monthlydemand"]:
-            data = cls.get_chunks(redis_client, name)
+            data = cls.get_df_chunks(redis_client, name)
             csv_path = os.path.join(data_folder, f'{name}.csv')
             data.to_csv(csv_path)
 

@@ -11,6 +11,9 @@ from db.utils import db
 # styles
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
 
+# fill filesystem
+db.update_data()
+
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
 server = app.server
@@ -171,5 +174,4 @@ def data_refresh_interval(n):
 
 # running the app
 if __name__ == '__main__':
-    db.update_data()
     app.run_server()
