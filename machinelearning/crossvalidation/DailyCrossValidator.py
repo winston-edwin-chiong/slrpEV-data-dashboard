@@ -39,7 +39,7 @@ class SARIMACrossValidator:
 
         stepwise_fit = pm.auto_arima(y_train,
                                      start_p=0, start_q=0,
-                                     max_p=3, max_q=3, max_Q=3, max_P=3,
+                                     max_p=2, max_q=2, max_Q=2, max_P=2,
                                      d=0, D=1, m=7,
                                      X=None,
                                      seasonal=True, trace=True, stepwise=True)
