@@ -100,13 +100,13 @@ app.layout = \
                                 html.Button([
                                     "Refresh Data!",
                                 ], id="data-refresh-btn", className="btn btn-outline-primary btn-sm py-0 px-1 rounded d-flex align-items-center"),
-                            ], className="d-flex justify-content-center align-items-center mb-2"),
+                            ], className="d-flex justify-content-center align-items-center mb-2 me-0 mb-lg-0 me-lg-2"),
                             ThemeChangerAIO(aio_id="theme", 
                                             radio_props={"value":dbc.themes.LUX, "options":themes_options}, 
                                             button_props={"className":"px-1 py-0 rounded"},
                                             offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}},
                                             )
-                        ], className="theme-change-flex d-flex flex-column justify-content-start align-items-start"),
+                        ], className="theme-change-flex d-flex flex-lg-row flex-column align-items-lg-center align-items-start"),
                     ], className="navbar-flex d-flex flex-grow-1 justify-content-between")
                 ], id="navbar-collapse", className="my-2", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)

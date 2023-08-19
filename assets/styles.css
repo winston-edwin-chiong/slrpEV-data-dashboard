@@ -23,7 +23,7 @@
 }
 
 /* Small devices (below 768px) */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767px) {
     .navbar-flex {
         display: flex;
         flex-direction: column;
@@ -34,5 +34,15 @@
         }
     .offcanvas {
         width: 85% !important;
+        }
+    }
+    
+/* Small height devices (below 600px) */
+@media screen and (max-height: 600px) {
+    #sched-vs-reg-scatter {
+        height: 150vh !important;
+        }
+    #hour-histogram, #day-histogram {
+        height: 70vh !important;
         }
     }

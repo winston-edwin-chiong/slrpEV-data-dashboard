@@ -71,8 +71,7 @@ dash.register_page(__name__, path="/")
 
 layout = \
     html.Div([
-        html.H1(datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%A, %B %d, %Y"),
-                className="d-flex justify-content-center text-center my-5 mx-2 text-bolder"),
+        html.H1(id="date-title", className="d-flex justify-content-center text-center my-5 mx-2 text-bolder"),
         dbc.Container([
             dbc.Row([
                 dbc.Col([
@@ -234,3 +233,12 @@ def update_cum_homepage_cards(n):
                         f"Equivalent to {round(cum_emiles_float / 5810, 1)} round trips from San Francisco to New York City!"]  # 5810 miles round trip
 
     return cum_kwh_delivered, cum_sessions, cum_emiles_delivered, cum_kwh_stats, cum_emiles_stats, cum_sessions_stats
+
+
+# update date title
+@dash.callback(
+    Output("date-title", "children"),
+    Input("data_refresh_signal", "data")
+)
+def update_date_title(n):
+    return datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%A, %B %d, %Y")   
