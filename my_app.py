@@ -147,7 +147,7 @@ app.layout = \
                         html.A(html.I(className="bi bi-github m-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
                         html.A(html.I(className="bi bi-linkedin m-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
                     ], className="d-flex")
-                ], className="d-flex flex-column justify-content-center align-items-center"),
+                ], className="d-flex flex-column justify-content-center align-items-center text-center"),
             ], className="d-flex justify-content-center align-items-center")
         ], className="fs-6 mt-5 p-2 bg-light text-dark shadow-top"),
         ### --> <-- ###
