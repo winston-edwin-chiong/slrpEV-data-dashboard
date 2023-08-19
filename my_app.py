@@ -13,6 +13,7 @@ from db.utils import db
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
 
 # connect to Redis, fill data folder on first run
+load_dotenv()
 r = db.get_redis_connection()
 db.update_data(r)
 
@@ -26,7 +27,6 @@ server = app.server
 app.title = "slrpEV Dashboard"
 
 
-load_dotenv()
 auth = dash_auth.BasicAuth(
     app,
     {os.getenv("DASH_USERNAME"): os.getenv("DASH_PASSWORD")}
