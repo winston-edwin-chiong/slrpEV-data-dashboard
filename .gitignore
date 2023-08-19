@@ -185,6 +185,9 @@ cache/
 # Data
 data/
 
+#VSCode
+.vscode/
+
 # Celery 
 celerybeat-schedule.bak
 celerybeat-schedule.dat

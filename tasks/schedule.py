@@ -23,11 +23,15 @@ load_dotenv()
 
 # query data
 @stub.function(
-        schedule=modal.Cron('5 * * * *'), 
+        schedule=modal.Cron('10,30,50 * * * *'), 
         secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image,
-        mounts=[modal.Mount.from_local_python_packages("datacleaning.FetchData", "datacleaning.CleanData", "db.utils")]
-)
+        mounts=[modal.Mount.from_local_python_packages(
+            "datacleaning.FetchData", 
+            "datacleaning.CleanData", 
+            "db.utils"
+            )]
+        )
 def query_data():
     r = db.get_redis_connection()
 
