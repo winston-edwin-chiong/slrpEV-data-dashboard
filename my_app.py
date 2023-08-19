@@ -12,8 +12,9 @@ from db.utils import db
 # styles
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
 
-# connect to Redis
+# connect to Redis, fill data folder on first run
 r = db.get_redis_connection()
+db.update_data(r)
 
 
 # app instantiation
