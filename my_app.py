@@ -12,10 +12,9 @@ from db.utils import db
 # styles
 dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
 
-# fill filesystem
-load_dotenv()
+# connect to Redis
 r = db.get_redis_connection()
-db.update_data(r)
+
 
 # app instantiation
 cache = diskcache.Cache("./cache")
@@ -64,7 +63,7 @@ themes_options = [
 app.layout = \
     html.Div([
 
-        # --> Navbar <-- #
+        ### --> Navbar <-- ###
         dbc.Navbar([
             dbc.Container([
                 html.A([
@@ -96,12 +95,17 @@ app.layout = \
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
                         ]),
                         html.Div([
+                            html.Div([
+                                html.Button([
+                                    "Refresh Data!",
+                                ], id="data-refresh-btn", className="btn btn-outline-primary btn-sm py-0 px-1 rounded d-flex align-items-center"),
+                            ], className="d-flex justify-content-center align-items-center mb-2"),
                             ThemeChangerAIO(aio_id="theme", 
                                             radio_props={"value":dbc.themes.LUX, "options":themes_options}, 
                                             button_props={"className":"px-1 py-0 rounded"},
-                                            offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}}
+                                            offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}},
                                             )
-                        ], className="theme-change-flex d-flex justify-content-start align-items-center"),
+                        ], className="theme-change-flex d-flex flex-column justify-content-start align-items-start"),
                     ], className="navbar-flex d-flex flex-grow-1 justify-content-between")
                 ], id="navbar-collapse", className="my-2", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
@@ -109,42 +113,43 @@ app.layout = \
         # --> <---#
 
 
-        # --> Page Content <-- #
+        ### --> Page Content <-- ###
         html.Div([
             dash.page_container,
         ], className="d-flex flex-column flex-grow-1"),
         # --> <-- #
 
-        
-        # --> Interval Components <-- #
+
+        ### --> Interval Components <-- ###
         html.Div([
             html.Div([
                 dcc.Interval(
                     id="data_refresh_interval_component",
-                    interval=15 * 60 * 1000,  # poll db every 15 minutes
+                    interval=25 * 60 * 1000,  # poll db every 25 minutes
                     n_intervals=0
                 ),
                 dcc.Store(id="data_refresh_signal"),
             ]),
         ]),
-        # --> <-- #
+        ### --> <-- ###
 
-        # --> Footer <-- #
+
+        ### --> Footer <-- ###
         html.Footer([
             html.Div([
                 html.Div([
                     html.Div([
                         html.Div(["Made with ❤️ & 🍵 by Winston"]),
                     ]),
-                    html.Div(["Icons by Bootstrap Icons and Icons8"]),
+                    html.Div(["Icons by Bootstrap Icons & Icons8, Themes by Bootswatch"]),
                     html.Div([
-                        html.A(html.I(className="bi bi-github me-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
-                        html.A(html.I(className="bi bi-linkedin ms-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
+                        html.A(html.I(className="bi bi-github m-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
+                        html.A(html.I(className="bi bi-linkedin m-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
                     ], className="d-flex")
                 ], className="d-flex flex-column justify-content-center align-items-center"),
             ], className="d-flex justify-content-center align-items-center")
         ], className="fs-6 mt-5 p-2 bg-light text-dark shadow-top"),
-        # --> <-- #
+        ### --> <-- ###
 
     ], className="d-flex flex-column min-vh-100")
 
@@ -161,26 +166,30 @@ def toggle_navbar_collapse(n, is_open):
     return is_open 
 
 
-# --> Interval Components <-- #
+### --> Interval Components <-- ###
 
 @dash.callback(
     Output("data_refresh_signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
+    Input("data-refresh-btn", "n_clicks"),
     background=True,
     manager=background_callback_manager,
-    prevent_initial_call=True
+    prevent_initial_call=True,
+    running=[
+        (Output("data-refresh-btn", "disabled"), True, False),
+        (Output("data-refresh-btn", "children"), [dbc.Spinner(size="sm", color="info", spinnerClassName="me-1"), "Refreshing Data..."], "Refresh Data!"),
+    ]
 )
-def data_refresh_interval(n):
+def data_refresh_interval(n, n_clicks):
     '''
     This callback updates data at regular intervals.
     '''
-    print("Refreshing data...")
     db.update_data(r)
     return n
 
-# --> <-- #
+### --> <-- ###
 
 
 # running the app
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()

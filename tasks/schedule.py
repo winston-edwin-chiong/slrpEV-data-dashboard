@@ -23,7 +23,7 @@ load_dotenv()
 
 # query data
 @stub.function(
-        schedule=modal.Cron('55 * * * *'), 
+        schedule=modal.Cron('5 * * * *'), 
         secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image,
         mounts=[modal.Mount.from_local_python_packages("datacleaning.FetchData", "datacleaning.CleanData", "db.utils")]
@@ -101,7 +101,7 @@ def update_params():
 
 
 # forecast hourly demand
-@stub.function(schedule=modal.Cron('5 * * * *'), 
+@stub.function(schedule=modal.Cron('15 * * * *'), 
         secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image, 
         mounts=[modal.Mount.from_local_python_packages(
