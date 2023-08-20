@@ -2,7 +2,7 @@ import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
 import dash_ag_grid as dag
-from dash import html, dcc, Input, Output, State
+from dash import html, dcc, Input, Output, State, ctx
 from dash_bootstrap_templates import ThemeChangerAIO
 
 dash.register_page(__name__, path="/data")
@@ -87,7 +87,7 @@ layout = \
     ])
 
 
-# --> DON'T TOUCH THIS <-- #
+### --> DON'T TOUCH THIS <-- ###
 
 operators = {
     "greaterThanOrEqual": "ge",
@@ -138,14 +138,32 @@ def filterDf(df, data, col):
         df = df.loc[getattr(df[col], operators[data["type"]])(crit1)]
     return df
 
-# --> <-- #
-
 
 @dash.callback(
     Output("raw-data-grid", "getRowsResponse"),
     Input("raw-data-grid", "getRowsRequest"),
+    Input("data_refresh_signal", "data")
 )
-def infinite_scroll(request):
+def infinite_scroll(request, signal):
+    callback_id = ctx.triggered_id
+
+    if callback_id is "data_refresh_signal":
+        dff = pd.read_csv("data/raw_data.csv")
+        # drop helper columns
+        dff = dff.drop(
+            columns=[
+                "finishChargeTime",
+                "trueDurationHrs",
+                "true_peakPower_W",
+                "Overstay",
+                "Overstay_h"
+            ]
+        )
+        # reverse data (most recent first)
+        dff = dff[::-1]
+
+        return {"rowData": dff.to_dict("records")}
+    
     dff = df.copy()
     if request is None:
         return dash.no_update
@@ -185,6 +203,8 @@ def infinite_scroll(request):
     partial = dff.iloc[request["startRow"]: request["endRow"]]
     return {"rowData": partial.to_dict("records"), "rowCount": len(dff.index)}
 
+### --> <-- ###
+
 
 @dash.callback(
     Output("data-column-dropdown", "value"),
@@ -215,29 +235,6 @@ def toggle_grid_collapse(button_press, is_open):
     if button_press:
         return not is_open
     return is_open
-
-
-@dash.callback(
-    Output("raw-data-grid", "rowData"),
-    Input("data_refresh_signal", "data")
-)
-def update_data(signal):
-    # load data
-    df = pd.read_csv("data/raw_data.csv")
-    # drop helper columns
-    df = df.drop(
-        columns=[
-            "finishChargeTime",
-            "trueDurationHrs",
-            "true_peakPower_W",
-            "Overstay",
-            "Overstay_h"
-        ]
-    )
-    # reverse data (most recent first)
-    df = df[::-1]
-
-    return df.to_dict("records")
 
 
 @dash.callback(
