@@ -22,16 +22,8 @@
     }
 }
 
-/* Small devices (below 768px) */
+/* Small width devices (below 768px) */
 @media screen and (max-width: 767px) {
-    .navbar-flex {
-        display: flex;
-        flex-direction: column;
-        }
-    .theme-change-flex {
-        margin-left: 0.75rem;
-        margin-top: 0.5rem;
-        }
     .offcanvas {
         width: 85% !important;
         }

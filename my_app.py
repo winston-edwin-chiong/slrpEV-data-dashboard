@@ -77,23 +77,23 @@ app.layout = \
                             dbc.NavItem([
                                 html.I(className="navbar-icon bi bi-house px-1 text-primary"),
                                 dbc.NavLink("Home", href="/", className="text-start text-primary")
-                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
+                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 html.I(className="navbar-icon bi bi-graph-up px-1 text-primary"),
                                 dbc.NavLink("Alltime", href="/alltime", className="text-start text-primary")
-                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
+                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 html.I(className="navbar-icon bi bi-table px-1 text-primary"),
                                 dbc.NavLink("Datatable", href="/data", className="text-start text-primary")
-                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
+                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 html.I(className="navbar-icon bi bi-calendar-event px-1 text-primary"),
                                 dbc.NavLink("Today", href="/today", className="text-start text-primary")
-                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
+                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 html.I(className="navbar-icon bi bi-info-circle px-1 text-primary"),
                                 dbc.NavLink("About", href="/about", className="text-start text-primary")
-                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 rounded-4"),
+                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                         ]),
                         html.Div([
                             html.Div([
@@ -101,13 +101,14 @@ app.layout = \
                                     "Refresh Data!",
                                 ], id="data-refresh-btn", className="btn btn-outline-primary btn-sm py-0 px-1 rounded d-flex align-items-center"),
                             ], className="d-flex justify-content-center align-items-center mb-2 me-0 mb-lg-0 me-lg-2"),
-                            ThemeChangerAIO(aio_id="theme", 
-                                            radio_props={"value":dbc.themes.LUX, "options":themes_options}, 
-                                            button_props={"className":"px-1 py-0 rounded"},
-                                            offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}},
-                                            )
-                        ], className="theme-change-flex d-flex flex-lg-row flex-column align-items-lg-center align-items-start"),
-                    ], className="navbar-flex d-flex flex-grow-1 justify-content-between")
+                                ThemeChangerAIO(
+                                    aio_id="theme", 
+                                    radio_props={"value":dbc.themes.LUX, "options":themes_options}, 
+                                    button_props={"className":"px-1 py-0 rounded d-flex justify-content-center align-items-center"},
+                                    offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}},
+                                    )
+                        ], className="d-flex flex-lg-row flex-column align-items-lg-center align-items-start mx-2 mt-1 mt-md-0 mx-md-0"),
+                    ], className="flex-md-row flex-column d-flex flex-grow-1 justify-content-between")
                 ], id="navbar-collapse", className="my-2", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
         ], className="py-2 nav-fill w-100 border-start-0 border-end-0 border-2 bg-secondary shadow-sm", expand="md"),
