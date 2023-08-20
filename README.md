@@ -16,8 +16,8 @@ Install the dependencies with `pip install -r requirements.txt`.
 
 Activate the Python virtual environment with `.\venv\Scripts\activate`.
 
-Start the Dash app with `.\venv\Scripts\python.exe my_app.py`
+Start the Dash app with `.\venv\Scripts\python.exe my_app.py`.
 
-Updates to the scheduled tasks should be pushed to Modal with `modal deploy --name slrpEV-data-dashboard-tasks tasks/schedule.py`
+Updates to the scheduled tasks should be pushed to Modal with `modal deploy --name slrpEV-data-dashboard-tasks tasks/schedule.py`.
 
 

@@ -27,7 +27,7 @@ layout = \
                             html.Br(),
                             html.P([
                                 html.Span([
-                                    "The intent of the app is visualizing and analyzing slrpEV demand. ",
+                                    "The intent of the app is to visualize and analyze slrpEV demand. ",
                                     "The chargers are located under the Recreational Sports Facility at ",
                                     html.Span("2301 Bancroft Way, Berkeley, CA 94720. ", className="fw-italic"),
                                     "Request access ",
@@ -46,7 +46,7 @@ layout = \
                                     html.A("Redis", href="https://redis.io/", target="_blank", className="fw-bold text-info"),
                                     ", this app's primary database. ",                   
                                     "This app's frontend is built with ",
-                                    html.A("Plotly Dash", href="https://plotly.com/dash/", target="_blank", className="fw-bold text-info"), 
+                                    html.A("Plotly Dash", href="https://dash.plotly.com/", target="_blank", className="fw-bold text-info"), 
                                     " and ",
                                     html.A("Bootstrap", href="https://getbootstrap.com/", target="_blank", className="fw-bold text-info"),
                                     ", and is hosted on ",
