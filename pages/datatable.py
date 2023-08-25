@@ -147,7 +147,7 @@ def filterDf(df, data, col):
 def infinite_scroll(request, signal):
     callback_id = ctx.triggered_id
 
-    if callback_id is "data_refresh_signal":
+    if callback_id == "data_refresh_signal":
         dff = pd.read_csv("data/raw_data.csv")
         # drop helper columns
         dff = dff.drop(
