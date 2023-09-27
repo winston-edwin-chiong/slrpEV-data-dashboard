@@ -122,8 +122,7 @@ class ImputeZero(BaseEstimator, TransformerMixin):
             return X
 
         # "missing chunk"
-        missing_dates = pd.date_range(
-            start=X.index[-1], end=end, freq="5MIN", inclusive="right")
+        missing_dates = pd.date_range(start=X.index[-1], end=end, freq="5MIN", inclusive="right")
         missing = pd.DataFrame(index=missing_dates, columns=["avg_power_demand_W"], data=0)  # impute zero
         imputed = pd.concat([X, missing], axis=0)
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"

@@ -113,7 +113,7 @@ app.layout = \
                             ], className="d-flex justify-content-center align-items-center mb-2 me-0 mb-lg-0 me-lg-2"),
                                 ThemeChangerAIO(
                                     aio_id="theme", 
-                                    radio_props={"value":dbc.themes.LUX, "options":themes_options}, 
+                                    radio_props={"value":dbc.themes.LUX, "options":themes_options, "persistence": True}, 
                                     button_props={"className":"px-1 py-0 rounded d-flex justify-content-center align-items-center"},
                                     offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}},
                                     )
@@ -204,4 +204,4 @@ def data_refresh_interval(n, n_clicks):
 
 # running the app
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)

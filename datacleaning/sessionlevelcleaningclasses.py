@@ -110,8 +110,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
 
     def __create_ts(self, session):
 
-        date_range = pd.date_range(start=session["startChargeTime"].round(
-            "5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min").to_list()
+        date_range = pd.date_range(start=session["startChargeTime"].round("5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min").to_list()
         power_vals = np.ones(len(date_range)) * session["true_peakPower_W"]
 
         temp_df = pd.DataFrame({"power": power_vals}, index=date_range)
@@ -119,8 +118,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
         date_range = temp_df.index.to_list()
         power_vals = temp_df["power"].to_list()
 
-        temp_df = pd.DataFrame([[date_range, power_vals]],
-                               columns=self.ts_df.columns)
+        temp_df = pd.DataFrame([[date_range, power_vals]], columns=self.ts_df.columns)
 
         self.ts_df = pd.concat([self.ts_df, temp_df], ignore_index=True)
 
