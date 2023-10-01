@@ -32,11 +32,11 @@ grid = dag.AgGrid(
     columnDefs=[{"field": i} for i in df.columns],
     defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
     columnSize="sizeToFit",
-    rowModelType="infinite",
-    rowData = df.to_dict("records"),
+    # rowModelType="infinite",
+    # rowData = df.to_dict("records"),
     dashGridOptions={
         "rowBuffer": 0,
-        "maxBlocksInCache": 1,
+        # "maxBlocksInCache": 1,
         "rowSelection": "multiple",
         "pagination": True,
         "paginationAutoPageSize": True
@@ -142,11 +142,11 @@ def filterDf(df, data, col):
     return df
 
 
-@dash.callback(
-    Output("raw-data-grid", "getRowsResponse"),
-    Input("raw-data-grid", "getRowsRequest"),
-    Input("data_refresh_signal", "data")
-)
+# @dash.callback(
+#     Output("raw-data-grid", "getRowsResponse"),
+#     Input("raw-data-grid", "getRowsRequest"),
+#     Input("data_refresh_signal", "data")
+# )
 def infinite_scroll(request, signal):
     callback_id = ctx.triggered_id
 
@@ -209,24 +209,24 @@ def infinite_scroll(request, signal):
 ### --> <-- ###
 
 
-# @dash.callback(
-#     Output("raw-data-grid", "rowData"),
-#     Input("data_refresh_signal", "data")
-# )
-# def update_rowdata(signal):
-#     df = db.get_df(r, "raw_data")
-#     df = df.drop(
-#         columns=[
-#             "finishChargeTime",
-#             "trueDurationHrs",
-#             "true_peakPower_W",
-#             "Overstay",
-#             "Overstay_h"
-#         ]
-#     )
-#     # reverse data (most recent first)
-#     df = df[::-1]
-#     return df.to_dict("records")
+@dash.callback(
+    Output("raw-data-grid", "rowData"),
+    Input("data_refresh_signal", "data")
+)
+def update_rowdata(signal):
+    df = db.get_df(r, "raw_data")
+    df = df.drop(
+        columns=[
+            "finishChargeTime",
+            "trueDurationHrs",
+            "true_peakPower_W",
+            "Overstay",
+            "Overstay_h"
+        ]
+    )
+    # reverse data (most recent first)
+    df = df[::-1]
+    return df.to_dict("records")
 
 
 @dash.callback(

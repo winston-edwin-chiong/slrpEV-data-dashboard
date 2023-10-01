@@ -174,7 +174,6 @@ def toggle_navbar_collapse(n, is_open):
 @dash.callback(
     Output("data_refresh_signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
-    Input("data-refresh-btn", "n_clicks"),
     prevent_initial_call=True,
 )
 def data_refresh_interval(n, n_clicks):
