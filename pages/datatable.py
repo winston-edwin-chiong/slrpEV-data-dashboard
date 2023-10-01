@@ -11,7 +11,7 @@ dash.register_page(__name__, path="/data")
 r = db.get_redis_connection()
 
 # load data
-df = db.get_df(r, "raw_data")
+df = pd.read_csv("raw_data.csv")
 
 # drop helper columns
 df = df.drop(
@@ -151,7 +151,7 @@ def infinite_scroll(request, signal):
     callback_id = ctx.triggered_id
 
     if callback_id == "data_refresh_signal":
-        dff = pd.read_csv("data/raw_data.csv")
+        dff = pd.read_csv("raw_data.csv")
         # drop helper columns
         dff = dff.drop(
             columns=[
@@ -214,7 +214,7 @@ def infinite_scroll(request, signal):
     Input("data_refresh_signal", "data")
 )
 def update_rowdata(signal):
-    df = db.get_df(r, "raw_data")
+    df = pd.read_csv("raw_data.csv")
     df = df.drop(
         columns=[
             "finishChargeTime",

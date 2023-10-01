@@ -15,6 +15,9 @@ dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0
 # connect to Redis, fill data folder on first run
 load_dotenv()
 r = db.get_redis_connection()
+# for data grid; it's really slow otherwise for some reason 
+raw_data = db.get_df(r, "raw_data")
+raw_data.to_csv("raw_data.csv")
 
 
 # app instantiation
@@ -180,6 +183,9 @@ def data_refresh_interval(n, n_clicks):
     '''
     This callback updates data at regular intervals.
     '''
+    # for data grid; it's really slow otherwise for some reason 
+    raw_data = db.get_df(r, "raw_data")
+    raw_data.to_csv("raw_data.csv")
     return n
 
 ### --> <-- ###
