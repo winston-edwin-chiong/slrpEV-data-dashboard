@@ -12,11 +12,10 @@ class CreateDailyForecasts:
 
     @classmethod
     def run_daily_forecast(cls, df: pd.DataFrame, best_params: dict, existing_forecasts: pd.DataFrame=pd.DataFrame()):
-        '''
-        df: Dataframe with training data.
-        best_params: Dictionary with best parameters for each column.
-        existing_forecasts: Dataframe with existing forecasts.
-        '''
+        """
+        Run a daily forecast. This function expects `best_params` to have a key for each column `avg_power_demand_W`, `energy_demand_kWh`, `peak_power_W`.
+        Each value should then have a key for `order` and `seasonal_order` of the ARIMA model. 
+        """
 
         new_forecasts = pd.DataFrame()
 
@@ -26,7 +25,7 @@ class CreateDailyForecasts:
             train = df[[column]].copy()
 
             # create ARIMA model
-            best_model_arima = sm.tsa.arima.ARIMA(train, order=best_params.get(column).get("order"), seasonal_order=best_params.get(column).get("seasonal_order")).fit()
+            best_model_arima = sm.tsa.arima.ARIMA(train, order=best_params[column]["order"], seasonal_order=best_params[column]["seasonal_order"]).fit()
 
             # forecast on day ahead, convert to a dataframe
             one_column_forecast = best_model_arima.forecast(7)

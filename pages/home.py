@@ -6,7 +6,9 @@ from dash.dependencies import Output, Input, State
 from plotting import plottingfunctions as pltf
 from dash import html, dcc
 from datetime import datetime, timedelta
+from db.utils import db
 
+r = db.get_redis_connection()
 
 ### --> Helper Functions <-- ###
 
@@ -28,8 +30,16 @@ def calculate_pct_change(after, before):
 
 def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_data, monthlydemand):
 
+    def get_icon_and_color(change):
+        if change > 0:
+            return "bi bi-arrow-up me-1", "#58c21e"
+        elif change < 0:
+            return "bi bi-arrow-down me-1", "#c21e58"
+        else:
+            return "bi bi-arrow-right me-1", "#55595c"
+
     # calculate daily kWh change
-    yesterday = pd.to_datetime(datetime.now(pytz.timezone("America/Los_Angeles")) - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = pd.to_datetime(datetime.now(pytz.timezone('US/Pacific')) - timedelta(days=1)).strftime("%Y-%m-%d")
     yesterday_kwh = dailydemand.loc[dailydemand.index == yesterday]["energy_demand_kWh"].iloc[0]
     kwh_change = calculate_pct_change(kwh_today, yesterday_kwh)
 
@@ -44,22 +54,23 @@ def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_dat
     return (
         [
             html.I(
-                className="bi bi-arrow-up me-1" if kwh_change > 0 else ("bi bi-arrow-down me-1" if kwh_change else "bi bi-arrow-right me-1"),
-                style={"color": "#58c21e" if kwh_change > 0 else ("#c21e58" if kwh_change else "#55595c")}
+                className=get_icon_and_color(kwh_change)[0],
+                style={"color": get_icon_and_color(kwh_change)[1]}
             ),
             f"{round(kwh_change, 2):+} % since yesterday!" if kwh_change else "No change since yesterday!"
         ],
         [
             html.I(
-                className="bi bi-arrow-up me-1" if num_users_change > 0 else ( "bi bi-arrow-down me-1" if num_users_change else "bi bi-arrow-right me-1"),
-                style={"color": "#58c21e" if num_users_change > 0 else ( "#c21e58" if num_users_change else "#55595c")}
+                className=get_icon_and_color(num_users_change)[0],
+                style={"color": get_icon_and_color(num_users_change)[1]}
             ),
             f"{num_users_change:+} users since yesterday!" if num_users_change else "No change since yesterday!"
         ],
         [
             html.I(
-                className="bi bi-arrow-up me-1" if peak_power_change > 0 else ( "bi bi-arrow-down me-1" if peak_power_change else "bi bi-arrow-right me-1"),
-                style={"color": "#58c21e" if peak_power_change > 0 else ( "#c21e58" if peak_power_change else "#55595c")} ),
+                className=get_icon_and_color(peak_power_change)[0],
+                style={"color": get_icon_and_color(peak_power_change)[1]} 
+            ),
             f"{round(peak_power_change, 2):+} % since last month!" if peak_power_change else "No change since last month!"
         ],
     )
@@ -169,14 +180,14 @@ layout = \
 )
 def update_today_homepage_cards(n):
     # load data
-    today = pd.read_csv("data/todays_sessions.csv")
-    monthlydemand = pd.read_csv("data/monthlydemand.csv", index_col="time", parse_dates=True)
-    dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
-    raw_data = pd.read_csv("data/raw_data.csv")
+    #today, monthlydemand, dailydemand, raw_data = db.get_multiple_df(r, ["todays_sessions", "monthlydemand", "dailydemand", "raw_data"])
+    today = db.get_df(r, "todays_sessions")
+    monthlydemand = db.get_df(r, "monthlydemand")
+    dailydemand = db.get_df(r, "dailydemand")
+    raw_data = db.get_df(r, "raw_data")
 
     # filter data to just this month
-    # TODO: potential bug here with the first day of the month (?) check this
-    thismonthdemand = monthlydemand.loc[monthlydemand.index >= datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)]
+    thismonthdemand = monthlydemand.iloc[[-1]]
 
     # extract peak power, convert to kW
     peak_power_float = thismonthdemand["peak_power_W"][0] / 1000
@@ -212,7 +223,7 @@ def update_today_homepage_cards(n):
 )
 def update_cum_homepage_cards(n):
     # load data
-    raw_data = pd.read_csv("data/raw_data.csv")
+    raw_data = db.get_df(r, "raw_data")
 
     # calculate cumulative sessions
     cum_sessions_float = len(raw_data)
@@ -242,4 +253,4 @@ def update_cum_homepage_cards(n):
     Input("data_refresh_signal", "data")
 )
 def update_date_title(n):
-    return datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%A, %B %d, %Y")   
+    return datetime.now(pytz.timezone('US/Pacific')).strftime("%A, %B %d, %Y")   

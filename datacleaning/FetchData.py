@@ -6,19 +6,21 @@ from dotenv import load_dotenv
 
 
 class FetchData:
+    """
+    Fetch raw slrpEV data from AWS DynamoDB. 
+    """
+
     table_id = "Sessions2"
 
     def __init__(self):
         pass
 
-    @staticmethod
-    def __configure():
-        load_dotenv()
-
-    # TODO: Could be in __init__; does the table ever change? Don't need to call this every time?
     @classmethod
-    def __get_table(cls, table_id):
-        cls.__configure()  # load environment variables
+    def __get_table(cls, table_id: str):
+        """
+        This function returns a specified table from AWS DyanamoDB. 
+        """
+        load_dotenv() # load environment variables
         dynamodb = boto3.resource(
             "dynamodb",
             aws_access_key_id=os.getenv("ACCESS_KEY_ID"),
@@ -29,7 +31,11 @@ class FetchData:
 
 
     @classmethod
-    def scan_all_records(cls):
+    def scan_all_records(cls) -> pd.DataFrame:
+        """
+        This function scans all the slrpEV records from from AWS DynamoDB. 
+        Result is returned as a pandas dataframe.
+        """
         scan_results = []
         table = cls.__get_table(cls.table_id)
 

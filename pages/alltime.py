@@ -3,14 +3,17 @@ import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import pandas as pd
 import pytz
+from io import BytesIO
 from dash_bootstrap_templates import ThemeChangerAIO
 from plotting import plottingfunctions as pltf
 from datetime import timedelta, datetime
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
+from db.utils import db
 
 dash.register_page(__name__, path="/alltime")
 
+r = db.get_redis_connection()
 
 ### --> Helper Functions <-- ###
 
@@ -24,9 +27,9 @@ def prediction_to_run(granularity):
     if granularity == "fivemindemand":
         return  # not yet supported
     elif granularity == "hourlydemand":
-        return pd.read_csv("data/hourlyforecasts.csv", index_col="time", parse_dates=True)
+        return db.get_df(r, "hourlyforecasts")
     elif granularity == "dailydemand":
-        return pd.read_csv("data/dailyforecasts.csv", index_col="time", parse_dates=True)
+        return db.get_df(r, "dailyforecasts")
     elif granularity == "monthlydemand":
         return  # not yet supported
     
@@ -336,7 +339,7 @@ layout = \
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, theme):
     # load data
-    data = pd.read_csv(f"data/{granularity}.csv", index_col="time", parse_dates=True)
+    data = db.get_df(r, granularity)
 
     # plot main time series
     fig = pltf.PlotMainTimeSeries.plot_main_time_series(data, granularity, quantity, start_date, end_date, theme)
@@ -365,8 +368,9 @@ def display_histogram_hover(hoverData, quantity, granularity, theme):
         return pltf.PlotHoverHistogram.default(theme), pltf.PlotHoverHistogram.default(theme)
 
     # load data
-    hourlydemand = pd.read_csv("data/hourlydemand.csv", index_col="time", parse_dates=True)
-    dailydemand = pd.read_csv("data/dailydemand.csv", index_col="time", parse_dates=True)
+    # hourlydemand, dailydemand = db.get_multiple_df(r, ["hourlydemand, dailydemand"])
+    hourlydemand = db.get_df(r, "hourlydemand")
+    dailydemand = db.get_df(r, "dailydemand")
 
     # create hover histograms
     if granularity == "dailydemand":
@@ -400,7 +404,7 @@ def jump_to_present(button_press):
     prevent_initial_call=True
 )
 def jump_to_month(button_press):
-    return pd.Timestamp.now(pytz.timezone("America/Los_Angeles")).date().replace(day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
+    return pd.Timestamp.now().date().replace(day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
 
 
 # jump to this year button
@@ -411,7 +415,7 @@ def jump_to_month(button_press):
     prevent_initial_call=True
 )
 def jump_to_year(button_press):
-    return pd.Timestamp.now(pytz.timezone("America/Los_Angeles")).date().replace(month=1, day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
+    return pd.Timestamp.now().date().replace(month=1, day=1).strftime("%m/%d/%Y"), get_last_days_datetime(-1)
 
 
 # jump to this alltime button
@@ -471,7 +475,7 @@ def toggle_tab_three_collapse(button_press, is_open):
 )
 def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
     # load data
-    data = pd.read_csv("data/raw_data.csv")
+    data = db.get_df(r, "raw_data")
     # plot figure
     if value == "cumulative-energy-delivered":
         return pltf.PlotCumulatives.plot_cumulative_energy_delivered(data, start_date, end_date, theme)
@@ -489,7 +493,7 @@ def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
 )
 def display_reg_vs_sched_scatter(data_signal, theme):
     # load data
-    data = pd.read_csv("data/raw_data.csv")
+    data = db.get_df(r, "raw_data")
 
     # plot figure
     fig = pltf.PlotSchedVsReg.plot_sched_vs_reg(data, theme)

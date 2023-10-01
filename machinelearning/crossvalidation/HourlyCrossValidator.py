@@ -21,8 +21,7 @@ class HourlyCrossValidator:
 
         for column in self.columns:
             # initalize cross validator, cross validate
-            params = kNNCrossValidator(
-                self.max_neighbors, self.max_depth, column).cross_validate_one(df)
+            params = kNNCrossValidator(self.max_neighbors, self.max_depth, column).cross_validate_one(df)
             best_params[column] = params
 
         # same data, different units, so same parameters
@@ -37,7 +36,6 @@ class kNNCrossValidator:
     test_size = 0.2
 
     def __init__(self, max_neighbors, max_depth, col_name):
-        super().__init__()
         self.max_neighbors = max_neighbors
         self.max_depth = max_depth
         self.col_name = col_name
@@ -70,8 +68,7 @@ class kNNCrossValidator:
             param_grid=params,
             scoring="neg_mean_squared_error",
             verbose=4,
-            cv=[(np.arange(0, len(X_train)), np.arange(
-                len(X_train), len(X_train_validation)))]
+            cv=[(np.arange(0, len(X_train)), np.arange(len(X_train), len(X_train_validation)))]
         )
         grid.fit(X_train_validation, y_train_validation)
         # TODO: Instead of returning parameters, return the best model?
@@ -115,6 +112,9 @@ class kNNCrossValidator:
 
 # Pipeline Classes
 class CreateLagFeatures(BaseEstimator, TransformerMixin):
+    """
+    This pipeline step creates lag features into the training data.
+    """
 
     def __init__(self, num_lag_depths, col_name):
         super().__init__()
@@ -138,6 +138,9 @@ class CreateLagFeatures(BaseEstimator, TransformerMixin):
 
 
 class SubsetLags(BaseEstimator, TransformerMixin):
+    """
+    This pipeline step subsets lag features of training data.
+    """
 
     def __init__(self, num_lags=1):
         super().__init__()

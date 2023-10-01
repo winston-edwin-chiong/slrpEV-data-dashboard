@@ -30,7 +30,6 @@ class SARIMACrossValidator:
     test_size = 0.2
 
     def __init__(self, col_name):
-        super().__init__()
         self.col_name = col_name
 
     def cross_validate_one(self, df: pd.DataFrame):

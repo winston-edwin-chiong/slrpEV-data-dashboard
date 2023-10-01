@@ -120,16 +120,7 @@ class PlotMainTimeSeries:
 
     @staticmethod
     def __query_date_df(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
-        """
-        Function querys a dataframe based on a specified start date and end date. If any argument is None, 
-        function will ignore those bounds Assumes dataframe has a datetime-like index. Start and end dates are 
-        also assumed to be in the form 'yyyy-mm-dd'.
-        ~~~
-        Parameters:
-        df : Dataframe to be queried.
-        start_date : Inclusive start date in 'yyyy-mm-dd' format.
-        end_date : Inclusive end date in 'yyyy-mm-dd' format.
-        """
+
         if start_date is None and end_date is None:
             return df
         elif start_date is not None and end_date is None:
@@ -204,7 +195,7 @@ class PlotDaily:
                     "yaxis_title": "Power (W)",
                     "barmode": "stack",
                     "showlegend": True,
-                    "xaxis_range": [datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d"), (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")],
+                    "xaxis_range": [datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d"), (datetime.now(pytz.timezone('US/Pacific')) + timedelta(days=1)).strftime("%Y-%m-%d")],
                     "xaxis_autorange": True
                 },
                 template=template_from_url(theme)        
@@ -245,8 +236,8 @@ class PlotDaily:
     @classmethod
     def plot_yesterday(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query dataframe
-        start_date = datetime.strftime(datetime.now(pytz.timezone("America/Los_Angeles")) - timedelta(1), "%Y-%m-%d")
-        end_date = datetime.strftime(datetime.now(pytz.timezone("America/Los_Angeles")), "%Y-%m-%d")
+        start_date = datetime.strftime(datetime.now(pytz.timezone('US/Pacific')) - timedelta(1), "%Y-%m-%d")
+        end_date = datetime.strftime(datetime.now(pytz.timezone('US/Pacific')), "%Y-%m-%d")
         df = cls.__query_date_df(df, start_date, end_date)
         df.index = df.index + pd.Timedelta('1 day')
 
@@ -267,8 +258,8 @@ class PlotDaily:
     @classmethod
     def plot_today_forecast(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query today's forecast
-        if not df.loc[df.index == datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d")].empty:
-            peak = df.loc[df.index == datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
+        if not df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")].empty:
+            peak = df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
 
             # add horizontal line to figure 
             fig.add_hline(
@@ -281,15 +272,6 @@ class PlotDaily:
 
     @staticmethod
     def __query_date_df(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
-        """
-        Function querys a dataframe based on a specified start date and end date. If any argument is None, 
-        function will ignore those bounds. Start and end dates are also assumed to be in the form 'yyyy-mm-dd'.
-        ~~~
-        Parameters:
-        df : Dataframe to be queried.
-        start_date : Inclusive start date in 'yyyy-mm-dd' format.
-        end_date : Inclusive end date in 'yyyy-mm-dd' format.  
-        """
 
         if start_date is None and end_date is None:
             return df
@@ -457,7 +439,7 @@ class PlotHoverHistogram:
             day_name = hoverData["points"][0]["customdata"][0]
             # get point to hover on (if it exists in dailydemand)    
             point = df.loc[df.index == pd.to_datetime(hoverData["points"][0]["x"]).strftime("%Y-%m-%d")][quantity].iloc[0] \
-                if pd.to_datetime(hoverData["points"][0]["x"]) < pd.to_datetime((datetime.now(pytz.timezone("America/Los_Angeles")) + timedelta(days=1)).strftime("%Y-%m-%d")) \
+                if pd.to_datetime(hoverData["points"][0]["x"]) < pd.to_datetime((datetime.now(pytz.timezone('US/Pacific')) + timedelta(days=1)).strftime("%Y-%m-%d")) \
                 else None
 
         # prediction curve
@@ -548,6 +530,7 @@ class PlotHoverHistogram:
     def empty_histogram_figure(theme=None) -> go.Figure:
         '''
         Some granularities don't have day / hour distributions. 
+        This functions returns an empty histogram stating there is no distribution available. 
         '''
         fig = go.Figure()
         fig.update_layout(

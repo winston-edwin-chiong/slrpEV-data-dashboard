@@ -6,9 +6,9 @@ from datetime import datetime
 
 class SortDropCast(BaseEstimator, TransformerMixin):
     """
-    This pipeline step will sort values by field "connectTime",
-    drop columns "user_email", "slrpPaymentId", 
-    and cast columns "cumEnergy_Wh", "peakPower_W" as float values. 
+    This pipeline step will sort values by field `connectTime`,
+    drop columns `user_email`, `slrpPaymentId`, 
+    and cast columns `cumEnergy_Wh`, `peakPower_W` as float values. 
     """
 
     def fit(self, X, y=None):
@@ -24,18 +24,20 @@ class SortDropCast(BaseEstimator, TransformerMixin):
 class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     """
     This pipeline step will drop any records that contain 0 for 
-    "peakPower_W" or "cumEnergy_Wh". Four additional columns will be created:
-    "reqChargeTime", "finishChargeTime", "Overstay", and "Overstay_h". 
+    `peakPower_W` or `cumEnergy_Wh`. Four additional columns will be created:
+    `finishChargeTime`, `trueDurationHrs`, `true_peakPower_W`, `Overstay`, and `Overstay_h`. 
     Any records with calculated charging durations greater than a day will be dropped. 
-    Raw data (with these new features) at this staged will be saved.
+    This step accounts for inconsistencies in the slrpEV data. 
     """
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X) -> pd.DataFrame:
+        # filter out rows where peakPower_W and cumEnergy_Wh contain bad (0) values
         X = X.loc[(X["peakPower_W"] != 0) & (X["cumEnergy_Wh"] != 0)].copy(deep=True)
 
+        # cast dates to pandas datetime
         X["connectTime"] = pd.to_datetime(X["connectTime"])
         X["startChargeTime"] = pd.to_datetime(X["startChargeTime"])
         X["Deadline"] = pd.to_datetime(X["Deadline"])
@@ -46,12 +48,12 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         # "cumEnergy_Wh" is seen as a column of truth
         X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
-        # filter out bad rows (this occurs when there is a very low peak power and high energy delivered). also filter out excessively high duration from raw data
+        # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
+        # also filter out excessively high duration from raw data
         X = X.loc[X["trueDurationHrs"] <= 24].copy()
         X = X[~(X["Duration"].str[0].astype(int) >= 2)]
 
-    
-
+        # calculate overstay 
         X['temp_0'] = pd.Timedelta(days=0, seconds=0)
         X['Overstay'] = X["lastUpdate"] - X['Deadline']
         X["Overstay"] = X[["Overstay", "temp_0"]].max(axis=1)
@@ -63,6 +65,11 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def __get_duration(row):
+        """
+        This helper function calculates the charging duration of a session. If the session is `REGULAR`,
+        the calculation is `lastUpdate - startChargeTime`. If the session is `SCHEDULED`, the calculation is 
+        `Deadline - startChargeTime`. 
+        """
         if row["regular"] == 1:
             return round(((row["lastUpdate"] - row["startChargeTime"]).seconds/3600), 3)
         else:
@@ -70,6 +77,10 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def __get_finishChargeTime(row):
+        """
+        This helper function calculates the finished charge time of a session. If the session is `REGULAR`, 
+        the finish charge time is `lastUpdate`. If the session is `SCHEDULED`, the finish charge time is `Deadline`.
+        """
         if row["regular"] == 1:
             return row["lastUpdate"]
         else:
@@ -79,7 +90,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
     """
     This pipeline step will create a time series for each session. A dataframe
-    with 5-min granularity will be returned, with one column, "power_demand_W".
+    with 5-min granularity will be returned, with one column, `power_demand_W`.
     """
 
     def fit(self, X, y=None):
@@ -92,10 +103,10 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         X = X.resample("5MIN").sum()
         return X
 
-    def __create_ts(self, session):
+    def __create_ts(self, session: pd.Series):
         """
-        This helper function takes in a session, with a "connectTime", "finishChargeTime", and 
-        a "peakPower_W" column. Function will return a time series at 5-min granularity. 
+        This helper function takes in a session, with a `connectTime`, `finishChargeTime`, and 
+        a `peakPower_W` column. Function will return a time series at 5-min granularity. 
         """
         date_range = pd.date_range(start=session["startChargeTime"].round("5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min")
         temp_df = pd.DataFrame(index=date_range)
@@ -106,7 +117,7 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
 class ImputeZero(BaseEstimator, TransformerMixin):
     """
     The way the data is pulled means data is only updated when there is a session ongoing. This class imputes zero 
-    to makes the data feel more like real time. 
+    to makes the data feel like it's in real time. 
     """
 
     def fit(self, X, y=None):
@@ -115,7 +126,7 @@ class ImputeZero(BaseEstimator, TransformerMixin):
     def transform(self, X) -> pd.DataFrame:
         # get start and end dates
         start = X.index[-1]
-        end = datetime.now(pytz.timezone("America/Los_Angeles")).strftime('%Y-%m-%d %H:%M:%S')
+        end = datetime.now(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d %H:%M:%S')
         end = pd.to_datetime(end).floor("5T").strftime('%Y-%m-%d %H:%M:%S')
 
         if str(start) == end:  # data up to date
@@ -132,7 +143,7 @@ class ImputeZero(BaseEstimator, TransformerMixin):
 class FeatureCreation(BaseEstimator, TransformerMixin):
     """
     This pipeline step will create an "energy_demand_kWh" and "peak_power_W" column. 
-    The name of the dataframe's index will be set to "time", and "day" and "month" columns 
+    The name of the dataframe's index will be set to `time`, and `day` and `month` columns 
     will be created. 
     """
 
@@ -151,8 +162,9 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
 
 class CreateGranularities(BaseEstimator, TransformerMixin):
     """
-    This pipeline step takes each dataframe and creates new granularities
-    (hourly, daily, and monthly). Each dataframe is optionally saved to a "data/" file. 
+    This pipeline step takes each dataframe and creates new granularities--hourly, daily, and monthly.
+    Returns a dictionary with all dataframes with keys: `fivemindemand`, `hourlydemand`, `dailydemand`, and `monthlydemand`.
+    Each dataframe is optionally saved to a `data/` file. 
     """
 
     def __init__(self, save=False) -> None:

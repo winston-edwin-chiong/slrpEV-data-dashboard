@@ -6,15 +6,13 @@ import pandas as pd
 from redis.backoff import ExponentialBackoff
 from redis.retry import Retry
 from redis.exceptions import BusyLoadingError, ConnectionError, TimeoutError
-from dotenv import load_dotenv
+from io import BytesIO
 
 
 class db:
 
-    chunk_size = 30
-
     @staticmethod
-    def get_redis_connection():
+    def get_redis_connection() -> redis.Redis:
         '''
         This function returns a Redis connection object. 
         '''
@@ -37,30 +35,6 @@ class db:
         return pickle.loads(redis_client.get(key))
     
 
-    @classmethod
-    def update_data(cls, redis_client: redis.Redis):
-        '''
-        Updates data and forecasts from Redis to the file system.
-        '''
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        data_folder = os.path.abspath(os.path.join(current_dir, '..', 'data'))
-
-        if not os.path.exists(data_folder):
-            os.makedirs(data_folder)
-
-        # update data 
-        for name in ["raw_data", "todays_sessions", "fivemindemand", "hourlydemand", "dailydemand", "monthlydemand"]:
-            data = cls.get_df_chunks(redis_client, name)
-            csv_path = os.path.join(data_folder, f'{name}.csv')
-            data.to_csv(csv_path)
-
-        # update forecasts
-        for name in ["hourlyforecasts", "dailyforecasts"]:
-            forecasts = cls.get_item(redis_client, name)
-            csv_path = os.path.join(data_folder, f'{name}.csv')
-            forecasts.to_csv(csv_path)
-
-
     @staticmethod
     def send_item(redis_client: redis.Redis, key: str, item):
         '''
@@ -68,50 +42,36 @@ class db:
         '''
         redis_client.set(key, pickle.dumps(item))
 
-    @staticmethod
-    def get_item(redis_client: redis.Redis, key: str):
-        '''
-        Unpickles and returns item from Redis.
-        '''
-        return pickle.loads(redis_client.get(key))
-
+    
     @classmethod
-    def send_df_chunks(cls, redis_client: redis.Redis, df: pd.DataFrame, name: str):
-        '''
-        Suitable for large dataframes, where a single send operation would exceed memory limit. 
-        '''
-        chunks = np.array_split(df, cls.chunk_size)
-
-        for i, chunk in enumerate(chunks):
-            serialized_chunk = pickle.dumps(chunk)  
-            redis_client.set(f"{name}_{i}", serialized_chunk)
-
-
-    @classmethod
-    def get_df_chunks(cls, redis_client: redis.Redis, name):
-        '''
-        All dataframes except forecasts should be retrieved with this method. 
-        '''
-        deserialized_chunks = []
-        for i in range(cls.chunk_size):
-            serialized_chunk = redis_client.get(f"{name}_{i}")
-            chunk = pickle.loads(serialized_chunk)
-            deserialized_chunks.append(chunk)
-
-        result = pd.concat(deserialized_chunks)
+    def get_df(cls, redis_client: redis.Redis, name):
+        """
+        All dataframes except should be retrieved with this method. 
+        """
+        buffer = redis_client.get(name)
+        result = pd.read_parquet(BytesIO(buffer))
         return result
     
-
-    @staticmethod
-    def load_from_data_folder(name, time_series=False):
-        '''
-        Loads data from the data folder.
-        '''
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        data_folder = os.path.abspath(os.path.join(current_dir, '..', '..', 'data'))
-        csv_path = os.path.join(data_folder, f'{name}.csv')
-        if time_series:
-            return pd.read_csv(csv_path, index_col="time", parse_dates=True)
-        return pd.read_csv(csv_path)
     
+    @classmethod
+    def send_df(cls, redis_client: redis.Redis, df: pd.DataFrame, name: str) -> None:
+        """
+        All dataframes except should be sent with this method.  
+        """
+        pq = df.to_parquet()
+        redis_client.set(name, pq)
+
+
+    @classmethod
+    def get_multiple_df(cls, redis_client: redis.Redis, names: list) -> list:
+        """
+        For retrieving multiple dataframes in a block. Returns as a list in the same order as input.
+        """
+        pipe = redis_client.pipeline()
+
+        for name in names:
+            pipe.get(name)
+
+        res = pipe.execute()    
+        return [pd.read_parquet(BytesIO(buffer)) for buffer in res]
     

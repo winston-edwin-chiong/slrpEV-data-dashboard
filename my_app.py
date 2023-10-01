@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 import dash_auth
 import os
 import diskcache
-from dash import html, dcc, DiskcacheManager
+from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
 from dash_bootstrap_templates import ThemeChangerAIO
@@ -15,13 +15,9 @@ dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0
 # connect to Redis, fill data folder on first run
 load_dotenv()
 r = db.get_redis_connection()
-db.update_data(r)
 
 
 # app instantiation
-cache = diskcache.Cache("./cache")
-background_callback_manager = DiskcacheManager(cache)
-
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
 server = app.server
 app.title = "slrpEV Dashboard"
@@ -106,18 +102,13 @@ app.layout = \
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                         ]),
                         html.Div([
-                            html.Div([
-                                html.Button([
-                                    "Refresh Data!",
-                                ], id="data-refresh-btn", className="btn btn-outline-primary btn-sm py-0 px-1 rounded d-flex align-items-center"),
-                            ], className="d-flex justify-content-center align-items-center mb-2 me-0 mb-lg-0 me-lg-2"),
-                                ThemeChangerAIO(
-                                    aio_id="theme", 
-                                    radio_props={"value":dbc.themes.LUX, "options":themes_options, "persistence": True}, 
-                                    button_props={"className":"px-1 py-0 rounded d-flex justify-content-center align-items-center"},
-                                    offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}},
-                                    )
-                        ], className="d-flex flex-lg-row flex-column align-items-lg-center align-items-start mx-2 mt-1 mt-md-0 mx-md-0"),
+                            ThemeChangerAIO(
+                                aio_id="theme", 
+                                radio_props={"value":dbc.themes.LUX, "options":themes_options, "persistence": True}, 
+                                button_props={"className":"px-1 py-0 rounded d-flex justify-content-center align-items-center"},
+                                offcanvas_props={"title":"Select a theme!", "style":{"width":"27%"}},
+                                )
+                        ], className="d-flex flex-row align-items-center mx-2 mt-1 mt-md-0 mx-md-0"),
                     ], className="flex-md-row flex-column d-flex flex-grow-1 justify-content-between")
                 ], id="navbar-collapse", className="my-2", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
@@ -184,19 +175,12 @@ def toggle_navbar_collapse(n, is_open):
     Output("data_refresh_signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
     Input("data-refresh-btn", "n_clicks"),
-    background=True,
-    manager=background_callback_manager,
     prevent_initial_call=True,
-    running=[
-        (Output("data-refresh-btn", "disabled"), True, False),
-        (Output("data-refresh-btn", "children"), [dbc.Spinner(size="sm", color="info", spinnerClassName="me-1"), "Refreshing Data..."], "Refresh Data!"),
-    ]
 )
 def data_refresh_interval(n, n_clicks):
     '''
     This callback updates data at regular intervals.
     '''
-    db.update_data(r)
     return n
 
 ### --> <-- ###

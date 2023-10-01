@@ -8,10 +8,11 @@ from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State
 from dash import html, dcc, Patch
 from db.utils import db
+from io import BytesIO
 
 dash.register_page(__name__, path="/today")
 
-
+r = db.get_redis_connection()
 
 layout = \
     html.Div([
@@ -136,9 +137,10 @@ def display_user_hover(hoverData, value):
     if hoverData is None or value != "today-aggregate-power":
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
-    data = pd.read_csv("data/raw_data.csv")
+    data = db.get_df(r, "raw_data")
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
+
     # get user hover data
     num_sessions, avg_duration, freq_connect, total_nrg = pltf.GetUserHoverData.get_user_hover_data(data, userId)
     
@@ -163,12 +165,12 @@ def display_user_hover(hoverData, value):
 )
 def display_today_graph(value, yesterday, forecast, data_signal, theme):
     # load data
-    data = pd.read_csv("data/todays_sessions.csv")
+    data = db.get_df(r, "todays_sessions")
 
     if value == "today-aggregate-power":
-        fivemindemand = pd.read_csv("data/fivemindemand.csv", index_col="time", parse_dates=True)
-        daily_forecasts = pd.read_csv("data/dailyforecasts.csv", index_col="time", parse_dates=True)
-
+        # fivemindemand, daily_forecasts = db.get_multiple_df(r, ["fivemindemand", "dailyforecasts"])
+        fivemindemand = db.get_df(r, "fivemindemand")
+        daily_forecasts = db.get_df(r, "dailyforecasts")
         return pltf.PlotDaily.plot_daily_time_series(data, yesterday, fivemindemand, daily_forecasts, forecast, theme), {"display": "inline"}
 
     elif value == "today-energy-dist":

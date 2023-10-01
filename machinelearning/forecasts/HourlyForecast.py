@@ -71,8 +71,7 @@ class kNNPredict(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def __create_24hrs_future(df):
-        prediction_range = pd.DataFrame(
-            index=df.index[-24:] + pd.Timedelta(hours=24), columns=df.columns)
+        prediction_range = pd.DataFrame(index=df.index[-24:] + pd.Timedelta(hours=24), columns=df.columns, data=0)
         df = pd.concat([df, prediction_range])
         return df
 

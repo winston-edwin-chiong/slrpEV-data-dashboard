@@ -1,15 +1,22 @@
 from sklearn.pipeline import Pipeline
 import datacleaning.fullcleaningclasses as fcc
-import datacleaning.sessionlevelcleaningclasses as scc
+import datacleaning.todaysessioncleaningclasses as scc
 
 
 class CleanData:
+    """
+    Clean raw slrpEV data from AWS DynamoDB. 
+    """
 
     def __init__(self):
         pass
 
     @staticmethod
-    def clean_save_raw_data(raw_data) -> dict:
+    def clean_raw_data(raw_data) -> dict:
+        """
+        This function cleans raw data slrpEV data and returns six cleaned dataframes in a dictionary with keys:
+        `fivemindemand`, `hourlydemand`, `dailydemand`, `monthlydemand`, `todays_sessions`, `raw_data`.
+        """
 
         # raw data pipeline (adds helper columns)
         raw_data_pipeline = Pipeline(
@@ -25,7 +32,7 @@ class CleanData:
             [
                 ("sort_drop_cast", fcc.SortDropCast()),
                 ("create_helpers", fcc.HelperFeatureCreation()),
-                ("create_session_TS", fcc.CreateSessionTimeSeries()),
+                ("create_session_ts", fcc.CreateSessionTimeSeries()),
                 ("impute_zero", fcc.ImputeZero()),
                 ("create_features", fcc.FeatureCreation()),
                 ("create_granularities", fcc.CreateGranularities()),

@@ -7,10 +7,12 @@ from datetime import datetime, timedelta
 
 class SortDropCastSessions(BaseEstimator, TransformerMixin):
     """
-    This pipeline step will sort values by field "connectTime",
-    drop columns "user_email", "slrpPaymentId", 
-    and cast columns "cumEnergy_Wh", "peakPower_W" as float values. 
-    Time-based columns will be converted into pd_datetime like.
+    This pipeline step will sort values by field `connectTime`,
+    drop columns `user_email`, `slrpPaymentId`, 
+    and cast columns `cumEnergy_Wh`, `peakPower_W` as float values.
+    This pipeline step will drop any records that contain 0 for 
+    `peakPower_W` or `cumEnergy_Wh`. 
+    Time-based columns will be converted into pandas timedate-like.
     """
 
     def fit(self, X, y=None):
@@ -37,8 +39,10 @@ class SortDropCastSessions(BaseEstimator, TransformerMixin):
 class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     """
     This pipeline step will drop any records that contain 0 for 
-    "peakPower_W" or "cumEnergy_Wh". Four additional columns will be created:
-    "reqChargeTime", "finishChargeTime", "Overstay", and "Overstay_h".
+    `peakPower_W` or `cumEnergy_Wh`. Four additional columns will be created:
+    `finishChargeTime`, `trueDurationHrs`, `true_peakPower_W`, `Overstay`, and `Overstay_h`. 
+    Any records with calculated charging durations greater than a day will be dropped. 
+    This step accounts for inconsistencies in the slrpEV data. 
     """
 
     def fit(self, X, y=None):
@@ -48,10 +52,9 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X["finishChargeTime"] = X.apply(self.__get_finishChargeTime, axis=1)
         X["trueDurationHrs"] = X.apply(self.__get_duration, axis=1)
-        X["true_peakPower_W"] = round(
-            X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
 
-        X = X[X["finishChargeTime"] >= datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%D")].copy()
+        X = X[X["finishChargeTime"] >= datetime.now(pytz.timezone('US/Pacific')).strftime("%D")].copy()
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered). also filter out excessively high duration from raw data
         X = X.loc[X["trueDurationHrs"] <= 24].copy()
@@ -67,6 +70,11 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def __get_duration(row):
+        """
+        This helper function calculates the charging duration of a session. If the session is `REGULAR`,
+        the calculation is `lastUpdate - startChargeTime`. If the session is `SCHEDULED`, the calculation is 
+        `Deadline - startChargeTime`. 
+        """
         if row["regular"] == 1:
             return round(((row["lastUpdate"] - row["startChargeTime"]).seconds/3600), 3)
         else:
@@ -74,6 +82,10 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def __get_finishChargeTime(row):
+        """
+        This helper function calculates the finished charge time of a session. If the session is `REGULAR`, 
+        the finish charge time is `lastUpdate`. If the session is `SCHEDULED`, the finish charge time is `Deadline`.
+        """        
         if row["regular"] == 1:
             return row["lastUpdate"]
         else:
@@ -82,10 +94,14 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
 class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
     """
-    This pipeline step will create a time series for each session. Two new columns will be created, 
-    "time_vals" and "power_vals", respective lists for a time and power demand. "time_vals" are rounded to the 
-    closest 5 min. 
+    This pipeline step will create a time series for each session TODAY. Two new columns will be created, 
+    `time_vals` and `power_vals`, respective lists for time and power demand. `time_vals` are rounded to the 
+    closest 5 min. The dataframe is optionally saved to a `data/` file.
     """
+
+    def __init__(self, save=False) -> None:
+        self.save = save
+        super().__init__()
 
     def fit(self, X, y=None):
         return self
@@ -100,15 +116,23 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
         X = X.explode(["time_vals", "power_vals"])
         X.rename(columns={"time_vals": "Time", "power_vals": "Power (W)"}, inplace=True)
 
-        X = X[(X["Time"] >= datetime.now(pytz.timezone("America/Los_Angeles")).strftime("%D"))].copy()  # keep sessions within today
+        X = X[(X["Time"] >= datetime.now(pytz.timezone('US/Pacific')).strftime("%D"))].copy()  # keep sessions within today
 
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
-        now = datetime.now(pytz.timezone("America/Los_Angeles")).strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.now(pytz.timezone('US/Pacific')).strftime('%Y-%m-%d %H:%M:%S')
         now = pd.to_datetime(now).floor("5T").strftime('%Y-%m-%d %H:%M:%S')
         X = X[X["Time"] <= now].copy()
+
+        if self.save:
+            X.to_csv("data/todays_sessions.csv")
+
         return X
 
-    def __create_ts(self, session):
+    def __create_ts(self, session: pd.Series) -> pd.DataFrame:
+        """
+        This helper function takes a row, and using the `startChargeTime` and `finishChargeTime` columns, fills in a time series
+        at five minute granularity.
+        """
 
         date_range = pd.date_range(start=session["startChargeTime"].round("5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min").to_list()
         power_vals = np.ones(len(date_range)) * session["true_peakPower_W"]
@@ -122,15 +146,3 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
 
         self.ts_df = pd.concat([self.ts_df, temp_df], ignore_index=True)
 
-
-class SaveTodaySessionToCSV(BaseEstimator, TransformerMixin):
-    """
-    This pipeline step will save session level dataframe to file system, in a "data/" folder. 
-    """
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X) -> pd.DataFrame:
-        X.to_csv("data/todays_sessions.csv")
-        return X
