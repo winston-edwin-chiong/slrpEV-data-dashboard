@@ -141,7 +141,7 @@ def filterDf(df, data, col):
         df = df.loc[getattr(df[col], operators[data["type"]])(crit1)]
     return df
 
-
+# Infinite Row Model
 # @dash.callback(
 #     Output("raw-data-grid", "getRowsResponse"),
 #     Input("raw-data-grid", "getRowsRequest"),
@@ -209,6 +209,7 @@ def infinite_scroll(request, signal):
 ### --> <-- ###
 
 
+# Clientside Row Model
 @dash.callback(
     Output("raw-data-grid", "rowData"),
     Input("data_refresh_signal", "data")

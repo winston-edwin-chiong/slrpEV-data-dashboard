@@ -179,7 +179,7 @@ def toggle_navbar_collapse(n, is_open):
     Input("data_refresh_interval_component", "n_intervals"),
     prevent_initial_call=True,
 )
-def data_refresh_interval(n, n_clicks):
+def data_refresh_interval(n):
     '''
     This callback updates data at regular intervals.
     '''
