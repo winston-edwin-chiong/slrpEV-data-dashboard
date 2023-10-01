@@ -180,11 +180,7 @@ layout = \
 )
 def update_today_homepage_cards(n):
     # load data
-    #today, monthlydemand, dailydemand, raw_data = db.get_multiple_df(r, ["todays_sessions", "monthlydemand", "dailydemand", "raw_data"])
-    today = db.get_df(r, "todays_sessions")
-    monthlydemand = db.get_df(r, "monthlydemand")
-    dailydemand = db.get_df(r, "dailydemand")
-    raw_data = db.get_df(r, "raw_data")
+    today, monthlydemand, dailydemand, raw_data = db.get_multiple_df(r, ["todays_sessions", "monthlydemand", "dailydemand", "raw_data"])
 
     # filter data to just this month
     thismonthdemand = monthlydemand.iloc[[-1]]

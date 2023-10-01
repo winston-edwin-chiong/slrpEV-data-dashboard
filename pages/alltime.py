@@ -368,9 +368,7 @@ def display_histogram_hover(hoverData, quantity, granularity, theme):
         return pltf.PlotHoverHistogram.default(theme), pltf.PlotHoverHistogram.default(theme)
 
     # load data
-    # hourlydemand, dailydemand = db.get_multiple_df(r, ["hourlydemand, dailydemand"])
-    hourlydemand = db.get_df(r, "hourlydemand")
-    dailydemand = db.get_df(r, "dailydemand")
+    hourlydemand, dailydemand = db.get_multiple_df(r, ["hourlydemand, dailydemand"])
 
     # create hover histograms
     if granularity == "dailydemand":

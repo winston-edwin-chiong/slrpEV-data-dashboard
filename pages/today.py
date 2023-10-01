@@ -168,9 +168,7 @@ def display_today_graph(value, yesterday, forecast, data_signal, theme):
     data = db.get_df(r, "todays_sessions")
 
     if value == "today-aggregate-power":
-        # fivemindemand, daily_forecasts = db.get_multiple_df(r, ["fivemindemand", "dailyforecasts"])
-        fivemindemand = db.get_df(r, "fivemindemand")
-        daily_forecasts = db.get_df(r, "dailyforecasts")
+        fivemindemand, daily_forecasts = db.get_multiple_df(r, ["fivemindemand", "dailyforecasts"])
         return pltf.PlotDaily.plot_daily_time_series(data, yesterday, fivemindemand, daily_forecasts, forecast, theme), {"display": "inline"}
 
     elif value == "today-energy-dist":
