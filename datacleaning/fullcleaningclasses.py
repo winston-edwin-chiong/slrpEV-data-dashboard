@@ -158,6 +158,21 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
         X["day"] = X.index.day_name()
         X["month"] = X.index.month_name()
         return X
+    
+class CreateSubsets(BaseEstimator, TransformerMixin):
+    """
+    This pipeline step will subset the dataframe to only certain columns.
+    """
+
+    def __init__(self, columns: list) -> None: 
+        self.columns = columns
+        super().__init__()
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X) -> pd.DataFrame:
+        return X[self.columns]
 
 
 class CreateGranularities(BaseEstimator, TransformerMixin):

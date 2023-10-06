@@ -219,7 +219,7 @@ def update_today_homepage_cards(n):
 )
 def update_cum_homepage_cards(n):
     # load data
-    raw_data = db.get_df(r, "raw_data")
+    raw_data = db.get_df(r, "raw_data_subset")
 
     # calculate cumulative sessions
     cum_sessions_float = len(raw_data)

@@ -27,7 +27,15 @@ class CleanData:
         )
         raw_data_w_helpers = raw_data_pipeline.fit_transform(raw_data)
 
-        # full time series pipeline
+        # subset of raw data pipeline (only some columns for query optimization)
+        subset_raw_data_pipeline = Pipeline(
+            [
+                ("subset_columns", fcc.CreateSubsets(["connectTime", "userId", "cumEnergy_Wh", "trueDurationHrs"])), 
+            ]
+        )
+        raw_data_subset = subset_raw_data_pipeline.fit_transform(raw_data_w_helpers)
+
+        # full time series pipeline; you could also pass `raw_data_w_helpers` here but showing full pipeline for clarity
         full_ts_pipeline = Pipeline(
             [
                 ("sort_drop_cast", fcc.SortDropCast()),
@@ -49,8 +57,10 @@ class CleanData:
                 ("nested_ts", scc.CreateNestedSessionTimeSeries()),
             ]
         )
-
         cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(raw_data)
+
+        # raw data and raw data subset
         cleaned_dataframes["raw_data"] = raw_data_w_helpers
+        cleaned_dataframes["raw_data_subset"] = raw_data_subset
 
         return cleaned_dataframes

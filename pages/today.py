@@ -137,7 +137,7 @@ def display_user_hover(hoverData, value):
     if hoverData is None or value != "today-aggregate-power":
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
-    data = db.get_df(r, "raw_data")
+    data = db.get_df(r, "raw_data_subset")
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
 

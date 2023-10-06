@@ -72,6 +72,7 @@ class db:
         for name in names:
             pipe.get(name)
 
-        res = pipe.execute()    
-        return [pd.read_parquet(BytesIO(buffer)) for buffer in res]
+        res = pipe.execute()
+        res = [pd.read_parquet(BytesIO(buffer)) for buffer in res] 
+        return res
     
