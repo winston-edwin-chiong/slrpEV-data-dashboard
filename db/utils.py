@@ -16,14 +16,18 @@ class db:
         '''
         This function returns a Redis connection object. 
         '''
-        retry = Retry(ExponentialBackoff(), 3)
+        return redis.from_url(url=os.getenv("REDIS_URI"))
 
+        # old 
+        retry = Retry(ExponentialBackoff(), 3)
         return redis.Redis(
             host=os.getenv("REDIS_HOST"),
             port=os.getenv("REDIS_PORT"),
+            username=os.getenv("REDIS_USERNAME"),
             password=os.getenv("REDIS_PASSWORD"),
             retry=retry,
-            retry_on_error=[BusyLoadingError, ConnectionError, TimeoutError]
+            retry_on_error=[BusyLoadingError, ConnectionError, TimeoutError],
+            ssl=True
         )
     
 
