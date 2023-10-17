@@ -8,7 +8,7 @@ from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State
 from dash import html, dcc, Patch
 from db.utils import db
-from io import BytesIO
+
 
 dash.register_page(__name__, path="/today")
 
@@ -84,7 +84,6 @@ layout = \
                                 dbc.Col([
                                     html.Div([
                                         html.Div(["User Information"], className="p-3 fw-bold"),
-                                        dcc.Loading(
                                             html.Div([
                                                 html.Ul([
                                                     html.Span("Lifetime number of sessions: ", className="fst-italic"),
@@ -101,9 +100,12 @@ layout = \
                                                 html.Ul([
                                                     html.Span("Lifetime energy consumption: ", className="fst-italic"), 
                                                     html.Span(id="total_nrg_consumed_user")
+                                                    ], className="p-1"),
+                                                html.Ul([
+                                                    html.Span("Preferred charging choice: ", className="fst-italic"), 
+                                                    html.Span(id="pref_charging_choice_user")
                                                     ], className="p-1")
                                             ], id='user-information', className="p-3 text-break"),
-                                        type="circle")
                                     ], className="border rounded shadow"),
                                 ], className="col-md-2 col-12 px-2", id="hover-user-col")
                             ], className="row-gap-4")
@@ -128,6 +130,7 @@ layout = \
     Output("avg_duration_user", "children"),
     Output("freq_connect_time_user", "children"),
     Output("total_nrg_consumed_user", "children"),
+    Output("pref_charging_choice_user", "children"),
     Input("today-graph", "hoverData"),
     State("today-graph-picker", "value"),
     prevent_initial_call=True
@@ -142,13 +145,14 @@ def display_user_hover(hoverData, value):
     userId = int(hoverData["points"][0]["customdata"][2])
 
     # get user hover data
-    num_sessions, avg_duration, freq_connect, total_nrg = pltf.GetUserHoverData.get_user_hover_data(data, userId)
+    num_sessions, avg_duration, freq_connect, total_nrg, pref_charging_choice, pref_charging_choice_percent = pltf.GetUserHoverData.get_user_hover_data(data, userId)
     
     text = (
         f"{num_sessions}", 
         f"{avg_duration} hours", 
         f"{freq_connect}", 
-        f"{round(total_nrg, 1)} kWh",
+        f"{total_nrg:.1f} kWh",
+        f"{pref_charging_choice} ({pref_charging_choice_percent:.0%})"
     )
 
     return text 

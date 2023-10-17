@@ -10,15 +10,11 @@ from dash_bootstrap_templates import ThemeChangerAIO
 from db.utils import db
 
 # styles
-dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.1/dbc.min.css" )
+dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css" )
 
 # connect to Redis, fill data folder on first run
 load_dotenv()
 r = db.get_redis_connection()
-# for data grid; it's really slow otherwise for some reason 
-raw_data = db.get_df(r, "raw_data")
-raw_data.to_csv("raw_data.csv")
-
 
 # app instantiation
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
@@ -75,31 +71,37 @@ app.layout = \
                         dbc.Nav([
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-house me-2 text-primary"),
+                                    html.I(className="navbar-icon bi bi-house ms-md-0 ms-1 me-2 text-primary"),
                                     "Home"
                                 ], href="/", className="text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-graph-up me-2 text-primary"),
+                                    html.I(className="navbar-icon bi bi-graph-up ms-md-0 ms-1 me-2 text-primary"),
                                     "Alltime"
                                 ], href="/alltime", className="text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-table me-2 text-primary"),
+                                    html.I(className="navbar-icon bi bi-table ms-md-0 ms-1 me-2 text-primary"),
                                     "Datatable"
                                 ], href="/data", className="text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-calendar-event me-2 text-primary"),
+                                    html.I(className="navbar-icon bi bi-calendar-event ms-md-0 ms-1 me-2 text-primary"),
                                     "Today"
                                 ], href="/today", className="text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-info-circle me-2 text-primary"),
+                                    html.I(className="navbar-icon bi bi-ev-station ms-md-0 ms-1 me-2 text-primary"),
+                                    "Chargers"
+                                ], href="/chargers", className="text-start text-primary")
+                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
+                            dbc.NavItem([
+                                dbc.NavLink([
+                                    html.I(className="navbar-icon bi bi-info-circle ms-md-0 ms-1 me-2 text-primary"),
                                     "About"
                                 ], href="/about", className="text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
@@ -149,6 +151,7 @@ app.layout = \
                     ]),
                     html.Div(["Icons by Bootstrap Icons & Icons8, Themes by Bootswatch"]),
                     html.Div([
+                        html.A(html.I(className="bi bi-globe2 m-1"), href="https://www.winstonchiong.com/", target="_blank"),
                         html.A(html.I(className="bi bi-github m-1"), href="https://github.com/winston-edwin-chiong/slrpEV-data-dashboard", target="_blank"),
                         html.A(html.I(className="bi bi-linkedin m-1"), href="https://www.linkedin.com/in/winstonechiong/", target="_blank"),
                     ], className="d-flex")
@@ -183,9 +186,6 @@ def data_refresh_interval(n):
     '''
     This callback updates data at regular intervals.
     '''
-    # for data grid; it's really slow otherwise for some reason 
-    raw_data = db.get_df(r, "raw_data")
-    raw_data.to_csv("raw_data.csv")
     return n
 
 ### --> <-- ###

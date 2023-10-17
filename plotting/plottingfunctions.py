@@ -567,10 +567,13 @@ class GetUserHoverData:
 
     @classmethod
     def get_user_hover_data(cls, df: pd.DataFrame, userId: int) -> tuple:
+        """
+        Returns `num_sessions`, `average_duration`, `freq_connect_time`, `total_nrg_consumed`, `pref_charging_choice`, `pref_charging_choice_percent`.
+        """
 
         subset = df[df["userId"] == userId].copy()
 
-        num_sessions = len(subset)
+        num_sessions = subset.shape[0]
         average_duration = round(subset["trueDurationHrs"].mean(), 2)
          
         subset["connectTime"] = pd.to_datetime(subset["connectTime"])
@@ -578,7 +581,10 @@ class GetUserHoverData:
 
         total_nrg_consumed = subset["cumEnergy_Wh"].sum() / 1000
 
-        return num_sessions, average_duration, freq_connect_time, total_nrg_consumed
+        pref_charging_choice = subset["choice"].mode()[0]
+        pref_charging_choice_percent = subset[subset["choice"] == pref_charging_choice].shape[0] / subset.shape[0]
+
+        return num_sessions, average_duration, freq_connect_time, total_nrg_consumed, pref_charging_choice, pref_charging_choice_percent
         
     def __get_connect(hour: int) -> str:
         if 6 <= hour <= 10:

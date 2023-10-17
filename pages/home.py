@@ -2,6 +2,7 @@ import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
 import pytz
+import dash_mantine_components as dmc
 from dash.dependencies import Output, Input, State
 from plotting import plottingfunctions as pltf
 from dash import html, dcc
@@ -31,6 +32,9 @@ def calculate_pct_change(after, before):
 def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_data, monthlydemand):
 
     def get_icon_and_color(change):
+        """
+        Returns an arrow icon and color corresponding to a change. Green up for increase, grey sideways for equal, red down for decrease. 
+        """
         if change > 0:
             return "bi bi-arrow-up me-1", "#58c21e"
         elif change < 0:
@@ -57,7 +61,7 @@ def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_dat
                 className=get_icon_and_color(kwh_change)[0],
                 style={"color": get_icon_and_color(kwh_change)[1]}
             ),
-            f"{round(kwh_change, 2):+} % since yesterday!" if kwh_change else "No change since yesterday!"
+            f"{kwh_change:+.0f}% since yesterday!" if kwh_change else "No change since yesterday!"
         ],
         [
             html.I(
@@ -71,7 +75,7 @@ def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_dat
                 className=get_icon_and_color(peak_power_change)[0],
                 style={"color": get_icon_and_color(peak_power_change)[1]} 
             ),
-            f"{round(peak_power_change, 2):+} % since last month!" if peak_power_change else "No change since last month!"
+            f"{peak_power_change:+.1f}% since last month!" if peak_power_change else "No change since last month!"
         ],
     )
 
@@ -93,7 +97,10 @@ layout = \
                         dcc.Loading(
                             dbc.CardBody([
                                 html.H2(id="homepage-cum-kwh"),
-                                html.Div(className="my-3", id="homepage-cum-kwh-stats")
+                                html.Div([
+                                    html.I(className="bi bi-lightning-charge-fill me-1", style={"color": "#FCC01E"}),
+                                    html.Span(id="homepage-cum-kwh-stats")
+                                ], className="my-3")
                             ]),
                         type="circle")
                     ], className="h-100 rounded shadow text-center"),
@@ -119,7 +126,10 @@ layout = \
                         dcc.Loading(
                             dbc.CardBody([
                                 html.H2(id="homepage-cum-emiles"),
-                                html.Div(className="my-3", id="homepage-cum-emiles-stats")
+                                html.Div([
+                                    html.I(className="bi bi-geo-alt-fill me-1", style={"color": "#3CDFFF"}),
+                                    html.Span(id="homepage-cum-emiles-stats")
+                                ], className="my-3")
                             ]),
                         type="circle")
                     ], className="h-100 rounded shadow text-center"),
@@ -144,8 +154,15 @@ layout = \
                         ]),
                         dcc.Loading(
                             dbc.CardBody([
-                                html.H2(id="homepage-cum-sessions"),
-                                html.Div(className="my-3", id="homepage-cum-sessions-stats")
+                                html.Div([
+                                    html.H2(id="homepage-cum-sessions"),
+                                    dmc.Divider(orientation="vertical", className="mx-3 vh-5"),
+                                    html.Div(id="homepage-sessions-split", className="d-flex flex-column align-items-start")
+                                ], className="d-flex flex-row align-items-center justify-content-center"),
+                                html.Div([
+                                    html.I(className="bi bi-calendar-week me-1", style={"color": "#000000"}),
+                                    html.Span(id="homepage-cum-sessions-stats")
+                                ], className="my-3") 
                             ]),
                         type="circle")
                     ], className="h-100 rounded shadow text-center"),
@@ -187,7 +204,7 @@ def update_today_homepage_cards(n):
 
     # extract peak power, convert to kW
     peak_power_float = thismonthdemand["peak_power_W"][0] / 1000
-    peak_power = f'{peak_power_float:,}' + " kW"
+    peak_power = f'{peak_power_float:,} kW'
 
     # workaround for length of NoneType error (no sessions today)
     if len(today) == 0:
@@ -195,22 +212,22 @@ def update_today_homepage_cards(n):
 
         return 0, 0, peak_power, kwh_change, users_change, peak_power_change
 
-    else:
-        today = today[["dcosId", "cumEnergy_Wh", "vehicle_model"]].groupby("dcosId").first().copy()
-        kwh_today_float = today["cumEnergy_Wh"].sum(axis=0) / 1000
+    today = today[["dcosId", "cumEnergy_Wh", "vehicle_model"]].groupby("dcosId").first().copy()
+    kwh_today_float = today["cumEnergy_Wh"].sum(axis=0) / 1000
 
-        kwh_today = f'{kwh_today_float:,}' + " kWh"
-        num_users = len(today)
+    kwh_today = f'{kwh_today_float:,} kWh'
+    num_users = len(today)
 
-        kwh_change, users_change, peak_power_change = calcuate_stats_change(kwh_today_float, num_users, peak_power_float, dailydemand, raw_data, monthlydemand)
+    kwh_change, users_change, peak_power_change = calcuate_stats_change(kwh_today_float, num_users, peak_power_float, dailydemand, raw_data, monthlydemand)
 
-        return kwh_today, num_users, peak_power, kwh_change, users_change, peak_power_change
+    return kwh_today, num_users, peak_power, kwh_change, users_change, peak_power_change
 
 
 # update cumulative stats homepage cards
 @dash.callback(
     Output("homepage-cum-kwh", "children"),
     Output("homepage-cum-sessions", "children"),
+    Output("homepage-sessions-split", "children"),
     Output("homepage-cum-emiles", "children"),
     Output("homepage-cum-kwh-stats", "children"),
     Output("homepage-cum-emiles-stats", "children"),
@@ -222,25 +239,30 @@ def update_cum_homepage_cards(n):
     raw_data = db.get_df(r, "raw_data_subset")
 
     # calculate cumulative sessions
-    cum_sessions_float = len(raw_data)
+    cum_sessions_float = raw_data.shape[0]
     cum_sessions = f'{cum_sessions_float:,}'
+    # calculate regular vs. schedule split by %
+    cum_sessions_percent_reg = f'{(raw_data[raw_data["choice"] == "REGULAR"].shape[0] / cum_sessions_float):.1%}'
+    cum_sessions_percent_sched = f'{(raw_data[raw_data["choice"] == "SCHEDULED"].shape[0] /cum_sessions_float):.1%}'
+    sessions_split = [
+        html.Span(f"Regular - {raw_data[raw_data['choice'] == 'REGULAR'].shape[0]} ({cum_sessions_percent_reg})"), 
+        html.Span(f"Scheduled - {raw_data[raw_data['choice'] == 'SCHEDULED'].shape[0]} ({cum_sessions_percent_sched})"), 
+        ]
+
     num_weeks = (datetime.today() - datetime(2020, 11, 5)).days // 7
-    cum_sessions_stats = [html.I(className="bi bi-ev-station me-1", style={"color": "#000000"}), 
-                          f"An average of {round(cum_sessions_float/num_weeks, 1)} sessions per week!"]
+    cum_sessions_stats = f"An average of {cum_sessions_float/num_weeks:.1f} sessions per week!"
 
     # calculate cumulative energy
-    cum_kwh_float = round(raw_data["cumEnergy_Wh"].sum() / 1000, 1)
-    cum_kwh_delivered = f'{cum_kwh_float:,}' + " kWh"
-    cum_kwh_stats = [html.I(className="bi bi-lightning-charge-fill me-1", style={"color": "#FCC01E"}), 
-                     f"Enough energy to power a US home for {round(cum_kwh_float/ 10649, 1)} years!"]  # 10649 kWh per home per year conversion
+    cum_kwh_float = raw_data["cumEnergy_Wh"].sum() / 1000
+    cum_kwh_delivered = f'{cum_kwh_float:,.1f} kWh'
+    cum_kwh_stats = f"Enough energy to power a US home for {cum_kwh_float/ 10649:.1f} years!" # 10649 kWh per home per year conversion
 
     # calculate cumulative e-miles
-    cum_emiles_float = round(raw_data["cumEnergy_Wh"].sum() / 290, 0)
-    cum_emiles_delivered = f'{cum_emiles_float:,}' + " Mi"  # 290 Wh/mile conversion rate
-    cum_emiles_stats = [html.I(className="bi bi-geo-alt-fill me-1", style={"color": "#3CDFFF"}), 
-                        f"Equivalent to {round(cum_emiles_float / 5810, 1)} round trips from San Francisco to New York City!"]  # 5810 miles round trip
+    cum_emiles_float = raw_data["cumEnergy_Wh"].sum() / 290
+    cum_emiles_delivered = f'{cum_emiles_float:,.0f} Mi' # 290 Wh/mile conversion rate
+    cum_emiles_stats = f"Equivalent to {(cum_emiles_float / 5810):.1f} round trips from San Francisco to New York City!" # 5810 miles round trip
 
-    return cum_kwh_delivered, cum_sessions, cum_emiles_delivered, cum_kwh_stats, cum_emiles_stats, cum_sessions_stats
+    return cum_kwh_delivered, cum_sessions, sessions_split, cum_emiles_delivered, cum_kwh_stats, cum_emiles_stats, cum_sessions_stats
 
 
 # update date title

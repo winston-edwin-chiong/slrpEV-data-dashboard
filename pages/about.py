@@ -35,42 +35,52 @@ layout = \
                                 ])
                             ]),
                             html.Br(),
-                            html.P([
-                                html.Span([
-                                    "Data from the physical chargers is stored on ",
-                                    html.A("AWS DynamoDB", href="https://aws.amazon.com/dynamodb/", target="_blank", className="fw-bold text-info"),
-                                    " and is updated every 5 minutes. ",
-                                    "Data cleaning and machine learning tasks are executed on a schedule hosted by ",
-                                    html.A("Modal", href="https://modal.com/", target="_blank", className="fw-bold text-info"),
-                                    " and results are sent to ",
-                                    html.A("Redis", href="https://redis.io/", target="_blank", className="fw-bold text-info"),
-                                    ", this app's primary database. ",                   
-                                    "This app's frontend is built with ",
-                                    html.A("Plotly Dash", href="https://dash.plotly.com/", target="_blank", className="fw-bold text-info"), 
-                                    " and ",
-                                    html.A("Bootstrap", href="https://getbootstrap.com/", target="_blank", className="fw-bold text-info"),
-                                    ", and is hosted on ",
-                                    html.A("Render", href="https://render.com/", target="_blank", className="fw-bold text-info"),
-                                    "."
+                            html.H3("FAQ"),
+                            dbc.Accordion([
+                                dbc.AccordionItem([
+                                    html.P([
+                                        html.Span([
+                                            "Data from the physical chargers is stored on ",
+                                            html.A("AWS DynamoDB", href="https://aws.amazon.com/dynamodb/", target="_blank", className="fw-bold text-info"),
+                                            " and is updated every 5 minutes. ",
+                                            "Data cleaning and machine learning tasks are executed on a schedule hosted by ",
+                                            html.A("Modal", href="https://modal.com/", target="_blank", className="fw-bold text-info"),
+                                            " and results are sent to ",
+                                            html.A("Redis", href="https://redis.io/", target="_blank", className="fw-bold text-info"),
+                                            ", this app's primary database. ",                   
+                                            "This app's frontend is built with ",
+                                            html.A("Plotly Dash", href="https://dash.plotly.com/", target="_blank", className="fw-bold text-info"), 
+                                            " and ",
+                                            html.A("Bootstrap", href="https://getbootstrap.com/", target="_blank", className="fw-bold text-info"),
+                                            ". The app is deployed on ",
+                                            html.A("Render", href="https://render.com/", target="_blank", className="fw-bold text-info"),
+                                            "."
+                                            ]),
                                     ]),
-                            ]),
-                            html.Br(),
-                            html.P([
-                                html.Span([
-                                    "Please reach out for suggestions, comments, questions, or requests to ",
-                                    html.A("winstonchiong@berkeley.edu!", href="mailto:winstonchiong@berkeley.edu", className="fst-italic fw-bold text-info")
-                                ])
-                            ]),
-                            html.Br(),
+                                ], title="How is this app built?"),
+                                dbc.AccordionItem([
+                                    html.P([
+                                        html.Span([
+                                            "Please reach out to me at ",
+                                            html.A("winstonchiong@berkeley.edu", href="mailto:winstonchiong@berkeley.edu", className="fst-italic fw-bold text-info"),
+                                            " ! I'm super happy to chat!"
+                                        ])
+                                    ]),
+                                ], title="I have a suggestion, comment, question, or request!"),
+                                dbc.AccordionItem([
+                                    ### --> Mac <-- ###
+                                    html.Div([
+                                        dbc.Tooltip("This is Mac!", target="Mac", placement="right"),
+                                        html.Img([
+                                        ], src=r"assets/images/cat1.jpg", alt="Winston's cat", className="img-fluid rounded", id="Mac", style={"max-width": "30%"})
+                                    ], className="d-flex justify-content-center")
+                                    ### --> <-- ###
+                                ], title="🐈?"),
+                            ], start_collapsed=True),
                         ], className="text-start m-2"),
                         ### --> <-- ###
 
-                        ### --> Mac <-- ###
-                        dbc.Tooltip("This is Mac!", target="Mac", placement="top"),
-                        html.Img([
-                        ], src=r"assets/images/cat1.jpg", alt="Winston's cat", className="img-fluid rounded", id="Mac", style={"max-width": "30%"})
-                        ### --> <-- ###
-                    ], className="d-flex flex-column justify-content-center align-items-center"),
+                    ], className="d-flex flex-column"),
                 ], className="col-12 col-lg-10"),
                 ### --> <-- ###
 

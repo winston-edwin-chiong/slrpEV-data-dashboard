@@ -2,48 +2,42 @@ import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
 import dash_ag_grid as dag
+import os 
 from dash import html, dcc, Input, Output, State, ctx
 from dash_bootstrap_templates import ThemeChangerAIO
 from db.utils import db
+
 
 dash.register_page(__name__, path="/data")
 
 r = db.get_redis_connection()
 
-# load data
-df = pd.read_csv("raw_data.csv")
 
-# drop helper columns
-df = df.drop(
-    columns=[
-        "finishChargeTime",
-        "trueDurationHrs",
-        "true_peakPower_W",
-        "Overstay",
-        "Overstay_h"
-    ]
-)
+def save_grid_data():
+    # load data
+    df = db.get_df(r, "raw_data")
+    # drop helper columns
+    df = df.drop(
+        columns=[
+            "finishChargeTime",
+            "trueDurationHrs",
+            "true_peakPower_W",
+            "Overstay",
+            "Overstay_h"
+        ]
+    )
+    # reverse data (most recent first)
+    df = df[::-1]
+    if not os.path.exists("data/"):
+        os.makedirs("data/")
+    df.to_csv("data/raw_data.csv")
+    
 
-# reverse data (most recent first)
-df = df[::-1]
+def get_grid_data():
+    df = pd.read_csv("data/raw_data.csv")
+    return df 
 
-grid = dag.AgGrid(
-    id="raw-data-grid",
-    columnDefs=[{"field": i} for i in df.columns],
-    defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
-    columnSize="sizeToFit",
-    # rowModelType="infinite",
-    # rowData = df.to_dict("records"),
-    dashGridOptions={
-        "rowBuffer": 0,
-        # "maxBlocksInCache": 1,
-        "rowSelection": "multiple",
-        "pagination": True,
-        "paginationAutoPageSize": True
-    },
-    style={"height": "70vh"},
-    className="ag-theme-balham",
-)
+save_grid_data()
 
 layout = \
     html.Div([
@@ -66,17 +60,36 @@ layout = \
                             html.Button("Reset Columns", className="btn btn-outline-secondary btn-sm py-1 px-2 ms-2 mt-1 rounded", id="reset-btn"),
                             dcc.Dropdown(
                                 id='data-column-dropdown',
-                                options=[{'label': col, 'value': col} for col in df.columns],
+                                options=[{'label': col, 'value': col} for col in get_grid_data().columns],
                                 multi=True,
-                                value=[option["value"] for option in [{'label': col, 'value': col} for col in df.columns]],
+                                value=[option["value"] for option in [{'label': col, 'value': col} for col in get_grid_data().columns]],
                                 className='dbc m-2',
                             )
                         ], className="px-2 py-2 border rounded mx-2 my-2")
                     ], id="grid-settings-collapse", is_open=False),
                     ### --> Grid <-- ###
                     html.Div([
-                        grid
+                        dag.AgGrid(
+                            id="raw-data-grid",
+                            columnDefs=[{"field": i} for i in get_grid_data().columns],
+                            defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
+                            columnSize="sizeToFit",
+                            # rowModelType="infinite",
+                            # rowData = df.to_dict("records"),
+                            dashGridOptions={
+                                "rowBuffer": 0,
+                                # "maxBlocksInCache": 1,
+                                "rowSelection": "multiple",
+                                "pagination": True,
+                                "paginationAutoPageSize": True
+                            },
+                            style={"height": "70vh"},
+                            className="ag-theme-balham",
+                        ),
                     ], className="m-3 mt-2 shadow-sm"),
+                    html.Div([
+                        html.Button("Refresh grid data!", className="btn btn-outline-secondary btn-sm py-0 px-2 me-1 mt-1 rounded", id="refresh-grid-data-btn", disabled=True)
+                    ], className="d-flex justify-content-end m-2")
                     ### --> <-- ###
                 ], className="col-12 col-lg-10"),
                 ### --> <-- ###
@@ -141,12 +154,12 @@ def filterDf(df, data, col):
         df = df.loc[getattr(df[col], operators[data["type"]])(crit1)]
     return df
 
-# Infinite Row Model
-# @dash.callback(
-#     Output("raw-data-grid", "getRowsResponse"),
-#     Input("raw-data-grid", "getRowsRequest"),
-#     Input("data_refresh_signal", "data")
-# )
+# Infinite Row Model; not used right now
+#@dash.callback(
+    Output("raw-data-grid", "getRowsResponse"),
+    Input("raw-data-grid", "getRowsRequest"),
+    Input("data_refresh_signal", "data")
+#)
 def infinite_scroll(request, signal):
     callback_id = ctx.triggered_id
 
@@ -167,7 +180,7 @@ def infinite_scroll(request, signal):
 
         return {"rowData": dff.to_dict("records")}
     
-    dff = df.copy()
+    dff = save_grid_data().copy()
     if request is None:
         return dash.no_update
     else:
@@ -212,22 +225,14 @@ def infinite_scroll(request, signal):
 # Clientside Row Model
 @dash.callback(
     Output("raw-data-grid", "rowData"),
-    Input("data_refresh_signal", "data")
+    Input("data_refresh_signal", "data"),
+    prevent_inital_call=True
 )
-def update_rowdata(signal):
-    df = pd.read_csv("raw_data.csv")
-    df = df.drop(
-        columns=[
-            "finishChargeTime",
-            "trueDurationHrs",
-            "true_peakPower_W",
-            "Overstay",
-            "Overstay_h"
-        ]
-    )
-    # reverse data (most recent first)
-    df = df[::-1]
+def update_rowdata(n):
+    save_grid_data()
+    df = get_grid_data()
     return df.to_dict("records")
+
 
 
 @dash.callback(

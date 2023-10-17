@@ -15,7 +15,7 @@ class CleanData:
     def clean_raw_data(raw_data) -> dict:
         """
         This function cleans raw data slrpEV data and returns six cleaned dataframes in a dictionary with keys:
-        `fivemindemand`, `hourlydemand`, `dailydemand`, `monthlydemand`, `todays_sessions`, `raw_data`.
+        `fivemindemand`, `hourlydemand`, `dailydemand`, `monthlydemand`, `todays_sessions`, `raw_data`, `raw_data_subset`.
         """
 
         # raw data pipeline (adds helper columns)
@@ -30,7 +30,7 @@ class CleanData:
         # subset of raw data pipeline (only some columns for query optimization)
         subset_raw_data_pipeline = Pipeline(
             [
-                ("subset_columns", fcc.CreateSubsets(["connectTime", "userId", "cumEnergy_Wh", "trueDurationHrs"])), 
+                ("subset_columns", fcc.CreateSubsets(["connectTime", "userId", "cumEnergy_Wh", "trueDurationHrs", "choice"])), 
             ]
         )
         raw_data_subset = subset_raw_data_pipeline.fit_transform(raw_data_w_helpers)
