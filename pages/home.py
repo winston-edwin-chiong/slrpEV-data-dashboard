@@ -157,7 +157,7 @@ layout = \
                                 html.Div([
                                     html.H2(id="homepage-cum-sessions"),
                                     dmc.Divider(orientation="vertical", className="mx-3 vh-5"),
-                                    html.Div(id="homepage-sessions-split", className="d-flex flex-column align-items-start")
+                                    html.Div(id="homepage-sessions-split", className="d-flex flex-column align-items-center")
                                 ], className="d-flex flex-row align-items-center justify-content-center"),
                                 html.Div([
                                     html.I(className="bi bi-calendar-week me-1", style={"color": "#000000"}),
@@ -181,7 +181,7 @@ layout = \
                     ], className="h-100 rounded shadow text-center"),
                 ], className="col-md-6 col-sm-12 col-12"),
             ], className="row-cols-1 rows-cols-sm-2 gx-4 gy-4"),
-        ], className="my-5")
+        ], className="my-5 animate__animated animate__fadeIn")
     ])
 
 
@@ -245,8 +245,23 @@ def update_cum_homepage_cards(n):
     cum_sessions_percent_reg = f'{(raw_data[raw_data["choice"] == "REGULAR"].shape[0] / cum_sessions_float):.1%}'
     cum_sessions_percent_sched = f'{(raw_data[raw_data["choice"] == "SCHEDULED"].shape[0] /cum_sessions_float):.1%}'
     sessions_split = [
-        html.Span(f"Regular - {raw_data[raw_data['choice'] == 'REGULAR'].shape[0]} ({cum_sessions_percent_reg})"), 
-        html.Span(f"Scheduled - {raw_data[raw_data['choice'] == 'SCHEDULED'].shape[0]} ({cum_sessions_percent_sched})"), 
+        # html.Span(f"Regular - {raw_data[raw_data['choice'] == 'REGULAR'].shape[0]} ({cum_sessions_percent_reg})"), 
+        # html.Span(f"Scheduled - {raw_data[raw_data['choice'] == 'SCHEDULED'].shape[0]} ({cum_sessions_percent_sched})"), 
+        html.Div(["Scheduled vs. Regular"], className="fs-6"),
+        dmc.RingProgress(
+            sections=[
+                {
+                    "tooltip": f'Regular - {cum_sessions_percent_reg} ({raw_data[raw_data["choice"] == "REGULAR"].shape[0]})', 
+                    "value": 100 * raw_data[raw_data["choice"] == "REGULAR"].shape[0] / cum_sessions_float, 
+                    "color": "orange"},
+                {
+                    "tooltip": f'Scheduled - {cum_sessions_percent_sched} ({raw_data[raw_data["choice"] == "SCHEDULED"].shape[0]})', 
+                    "value": 100 * raw_data[raw_data["choice"] == "SCHEDULED"].shape[0] / cum_sessions_float, 
+                    "color": "cyan"}
+            ],
+            size=60,
+            thickness=12.5
+        ),
         ]
 
     num_weeks = (datetime.today() - datetime(2020, 11, 5)).days // 7

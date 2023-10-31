@@ -234,7 +234,6 @@ def update_rowdata(n):
     return df.to_dict("records")
 
 
-
 @dash.callback(
     Output("data-column-dropdown", "value"),
     Input("reset-btn", "n_clicks"),

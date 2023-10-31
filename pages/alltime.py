@@ -2,8 +2,6 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 import pandas as pd
-import pytz
-from io import BytesIO
 from dash_bootstrap_templates import ThemeChangerAIO
 from plotting import plottingfunctions as pltf
 from datetime import timedelta, datetime

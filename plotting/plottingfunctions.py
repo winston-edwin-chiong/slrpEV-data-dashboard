@@ -658,7 +658,7 @@ class PlotSchedVsReg:
                          )
         fig.update_traces(hovertemplate="Scheduled ¢/Hr: %{x}<br>Regular ¢/Hr: %{y}<br>Count: %{marker.size:,}<br>Choice: %{customdata}<extra></extra>")
         fig.update_layout(
-            title="Choice On Different Price / Charge Offerings",
+            title="Choice On Different Price & Charge Offerings",
             xaxis_title="REGULAR PRICE (cents/hour)",
             yaxis_title="SCHEDULED PRICE (cents/hour)",
             showlegend=True,

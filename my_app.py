@@ -10,7 +10,7 @@ from dash_bootstrap_templates import ThemeChangerAIO
 from db.utils import db
 
 # styles
-dbc_css = ( "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css" )
+dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css")
 
 # connect to Redis, fill data folder on first run
 load_dotenv()
@@ -184,7 +184,7 @@ def toggle_navbar_collapse(n, is_open):
 )
 def data_refresh_interval(n):
     '''
-    This callback updates data at regular intervals.
+    This callback does something at regular intervals.
     '''
     return n
 
