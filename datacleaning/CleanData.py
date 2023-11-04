@@ -1,6 +1,7 @@
 from sklearn.pipeline import Pipeline
 import datacleaning.fullcleaningclasses as fcc
 import datacleaning.todaysessioncleaningclasses as scc
+import datacleaning.chargercleaningclasses as ccc
 
 
 class CleanData:
@@ -35,6 +36,14 @@ class CleanData:
         )
         raw_data_subset = subset_raw_data_pipeline.fit_transform(raw_data_w_helpers)
 
+        # chargers pipeline 
+        chargers_pipeline = Pipeline(
+            [
+                ("clean_chargers", ccc.CleanChargers())
+            ]
+        )
+        chargers = chargers_pipeline.fit_transform(raw_data_w_helpers)
+
         # full time series pipeline; you could also pass `raw_data_w_helpers` here but showing full pipeline for clarity
         full_ts_pipeline = Pipeline(
             [
@@ -59,8 +68,9 @@ class CleanData:
         )
         cleaned_dataframes["todays_sessions"] = todays_sessions_pipeline.fit_transform(raw_data)
 
-        # raw data and raw data subset
+        # raw data, raw data subset, and chargers
         cleaned_dataframes["raw_data"] = raw_data_w_helpers
         cleaned_dataframes["raw_data_subset"] = raw_data_subset
+        cleaned_dataframes["chargers"] = chargers
 
         return cleaned_dataframes

@@ -245,8 +245,6 @@ def update_cum_homepage_cards(n):
     cum_sessions_percent_reg = f'{(raw_data[raw_data["choice"] == "REGULAR"].shape[0] / cum_sessions_float):.1%}'
     cum_sessions_percent_sched = f'{(raw_data[raw_data["choice"] == "SCHEDULED"].shape[0] /cum_sessions_float):.1%}'
     sessions_split = [
-        # html.Span(f"Regular - {raw_data[raw_data['choice'] == 'REGULAR'].shape[0]} ({cum_sessions_percent_reg})"), 
-        # html.Span(f"Scheduled - {raw_data[raw_data['choice'] == 'SCHEDULED'].shape[0]} ({cum_sessions_percent_sched})"), 
         html.Div(["Scheduled vs. Regular"], className="fs-6"),
         dmc.RingProgress(
             sections=[

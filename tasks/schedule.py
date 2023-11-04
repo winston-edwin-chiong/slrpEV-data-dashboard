@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 # query data
 @stub.function(
-        schedule=modal.Cron('10,30,50 * * * *'), 
+        schedule=modal.Cron('0,10,20,30,40,50 * * * *'), 
         secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
         image=image,
         mounts=[modal.Mount.from_local_python_packages(
