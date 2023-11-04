@@ -31,25 +31,32 @@ class CleanChargers(BaseEstimator, TransformerMixin):
         # *** We'll do 16 just in case. 
         inuse = X[X['time_difference'] <= 16]
 
+        # include a failsafe for when a charger appears to be in by two sessions; select more recent
+        inuse = inuse.groupby("stationId").apply(lambda x: x.sort_values("lastUpdate", ascending=False).iloc[0]).reset_index(drop=True)
+
         inuse = inuse.drop(columns=['time_difference']).sort_values("lastUpdate", ascending=False)
 
         chargers = pd.DataFrame()
-        # Unique Chargers
+
+        # unique Chargers
         chargers["stationId"] = X["stationId"].unique()
 
-        # Chargers in use as `1` or `0``
+        # chargers in use as `1` or `0``
         chargers["inUse"] = chargers["stationId"].isin(inuse["stationId"]).astype(int)
 
-        # Assume each charger is outputting power at the peak power rate 
+        # assume each charger is outputting power at the peak power rate 
         chargers = chargers.merge(inuse[["stationId", "true_peakPower_W"]].rename(columns={"true_peakPower_W": "currentChargingRate"}), on='stationId', how='left')
 
-        # Add choice
+        # add choice
         chargers = chargers.merge(inuse[["stationId", "choice"]], on='stationId', how='left')
 
-        # Add cumulative energy delivered by each charger 
+        # add vehicle model
+        chargers = chargers.merge(inuse[["stationId", "vehicle_model"]], on='stationId', how='left')
+
+        # add cumulative energy delivered by each charger 
         chargers = chargers.merge(X[["stationId", "cumEnergy_Wh"]].groupby("stationId").sum(), on='stationId', how='left')
 
-        # Add energy delivered by each charger today 
+        # add energy delivered by each charger today 
         chargers = chargers.merge(
             X[X["finishChargeTime"] >= now][["stationId", "cumEnergy_Wh"]].groupby("stationId").sum().rename(columns={"cumEnergy_Wh": "todayEnergy_Wh"}), 
             on='stationId', 
@@ -58,7 +65,7 @@ class CleanChargers(BaseEstimator, TransformerMixin):
         chargers["todayEnergy_Wh"] = chargers["todayEnergy_Wh"].fillna(0)
 
         # Today's Utilization Rate by Power:
-        # Assume each charger is rated at 6.6 kW 
+        # assume each charger is rated at 6.6 kW 
         chargers = chargers.merge(
             X[X["finishChargeTime"] >= now][["stationId", "cumEnergy_Wh"]].groupby("stationId").sum().rename(columns={"cumEnergy_Wh": "currPowerUtilRate"}), 
             on='stationId', 
