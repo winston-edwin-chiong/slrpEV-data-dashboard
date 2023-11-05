@@ -31,7 +31,7 @@ class CleanChargers(BaseEstimator, TransformerMixin):
         # *** We'll do 16 just in case. 
         inuse = X[X['time_difference'] <= 16]
 
-        # include a failsafe for when a charger appears to be in by two sessions; select more recent
+        # include handling for when a charger appears to be in use by two sessions; select more recent
         inuse = inuse.groupby("stationId").apply(lambda x: x.sort_values("lastUpdate", ascending=False).iloc[0]).reset_index(drop=True)
 
         inuse = inuse.drop(columns=['time_difference']).sort_values("lastUpdate", ascending=False)

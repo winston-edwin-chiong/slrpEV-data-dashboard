@@ -193,7 +193,7 @@ layout = \
     Output("homepage-kwh-change", "children"),
     Output("homepage-users-change", "children"),
     Output("homepage-peak-power-change", "children"),
-    Input("data_refresh_signal", "data"),
+    Input("data-refresh-signal", "data"),
 )
 def update_today_homepage_cards(n):
     # load data
@@ -232,7 +232,7 @@ def update_today_homepage_cards(n):
     Output("homepage-cum-kwh-stats", "children"),
     Output("homepage-cum-emiles-stats", "children"),
     Output("homepage-cum-sessions-stats", "children"),
-    Input("data_refresh_signal", "data")
+    Input("data-refresh-signal", "data")
 )
 def update_cum_homepage_cards(n):
     # load data
@@ -258,7 +258,7 @@ def update_cum_homepage_cards(n):
                     "color": "cyan"}
             ],
             size=60,
-            thickness=12.5
+            thickness=18
         ),
         ]
 
@@ -281,7 +281,7 @@ def update_cum_homepage_cards(n):
 # update date title
 @dash.callback(
     Output("date-title", "children"),
-    Input("data_refresh_signal", "data")
+    Input("data-refresh-signal", "data")
 )
 def update_date_title(n):
     return datetime.now(pytz.timezone('US/Pacific')).strftime("%A, %B %d, %Y")   

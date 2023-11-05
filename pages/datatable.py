@@ -158,12 +158,12 @@ def filterDf(df, data, col):
 #@dash.callback(
     Output("raw-data-grid", "getRowsResponse"),
     Input("raw-data-grid", "getRowsRequest"),
-    Input("data_refresh_signal", "data")
+    Input("data-refresh-signal", "data")
 #)
 def infinite_scroll(request, signal):
     callback_id = ctx.triggered_id
 
-    if callback_id == "data_refresh_signal":
+    if callback_id == "data-refresh-signal":
         dff = pd.read_csv("raw_data.csv")
         # drop helper columns
         dff = dff.drop(
@@ -225,7 +225,7 @@ def infinite_scroll(request, signal):
 # Clientside Row Model
 @dash.callback(
     Output("raw-data-grid", "rowData"),
-    Input("data_refresh_signal", "data"),
+    Input("data-refresh-signal", "data"),
     prevent_inital_call=True
 )
 def update_rowdata(n):

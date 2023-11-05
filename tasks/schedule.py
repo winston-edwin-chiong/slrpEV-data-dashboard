@@ -57,7 +57,8 @@ def query_data():
             "machinelearning.crossvalidation.HourlyCrossValidator",
             "machinelearning.forecasts.HourlyForecast",
             )],
-        timeout=600
+        timeout=600,
+        retries=2
         )
 def update_params():
     r = db.get_redis_connection()

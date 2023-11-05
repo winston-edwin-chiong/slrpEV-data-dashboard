@@ -332,7 +332,7 @@ layout = \
     Input("maints-date-picker", "start_date"),
     Input("maints-date-picker", "end_date"),
     Input("toggle-forecasts", "checked"),
-    Input("data_refresh_signal", "data"),
+    Input("data-refresh-signal", "data"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value")
 )
 def display_main_figure(granularity, quantity, start_date, end_date, forecasts, data_signal, theme):
@@ -466,7 +466,7 @@ def toggle_tab_three_collapse(button_press, is_open):
     Input("cumulative-date-picker", "start_date"),
     Input("cumulative-date-picker", "end_date"),
     Input("cumulative-graph-picker", "value"),
-    Input("data_refresh_signal", "data"),
+    Input("data-refresh-signal", "data"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
 def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
@@ -484,7 +484,7 @@ def display_cumulative_graph(start_date, end_date, value, data_signal, theme):
 # update scheduled vs. regular scatter
 @dash.callback(
     Output("sched-vs-reg-scatter", "figure"),
-    Input("data_refresh_signal", "data"),
+    Input("data-refresh-signal", "data"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
 def display_reg_vs_sched_scatter(data_signal, theme):

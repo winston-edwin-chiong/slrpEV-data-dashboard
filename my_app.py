@@ -2,7 +2,6 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_auth
 import os
-import diskcache
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
@@ -136,7 +135,7 @@ app.layout = \
                     interval=25 * 60 * 1000,  # poll db every 25 minutes
                     n_intervals=0
                 ),
-                dcc.Store(id="data_refresh_signal"),
+                dcc.Store(id="data-refresh-signal"),
             ]),
         ]),
         ### --> <-- ###
@@ -178,7 +177,7 @@ def toggle_navbar_collapse(n, is_open):
 ### --> Interval Components <-- ###
 
 @dash.callback(
-    Output("data_refresh_signal", "data"),
+    Output("data-refresh-signal", "data"),
     Input("data_refresh_interval_component", "n_intervals"),
     prevent_initial_call=True,
 )

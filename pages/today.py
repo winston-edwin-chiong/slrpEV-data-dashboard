@@ -1,8 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-import pickle
-import pandas as pd
 from dash_bootstrap_templates import ThemeChangerAIO
 from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State
@@ -164,7 +162,7 @@ def display_user_hover(hoverData, value):
     Input("today-graph-picker", "value"),
     Input("toggle-yesterday", "checked"),
     Input("toggle-daily-forecast", "checked"),
-    Input("data_refresh_signal", "data"),
+    Input("data-refresh-signal", "data"),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
 def display_today_graph(value, yesterday, forecast, data_signal, theme):
@@ -185,7 +183,7 @@ def display_today_graph(value, yesterday, forecast, data_signal, theme):
     Input("today-open-settings-btn", "n_clicks"),
     State("today-settings-collapse", "is_open"),
 )
-def toggle_tab_one_collapse(button_press, is_open):
+def toggle_today_options_collapse(button_press, is_open):
     if button_press:
         return not is_open
     return is_open
