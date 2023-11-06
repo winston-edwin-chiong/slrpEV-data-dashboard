@@ -17,8 +17,8 @@ def get_icon_state(inuse: int):
     Returns a plug-in icon class name that is green and animated if in use, static and gray otherwise.
     """
     if inuse:
-        return "bi bi-plugin position-absolute bottom-0 end-0 m-1 text-success animate__animated animate__pulse animate__infinite infinite fs-4"
-    return "bi bi-plugin position-absolute bottom-0 end-0 m-1"
+        return "bi bi-plugin fs-4 position-absolute bottom-0 end-0 m-1 text-success animate__animated animate__pulse animate__infinite infinite"
+    return "bi bi-plugin fs-4 position-absolute bottom-0 end-0 m-1"
 
 
 def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str):
@@ -35,7 +35,7 @@ def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str):
                 ], className="d-inline-flex align-items-center")
             ], className="d-inline-block my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-pill"),
         html.Span([
-            html.Span([f"{vehicle_model} @ {rate/1000} kW"])
+            html.Span([f"{vehicle_model} @ {rate/1000} kW {choice}"])
             ], className="d-inline-block my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-pill"),
         ]
     
