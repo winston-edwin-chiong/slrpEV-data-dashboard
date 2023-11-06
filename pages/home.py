@@ -155,8 +155,7 @@ layout = \
                         dcc.Loading(
                             dbc.CardBody([
                                 html.Div([
-                                    html.H2(id="homepage-cum-sessions"),
-                                    dmc.Divider(orientation="vertical", className="mx-3 vh-5"),
+                                    html.H2(id="homepage-cum-sessions", className="m-0"),
                                     html.Div(id="homepage-sessions-split", className="d-flex flex-column align-items-center")
                                 ], className="d-flex flex-row align-items-center justify-content-center"),
                                 html.Div([
@@ -245,20 +244,19 @@ def update_cum_homepage_cards(n):
     cum_sessions_percent_reg = f'{(raw_data[raw_data["choice"] == "REGULAR"].shape[0] / cum_sessions_float):.1%}'
     cum_sessions_percent_sched = f'{(raw_data[raw_data["choice"] == "SCHEDULED"].shape[0] /cum_sessions_float):.1%}'
     sessions_split = [
-        html.Div(["Scheduled vs. Regular"], className="fs-6"),
         dmc.RingProgress(
             sections=[
                 {
                     "tooltip": f'Regular - {cum_sessions_percent_reg} ({raw_data[raw_data["choice"] == "REGULAR"].shape[0]})', 
                     "value": 100 * raw_data[raw_data["choice"] == "REGULAR"].shape[0] / cum_sessions_float, 
-                    "color": "orange"},
+                    "color": "#003262"},
                 {
                     "tooltip": f'Scheduled - {cum_sessions_percent_sched} ({raw_data[raw_data["choice"] == "SCHEDULED"].shape[0]})', 
                     "value": 100 * raw_data[raw_data["choice"] == "SCHEDULED"].shape[0] / cum_sessions_float, 
-                    "color": "cyan"}
+                    "color": "#FDB515"}
             ],
-            size=60,
-            thickness=18
+            size=45,
+            thickness=8
         ),
         ]
 

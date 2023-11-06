@@ -21,11 +21,6 @@ server = app.server
 app.title = "slrpEV Dashboard"
 
 
-auth = dash_auth.BasicAuth(
-    app,
-    {os.getenv("DASH_USERNAME"): os.getenv("DASH_PASSWORD")}
-)
-
 # theme options
 themes_options = [
     {"label": "Bootstrap, the OG 🚼", "value": dbc.themes.BOOTSTRAP},

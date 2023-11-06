@@ -16,9 +16,10 @@ r = db.get_redis_connection()
 def save_grid_data():
     # load data
     df = db.get_df(r, "raw_data")
-    # drop helper columns
+    # drop helper columns and userId
     df = df.drop(
         columns=[
+            "userId",
             "finishChargeTime",
             "trueDurationHrs",
             "true_peakPower_W",

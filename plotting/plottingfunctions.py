@@ -173,13 +173,14 @@ class PlotDaily:
         
         fig = go.Figure()
 
-        for dcosId in df["dcosId"].unique():
+        for i, dcosId in enumerate(df["dcosId"].unique()):
             fig.add_trace(
                 go.Bar(
                     x=df[df["dcosId"] == dcosId]["Time"],
                     y=df[df["dcosId"] == dcosId]["Power (W)"],
                     customdata=df[df["dcosId"] == dcosId][["vehicle_model", "choice", "userId"]],
-                    name="User ID: " + str(df[df["dcosId"] == dcosId]["userId"].iloc[0]),
+                    name=f"User #{i+1}", # scrub userId for now
+                    # name="User ID: " + str(df[df["dcosId"] == dcosId]["userId"].iloc[0]),
                     offsetgroup=1,
                     hovertemplate="<br>Date: %{x}" +
                     "<br>Power: %{y} Watts" +
