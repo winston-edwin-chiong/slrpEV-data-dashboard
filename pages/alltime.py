@@ -119,7 +119,7 @@ tab_one_content = \
                                         dmc.Switch(size="md", radius="lg", checked=True, id="toggle-histograms", color="gray"),
                                     ], className="w-100 d-flex justify-content-center flex-column px-2 py-2 border rounded mx-0 my-2")
                                 ], className="col-lg-3 col-sm-6 col-12 d-flex")
-                            ])
+                            ]),
                         ], fluid=True),
                     ], id="tab-one-settings-collapse", is_open=False),
                     ### --> <-- ###
@@ -167,7 +167,26 @@ tab_one_content = \
                                 ], className="col-xl-3 col-12 px-2", id="hover-histogram-col")
                             ], className="row-gap-4")
                         ], className="mt-2", fluid=True),
-                    ],),
+                    ]),
+
+                    ### --> Download Data <--- ###
+                    html.Div([
+                        html.Button([
+                            "Download data!", 
+                            html.I(className="ms-1 bi bi-download")
+                        ], id="download-data-btn", className="btn btn-outline-secondary btn-sm px-1 py-0 rounded"),
+                        dcc.Download(id="downloaded-data")
+                    ], className="d-flex m-2 justify-content-end align-items-center"),
+                    dbc.Toast([
+                        html.Div("Be sure to format the dates if you plan on using in Excel!"),
+                        html.Span([
+                            "Reach out to ",
+                            html.A("Winston", href="mailto:winstonchiong@berkeley.edu", target="_blank", className="fw-bold text-info"),
+                            " for any errors!"
+                        ])
+                    ], id="downloaded-data-toast", header="Data downloaded!", icon="success", is_open=False, dismissable=True, duration=15000, className="position-fixed bottom-0 start-0 m-3")
+                    ### --> <-- ###
+
                     ### --> <-- ###
                 ], className="col-12 col-lg-10"),
                 ### --> <-- ###
@@ -504,3 +523,16 @@ def toggle_histograms(checked):
     if checked: 
         return {"display": "inline"}
     return {"display": "none"}
+
+# download data
+@dash.callback(
+    Output("downloaded-data", "data"),
+    Output("downloaded-data-toast", "is_open"),
+    Input("download-data-btn", "n_clicks"),
+    State("dataframe-picker", "value"),
+    prevent_initial_call=True
+)
+def download_data(n_clicks, granularity):
+    df = db.get_df(r, f"{granularity}")
+
+    return dcc.send_data_frame(df.to_csv, f"{granularity}.csv"), True

@@ -693,7 +693,8 @@ class PlotChargers:
             xaxis_title="Station ID",
             margin=dict(pad=0),
             legend={"x":1.05, "y":1}, 
-            template=template_from_url(theme)        
+            template=template_from_url(theme),
+            hovermode="x" 
             )
         
         return fig 
