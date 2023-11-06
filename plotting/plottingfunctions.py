@@ -8,11 +8,13 @@ from dash_bootstrap_templates import template_from_url
 
 
 def add_training_end_vline(self, start_date, end_date):
+    """
+    Plots a vertical line.
+    """
 
     training_end = "2022-08-15"
 
-    plotly_friendly_date = datetime.strptime(training_end,
-                                             "%Y-%m-%d").timestamp() * 1000  # this is a known bug
+    plotly_friendly_date = datetime.strptime(training_end, "%Y-%m-%d").timestamp() * 1000  # this is a known bug
 
     if start_date is None and end_date is None:
         self.add_vline(x=plotly_friendly_date, line_color="green", line_dash="dash",
@@ -355,7 +357,7 @@ class PlotCumulatives:
         fig = px.bar(df, x=df.index, y='cumEnergy_kWh', template=template_from_url(theme))
         fig.update_traces(hovertemplate="Vehicle Model: %{x}<br>Energy Consumed: %{y} kWh<extra></extra>")
         fig.update_layout(
-            title="Top 20 Energy Consumption by Vehicle Model",
+            title="Top 20 Vehicle Models by Energy Consumption",
             xaxis_title="Vehicle Model",
             yaxis_title="Cumulative Energy Consumption (kWh)",
             margin=dict(pad=10),
@@ -665,3 +667,33 @@ class PlotSchedVsReg:
             showlegend=True,
         ) 
         return fig
+
+
+# Class to plot chargers 
+
+class PlotChargers:
+
+    @classmethod
+    def plot_charger_usage_bar_chart(cls, df: pd.DataFrame, theme=None) -> go.Figure():
+
+        fig = go.Figure(
+            data=[
+                go.Bar(name='Cumulative', x=df["stationId"], y=df["cumEnergy_Wh"]/1000, yaxis='y', offsetgroup=1, hovertemplate="Station %{x}<br>Energy Delivered: %{y} kWh"),
+                go.Bar(name='Today', x=df["stationId"], y=df["todayEnergy_Wh"]/1000, yaxis='y2', offsetgroup=2, hovertemplate="Station %{x}<br>Energy Delivered: %{y} kWh")
+            ],
+            layout={
+                'yaxis': {'title': 'Cumulative Energy Delivered (kWh)'},
+                'yaxis2': {'title': 'Energy Delivered Today (kWh)', 'overlaying': 'y', 'side': 'right'}
+            },
+        )
+
+        fig.update_layout(
+            barmode='group',
+            title=f"Cumulative & Today's Energy Delivered by Charger",
+            xaxis_title="Station ID",
+            margin=dict(pad=0),
+            legend={"x":1.05, "y":1}, 
+            template=template_from_url(theme)        
+            )
+        
+        return fig 

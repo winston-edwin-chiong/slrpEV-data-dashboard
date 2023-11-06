@@ -1,12 +1,25 @@
 import dash 
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
+from plotting import plottingfunctions as pltf
+from dash_bootstrap_templates import ThemeChangerAIO
 from dash import html, Input, Output, State, dcc
 from db.utils import db 
 
 dash.register_page(__name__, "/chargers")
 
 r = db.get_redis_connection()
+
+charger_numbers_sorted = db.get_df(r, "chargers")["stationId"].sort_values(ascending=True).unique()
+
+def get_icon_state(inuse: int):
+    """
+    Returns a plug-in icon class name that is green and animated if in use, static and gray otherwise.
+    """
+    if inuse:
+        return "bi bi-plugin position-absolute bottom-0 end-0 m-1 text-success animate__animated animate__pulse animate__infinite infinite fs-4"
+    return "bi bi-plugin position-absolute bottom-0 end-0 m-1"
+
 
 def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str):
     """
@@ -101,14 +114,14 @@ layout = \
                             dbc.Row([
                                 dbc.Col([
                                     html.Div([
-                                        html.Div("Sample Label"),
+                                        html.Div("Options"),
                                         dcc.Dropdown(
                                             id="charger-picker",
                                             options=[
-                                                {"label": "Sample Option 1", "value": "one"},
-                                                {"label": "Sample Option 2", "value": "two"},                                    
+                                                {"label": "Option 1... (nothing rn)", "value": "option_1"},
+                                                {"label": "Option 2... (nothing rn)", "value": "option_2"},                                    
                                             ],
-                                            value="one",
+                                            value="option_1",
                                             clearable=False,
                                             searchable=False,
                                             className="dbc"
@@ -126,161 +139,46 @@ layout = \
                             dbc.Col([
                                 html.Div([
                                     html.H3("CHARGER"),
-                                    html.H3("11"),
-                                    html.Div(id="charger-11-usage-status"),
-                                    html.Div(id="charger-11-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-11-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
+                                    html.H3(f"{i}"),
+                                    html.Div(id=f"charger-{i}-usage-status"),
+                                    html.Div(id=f"charger-{i}-utilization", className="my-3 d-flex align-items-center justify-content-center"),
+                                    html.I(id=f"charger-{i}-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
                                     dbc.Modal(
                                         [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 11")),
-                                            dbc.ModalBody(dcc.Graph()),
+                                            dbc.ModalHeader(dbc.ModalTitle(f"Charger {i}")),
+                                            dbc.ModalBody([
+                                                dbc.Alert([
+                                                    html.I(className="bi bi-exclamation-triangle-fill me-2"),
+                                                    "In development!"
+                                                ], color="warning", className="m-2"),                                                
+                                                dcc.Graph(),
+                                            ]),
                                         ],
-                                        id="charger-11-modal",
+                                        id=f"charger-{i}-modal",
                                         is_open=False,
                                     ),
                                         dbc.ModalFooter(),           
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")
+                                    html.I(id=f"charger-{i}-plug-in-icon")
                                 ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                            dbc.Col([
-                                html.Div([
-                                html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3("12"),
-                                    html.Div(id="charger-12-usage-status"),
-                                    html.Div(id="charger-12-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-12-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 12")),
-                                            dbc.ModalBody(dcc.Graph()),
-                                        ],
-                                        id="charger-12-modal",
-                                        is_open=False,
-                                    ),
-                                        dbc.ModalFooter(),           
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                                ])
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                            dbc.Col([
-                                html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3("13"),
-                                    html.Div(id="charger-13-usage-status"),       
-                                    html.Div(id="charger-13-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-13-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 13")),
-                                            dbc.ModalBody(dcc.Graph()),
-                                            dbc.ModalFooter()                 
-                                        ],
-                                        id="charger-13-modal",
-                                    ),      
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")                                                                     
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                            dbc.Col([
-                                html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3("14"),
-                                    html.Div(id="charger-14-usage-status"),
-                                    html.Div(id="charger-14-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-14-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 14")),
-                                            dbc.ModalBody(dcc.Graph()),
-                                            dbc.ModalFooter(),           
-                                        ],
-                                        id="charger-14-modal",
-                                        is_open=False,
-                                    ),
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")                                    
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                        ], className=""),
-                        dbc.Row([
-                            dbc.Col([
-                                html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3("15"),
-                                    html.Div(id="charger-15-usage-status"),
-                                    html.Div(id="charger-15-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-15-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 15")),
-                                            dbc.ModalBody(dcc.Graph()),
-                                            dbc.ModalFooter(),           
-                                        ],
-                                        id="charger-15-modal",
-                                        is_open=False,
-                                    ),
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")                                    
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                            dbc.Col([
-                                html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3("16"),
-                                    html.Div(id="charger-16-usage-status"),
-                                    html.Div(id="charger-16-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-16-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 16")),
-                                            dbc.ModalBody(dcc.Graph()),
-                                            dbc.ModalFooter(),           
-                                        ],
-                                        id="charger-16-modal",
-                                        is_open=False,
-                                    ),
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")                                    
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                            dbc.Col([
-                                html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3("17"),
-                                    html.Div(id="charger-17-usage-status"),
-                                    html.Div(id="charger-17-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-17-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 17")),
-                                            dbc.ModalBody(dcc.Graph()),
-                                            dbc.ModalFooter(),           
-                                        ],
-                                        id="charger-17-modal",
-                                        is_open=False,
-                                    ),
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")                                    
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                            dbc.Col([
-                                html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3("18"),
-                                    html.Div(id="charger-18-usage-status"),
-                                    html.Div(id="charger-18-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id="charger-18-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle("Charger 18")),
-                                            dbc.ModalBody(dcc.Graph()),
-                                            dbc.ModalFooter(),           
-                                        ],
-                                        id="charger-18-modal",
-                                        is_open=False,
-                                    ),
-                                    html.I(className="bi bi-plugin position-absolute bottom-0 end-0 m-1")                                    
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
-                            ], className="col-xxl-3 col-md-6 col-12"),
-                        ], className="")
+                            ], className="col-xxl-3 col-md-6 col-12")
+                            for i in charger_numbers_sorted
+                        ]),
                     ], className="text-center"),
                     ### --> <-- ###
+
+                    ### --> Utilization Bar Chart <-- ###
+                    dcc.Loading([
+                        dcc.Graph(
+                            id="charger-usage-bar-chart",
+                            config={
+                                "displaylogo": False,
+                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                            },
+                            className="my-5"
+                        )
+                    ], type="graph", className="dbc"),
+                    ### --> <-- ###
+
                 ], className="col-12 col-lg-10"),
                 ### --> <-- ###
 
@@ -296,14 +194,8 @@ layout = \
 
 # charger states
 @dash.callback(
-    Output("charger-11-usage-status", "children"),
-    Output("charger-12-usage-status", "children"),
-    Output("charger-13-usage-status", "children"),
-    Output("charger-14-usage-status", "children"),
-    Output("charger-15-usage-status", "children"),
-    Output("charger-16-usage-status", "children"),
-    Output("charger-17-usage-status", "children"),
-    Output("charger-18-usage-status", "children"),
+    [Output(f"charger-{i}-usage-status", "children") for i in charger_numbers_sorted],
+    [Output(f"charger-{i}-plug-in-icon", "className") for i in charger_numbers_sorted],
     Input("data-refresh-signal", "data")
 )
 def update_charger_usage(n):
@@ -318,19 +210,15 @@ def update_charger_usage(n):
         row["choice"]
         ), 
         axis=1).to_list()
+    
+    # calculate correct icons
+    icons = chargers.sort_values("stationId", ascending=True).apply(lambda row: get_icon_state(row["inUse"]), axis=1).to_list()
 
-    return inuse
+    return inuse + icons
 
 # charger utlizations
 @dash.callback(
-    Output("charger-11-utilization", "children"),
-    Output("charger-12-utilization", "children"),
-    Output("charger-13-utilization", "children"),
-    Output("charger-14-utilization", "children"),
-    Output("charger-15-utilization", "children"),
-    Output("charger-16-utilization", "children"),
-    Output("charger-17-utilization", "children"),
-    Output("charger-18-utilization", "children"),
+    [Output(f"charger-{i}-utilization", "children") for i in charger_numbers_sorted],
     Input("data-refresh-signal", "data")
 )
 def update_charger_utilizations(n):
@@ -347,7 +235,7 @@ def update_charger_utilizations(n):
     return utilization
 
 
-for i in range(11, 19):
+for i in charger_numbers_sorted:
     # show/hide modal 
     @dash.callback(
         Output(f"charger-{i}-modal", "is_open"),
@@ -358,6 +246,19 @@ for i in range(11, 19):
         if n:
             return not is_open
         return is_open
+    
+# charger usage bar chart 
+@dash.callback(
+    Output("charger-usage-bar-chart", "figure"),
+    Input("data-refresh-signal", "data"),
+    Input(ThemeChangerAIO.ids.radio("theme"), "value"),
+)
+def charger_usage_bar_chart(n, theme):
+    # load data
+    chargers = db.get_df(r, "chargers")
+
+    # plot charger usage bar chart 
+    return pltf.PlotChargers.plot_charger_usage_bar_chart(chargers, theme)
 
 
 # toggle settings collapse
