@@ -51,7 +51,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     def transform(self, X) -> pd.DataFrame:
 
         X["finishChargeTime"] = X["lastUpdate"]
-        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["DurationHrs"], 0)
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["DurationHrs"].astype(float), 0)
 
         X = X[X["finishChargeTime"] >= datetime.now(pytz.timezone('US/Pacific')).strftime("%D")].copy()
 

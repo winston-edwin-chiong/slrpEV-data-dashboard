@@ -45,7 +45,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
 
         X["finishChargeTime"] = X["lastUpdate"] 
         # `cumEnergy_Wh` & `DurationHrs` are seen as columns of truth
-        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["DurationHrs"], 0)
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["DurationHrs"].astype(float), 0)
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
         # also filter out excessively high duration from raw data
