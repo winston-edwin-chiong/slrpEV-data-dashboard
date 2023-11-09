@@ -577,7 +577,7 @@ class GetUserHoverData:
         subset = df[df["userId"] == userId].copy()
 
         num_sessions = subset.shape[0]
-        average_duration = round(subset["trueDurationHrs"].mean(), 2)
+        average_duration = round(subset["DurationHrs"].mean(), 2)
          
         subset["connectTime"] = pd.to_datetime(subset["connectTime"])
         freq_connect_time = subset["connectTime"].dt.hour.apply(cls.__get_connect).value_counts().index[0]

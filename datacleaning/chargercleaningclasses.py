@@ -74,7 +74,7 @@ class CleanChargers(BaseEstimator, TransformerMixin):
 
         # Today's Utilization Rate by Occupation:
         chargers = chargers.merge(
-            X[X["finishChargeTime"] >= now][["stationId", "trueDurationHrs"]].groupby("stationId").sum().rename(columns={"trueDurationHrs": "currOccupUtilRate"}), 
+            X[X["finishChargeTime"] >= now][["stationId", "DurationHrs"]].groupby("stationId").sum().rename(columns={"DurationHrs": "currOccupUtilRate"}), 
             on='stationId', 
             how='left')
         chargers["currOccupUtilRate"] = (chargers["currOccupUtilRate"] / 24).fillna(0)

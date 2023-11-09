@@ -25,7 +25,7 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     """
     This pipeline step will drop any records that contain 0 for 
     `peakPower_W` or `cumEnergy_Wh`. Four additional columns will be created:
-    `finishChargeTime`, `trueDurationHrs`, `true_peakPower_W`, `Overstay`, and `Overstay_h`. 
+    `finishChargeTime`, `true_peakPower_W`, `Overstay`, and `Overstay_h`. 
     Any records with calculated charging durations greater than a day will be dropped. 
     This step accounts for inconsistencies in the slrpEV data. 
     """
@@ -43,14 +43,13 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         X["Deadline"] = pd.to_datetime(X["Deadline"])
         X["lastUpdate"] = pd.to_datetime(X["lastUpdate"])
 
-        X["finishChargeTime"] = X.apply(self.__get_finishChargeTime, axis=1)
-        X["trueDurationHrs"] = X.apply(self.__get_duration, axis=1)
-        # "cumEnergy_Wh" is seen as a column of truth
-        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["trueDurationHrs"], 0)
+        X["finishChargeTime"] = X["lastUpdate"] 
+        # `cumEnergy_Wh` & `DurationHrs` are seen as columns of truth
+        X["true_peakPower_W"] = round(X["cumEnergy_Wh"] / X["DurationHrs"], 0)
 
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
         # also filter out excessively high duration from raw data
-        X = X.loc[X["trueDurationHrs"] <= 24].copy()
+        X = X.loc[X["DurationHrs"] <= 24].copy()
         X = X[~(X["Duration"].str[0].astype(int) >= 2)]
 
         # calculate overstay 
@@ -66,20 +65,18 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
     @staticmethod
     def __get_duration(row):
         """
-        This helper function calculates the charging duration of a session. If the session is `REGULAR`,
-        the calculation is `lastUpdate - startChargeTime`. If the session is `SCHEDULED`, the calculation is 
-        `Deadline - startChargeTime`. 
+        This helper function calculates the charging duration of a session. 
+        The calculation is `lastUpdate - startChargeTime`. 
         """
-        if row["regular"] == 1:
-            return round(((row["lastUpdate"] - row["startChargeTime"]).seconds/3600), 3)
-        else:
-            return round(((row["Deadline"] - row["startChargeTime"]).seconds/3600), 3)
+        return round(((row["lastUpdate"] - row["startChargeTime"]).seconds/3600), 3)
+
 
     @staticmethod
     def __get_finishChargeTime(row):
         """
         This helper function calculates the finished charge time of a session. If the session is `REGULAR`, 
         the finish charge time is `lastUpdate`. If the session is `SCHEDULED`, the finish charge time is `Deadline`.
+        DEPRECATED: Currently, every session finishes at `lastUpdate` becaused SCHEDULED sessions can end early.
         """
         if row["regular"] == 1:
             return row["lastUpdate"]

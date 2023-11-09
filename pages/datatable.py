@@ -21,7 +21,6 @@ def save_grid_data():
         columns=[
             "userId",
             "finishChargeTime",
-            "trueDurationHrs",
             "true_peakPower_W",
             "Overstay",
             "Overstay_h"
@@ -69,25 +68,27 @@ layout = \
                         ], className="px-2 py-2 border rounded mx-2 my-2")
                     ], id="grid-settings-collapse", is_open=False),
                     ### --> Grid <-- ###
-                    html.Div([
-                        dag.AgGrid(
-                            id="raw-data-grid",
-                            columnDefs=[{"field": i} for i in get_grid_data().columns],
-                            defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
-                            columnSize="sizeToFit",
-                            # rowModelType="infinite",
-                            # rowData = df.to_dict("records"),
-                            dashGridOptions={
-                                "rowBuffer": 0,
-                                # "maxBlocksInCache": 1,
-                                "rowSelection": "multiple",
-                                "pagination": True,
-                                "paginationAutoPageSize": True
-                            },
-                            style={"height": "70vh"},
-                            className="ag-theme-balham",
-                        ),
-                    ], className="m-3 mt-2 shadow-sm"),
+                    dcc.Loading([
+                        html.Div([
+                            dag.AgGrid(
+                                id="raw-data-grid",
+                                columnDefs=[{"field": i} for i in get_grid_data().columns],
+                                defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
+                                columnSize="sizeToFit",
+                                # rowModelType="infinite",
+                                # rowData = df.to_dict("records"),
+                                dashGridOptions={
+                                    "rowBuffer": 0,
+                                    # "maxBlocksInCache": 1,
+                                    "rowSelection": "multiple",
+                                    "pagination": True,
+                                    "paginationAutoPageSize": True
+                                },
+                                style={"height": "70vh"},
+                                className="ag-theme-balham",
+                            ),
+                        ], className="m-3 mt-2 shadow-sm")
+                    ], type="circle"),
                     html.Div([
                         html.Button("Refresh grid data!", className="btn btn-outline-secondary btn-sm py-0 px-2 me-1 mt-1 rounded", id="refresh-grid-data-btn", disabled=True)
                     ], className="d-flex justify-content-end m-2")
@@ -170,7 +171,6 @@ def infinite_scroll(request, signal):
         dff = dff.drop(
             columns=[
                 "finishChargeTime",
-                "trueDurationHrs",
                 "true_peakPower_W",
                 "Overstay",
                 "Overstay_h"

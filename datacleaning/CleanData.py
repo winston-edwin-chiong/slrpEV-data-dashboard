@@ -31,7 +31,7 @@ class CleanData:
         # subset of raw data pipeline (only some columns for query optimization)
         subset_raw_data_pipeline = Pipeline(
             [
-                ("subset_columns", fcc.CreateSubsets(["connectTime", "userId", "cumEnergy_Wh", "trueDurationHrs", "choice"])), 
+                ("subset_columns", fcc.CreateSubsets(["connectTime", "userId", "cumEnergy_Wh", "DurationHrs", "choice"])), 
             ]
         )
         raw_data_subset = subset_raw_data_pipeline.fit_transform(raw_data_w_helpers)

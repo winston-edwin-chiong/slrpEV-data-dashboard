@@ -118,8 +118,8 @@ layout = \
                                         dcc.Dropdown(
                                             id="charger-picker",
                                             options=[
-                                                {"label": "Option 1... (nothing rn)", "value": "option_1"},
-                                                {"label": "Option 2... (nothing rn)", "value": "option_2"},                                    
+                                                {"label": "Option 1", "value": "option_1"},
+                                                {"label": "Option 2", "value": "option_2"},                                    
                                             ],
                                             value="option_1",
                                             clearable=False,
@@ -151,15 +151,21 @@ layout = \
                                                     html.I(className="bi bi-exclamation-triangle-fill me-2"),
                                                     "In development!"
                                                 ], color="warning", className="m-2"),                                                
-                                                dcc.Graph(),
+                                                dcc.Graph(
+                                                    config={
+                                                        "displaylogo": False,
+                                                        "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                                    },
+                                                ),
                                             ]),
                                         ],
                                         id=f"charger-{i}-modal",
                                         is_open=False,
                                     ),
                                         dbc.ModalFooter(),           
-                                    html.I(id=f"charger-{i}-plug-in-icon")
-                                ], className="position-relative shadow border border-secondary rounded mx-2 my-2 p-2")
+                                    html.I(id=f"charger-{i}-plug-in-icon"),
+                                    html.Div(className="d-flex flex-column flex-grow-1")
+                                ], className="d-flex flex-column position-relative bg-light shadow border border-secondary rounded mx-2 my-2 p-2")
                             ], className="col-xxl-3 col-md-6 col-12")
                             for i in charger_numbers_sorted
                         ]),
@@ -167,16 +173,18 @@ layout = \
                     ### --> <-- ###
 
                     ### --> Utilization Bar Chart <-- ###
-                    dcc.Loading([
-                        dcc.Graph(
-                            id="charger-usage-bar-chart",
-                            config={
-                                "displaylogo": False,
-                                "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                            },
-                            className="my-5"
-                        )
-                    ], type="graph", className="dbc"),
+                    html.Div([
+                        dcc.Loading([
+                            dcc.Graph(
+                                id="charger-usage-bar-chart",
+                                config={
+                                    "displaylogo": False,
+                                    "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                },
+                                className="p-1"
+                            )
+                        ], type="graph", className="dbc"),
+                    ], className="border rounded shadow my-5")
                     ### --> <-- ###
 
                 ], className="col-12 col-lg-10"),
