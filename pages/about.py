@@ -1,5 +1,6 @@
 import dash 
 import dash_bootstrap_components as dbc
+import dash_leaflet as dl 
 from dash import html
 
 dash.register_page(__name__, "/about")
@@ -34,6 +35,12 @@ layout = \
                                     html.A("here!", href="https://docs.google.com/forms/d/e/1FAIpQLScuI2LUrPkxfU4BdbnnULyJVHb9HFTMBapTIs9EEWjCw6-tzQ/viewform", target="_blank", className="fw-bold text-info")
                                 ])
                             ]),
+                            html.Div([
+                                html.Iframe(
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3149.6418529753005!2d-122.26615172369235!3d37.86866970674504!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80857c27c74eb40f%3A0x78885a7266364a6!2sRSF%20Parking%20Garage%2C%20Berkeley%2C%20CA%2094704!5e0!3m2!1sen!2sus!4v1699501502910!5m2!1sen!2sus",
+                                    style={"height": "50vh", "width": "50vw"}
+                                    ),
+                            ], className="d-flex justify-content-center my-2"),
                             html.Br(),
                             html.H3("FAQ"),
                             dbc.Accordion([
@@ -43,7 +50,7 @@ layout = \
                                             "Data from the physical chargers is stored on ",
                                             html.A("AWS DynamoDB", href="https://aws.amazon.com/dynamodb/", target="_blank", className="fw-bold text-info"),
                                             " and is updated every 5 minutes. ",
-                                            "Data cleaning and machine learning tasks are executed on a schedule hosted by ",
+                                            "Data cleaning and machine learning tasks are executed on a schedule by ",
                                             html.A("Modal", href="https://modal.com/", target="_blank", className="fw-bold text-info"),
                                             " and results are sent to ",
                                             html.A("Redis", href="https://redis.io/", target="_blank", className="fw-bold text-info"),

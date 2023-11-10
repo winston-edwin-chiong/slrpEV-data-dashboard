@@ -138,34 +138,35 @@ layout = \
                         dbc.Row([
                             dbc.Col([
                                 html.Div([
-                                    html.H3("CHARGER"),
-                                    html.H3(f"{i}"),
-                                    html.Div(id=f"charger-{i}-usage-status"),
-                                    html.Div(id=f"charger-{i}-utilization", className="my-3 d-flex align-items-center justify-content-center"),
-                                    html.I(id=f"charger-{i}-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
-                                    dbc.Modal(
-                                        [
-                                            dbc.ModalHeader(dbc.ModalTitle(f"Charger {i}")),
-                                            dbc.ModalBody([
-                                                dbc.Alert([
-                                                    html.I(className="bi bi-exclamation-triangle-fill me-2"),
-                                                    "In development!"
-                                                ], color="warning", className="m-2"),                                                
-                                                dcc.Graph(
-                                                    config={
-                                                        "displaylogo": False,
-                                                        "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
-                                                    },
-                                                ),
-                                            ]),
-                                        ],
-                                        id=f"charger-{i}-modal",
-                                        is_open=False,
-                                    ),
-                                        dbc.ModalFooter(),           
-                                    html.I(id=f"charger-{i}-plug-in-icon"),
-                                    html.Div(className="d-flex flex-column flex-grow-1")
-                                ], className="d-flex flex-column position-relative bg-light shadow border border-secondary rounded mx-2 my-2 p-2")
+                                    html.Div([
+                                        html.H3("CHARGER"),
+                                        html.H3(f"{i}"),
+                                        html.Div(id=f"charger-{i}-usage-status"),
+                                        html.Div(id=f"charger-{i}-utilization", className="my-3 d-flex align-items-center justify-content-center"),
+                                        html.I(id=f"charger-{i}-open-modal", className="bi bi-box-arrow-up-right position-absolute top-0 end-0 m-1", role="button"),
+                                        dbc.Modal(
+                                            [
+                                                dbc.ModalHeader(dbc.ModalTitle(f"Charger {i}")),
+                                                dbc.ModalBody([
+                                                    dbc.Alert([
+                                                        html.I(className="bi bi-exclamation-triangle-fill me-2"),
+                                                        "In development!"
+                                                    ], color="warning", className="m-2"),                                                
+                                                    dcc.Graph(
+                                                        config={
+                                                            "displaylogo": False,
+                                                            "modeBarButtonsToAdd": ["hoverCompare", "hoverClosest"]
+                                                        },
+                                                    ),
+                                                ]),
+                                            ],
+                                            id=f"charger-{i}-modal",
+                                            is_open=False,
+                                        ),
+                                            dbc.ModalFooter(),           
+                                        html.I(id=f"charger-{i}-plug-in-icon"),
+                                    ], className="position-relative flex-grow-1 bg-light shadow border border-secondary rounded m-2 p-2")
+                                ], className="d-flex flex-column h-100"),
                             ], className="col-xxl-3 col-md-6 col-12")
                             for i in charger_numbers_sorted
                         ]),
@@ -184,7 +185,7 @@ layout = \
                                 className="p-1"
                             )
                         ], type="graph", className="dbc"),
-                    ], className="border rounded shadow my-5")
+                    ], className="border rounded shadow my-5 mx-4")
                     ### --> <-- ###
 
                 ], className="col-12 col-lg-10"),
