@@ -176,7 +176,7 @@ tab_one_content = \
                             html.I(className="ms-1 bi bi-download")
                         ], id="download-data-btn", className="btn btn-outline-secondary btn-sm px-1 py-0 rounded"),
                         dcc.Download(id="downloaded-data")
-                    ], className="d-flex m-2 justify-content-end align-items-center"),
+                    ], className="d-flex mt-3 mb-2 mx-2 justify-content-end align-items-center"),
                     dbc.Toast([
                         html.Div("Be sure to format the dates if you plan on using in Excel!"),
                         html.Span([
@@ -364,7 +364,7 @@ def display_main_figure(granularity, quantity, start_date, end_date, forecasts, 
     # plot predictions (if supported)
     if forecasts and granularity != "fivemindemand" and granularity != "monthlydemand":
         forecast_df = prediction_to_run(granularity)
-        fig = pltf.PlotForecasts.plot_forecasts(fig, forecast_df, quantity, granularity)
+        fig = pltf.PlotMainTimeSeries.plot_forecasts(fig, forecast_df, quantity, start_date)
 
     return fig
 

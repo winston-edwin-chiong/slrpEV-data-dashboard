@@ -136,7 +136,7 @@ layout = \
 def display_user_hover(hoverData, value):
     # place holder for no hover or if graph is not the daily time series
     if hoverData is None or value != "today-aggregate-power":
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
     # load data
     data = db.get_df(r, "raw_data_subset")
     # get user ID

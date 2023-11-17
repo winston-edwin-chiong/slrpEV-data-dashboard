@@ -1,7 +1,6 @@
 import dash
 import dash_bootstrap_components as dbc
-import dash_auth
-import os
+import os 
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv
@@ -11,7 +10,7 @@ from db.utils import db
 # styles
 dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css")
 
-# connect to Redis, fill data folder on first run
+# connect to Redis
 load_dotenv()
 r = db.get_redis_connection()
 
@@ -57,7 +56,7 @@ app.layout = \
         dbc.Navbar([
             dbc.Container([
                 html.A([
-                    html.Img(src=r"/assets/images/ChartLogo.png", height="40px", className="me-2")
+                    html.Img(src=r"assets/images/ChartLogo.png", height="40px", className="me-2")
                 ], href="/"),
                 dbc.NavbarToggler(id="navbar-toggler"),
                 dbc.Collapse([

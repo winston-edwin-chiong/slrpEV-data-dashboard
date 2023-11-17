@@ -80,7 +80,7 @@ class PlotMainTimeSeries:
         plot_layout = cls.plot_layout_key[quantity]
 
         # get hover data
-        hover_column = cls.other_columns[granularity].get("hoverdata")
+        hover_column = cls.other_columns[granularity]["hoverdata"]
         hoverdata = df[hover_column]
         hoverdata["units"] = plot_layout["units_measurement"]
 
@@ -108,6 +108,32 @@ class PlotMainTimeSeries:
             )
 
         return fig
+
+
+    @classmethod
+    def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str, start_date: str) -> go.Figure:
+
+        if len(forecasts) == 0:
+            return fig 
+
+        # filter forecasts to only include earliest date shown 
+        forecasts = cls.__query_date_df(forecasts, start_date, None)
+
+        plot_layout = cls.plot_layout_key[quantity]
+
+        fig.add_trace(
+            go.Scatter(
+                x=forecasts.index,
+                y=forecasts[quantity+"_predictions"],
+                customdata=np.vstack(np.repeat([plot_layout["units_measurement"]], len(forecasts))),
+                name=f"{plot_layout['cleaned_quantity']} Forecasts", 
+                hovertemplate="<extra></extra>" +
+                    "%{x}" +
+                    "<br><i>%{y} %{customdata[0]}</i>",
+                fill="tozeroy",
+            )
+        )
+        return fig   
 
 
     @classmethod
@@ -179,13 +205,13 @@ class PlotDaily:
             fig.add_trace(
                 go.Bar(
                     x=df[df["dcosId"] == dcosId]["Time"],
-                    y=df[df["dcosId"] == dcosId]["Power (W)"],
+                    y=df[df["dcosId"] == dcosId]["Power (W)"] / 1000, # convert to kWh
                     customdata=df[df["dcosId"] == dcosId][["vehicle_model", "choice", "userId"]],
                     name=f"User #{i+1}", # scrub userId for now
                     # name="User ID: " + str(df[df["dcosId"] == dcosId]["userId"].iloc[0]),
                     offsetgroup=1,
                     hovertemplate="<br>Date: %{x}" +
-                    "<br>Power: %{y} Watts" +
+                    "<br>Power: %{y} kW" +
                     "<br>Vehicle Model: %{customdata[0]}" +
                     "<br>Choice: %{customdata[1]}",
                     hoverlabel={"font":{"size":10}},
@@ -195,7 +221,7 @@ class PlotDaily:
                 {
                     "title": "Today's Sessions",
                     "xaxis_title": "Time",
-                    "yaxis_title": "Power (W)",
+                    "yaxis_title": "Power (kW)",
                     "barmode": "stack",
                     "showlegend": True,
                     "xaxis_range": [datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d"), (datetime.now(pytz.timezone('US/Pacific')) + timedelta(days=1)).strftime("%Y-%m-%d")],
@@ -262,13 +288,20 @@ class PlotDaily:
     def plot_today_forecast(cls, fig: go.Figure, df: pd.DataFrame) -> go.Figure:
         # query today's forecast
         if not df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")].empty:
-            peak = df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0]
+
+            # get today's predictions, round, convert to kWh
+            peak = round(df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0], 1) / 1000
 
             # add horizontal line to figure 
             fig.add_hline(
                 y=peak,
                 line_dash="dot",
-                annotation_text=f"Peak Power Forecast: {round(peak, 1)} W"
+                annotation_text=f"Peak Power Forecast: {peak} kW"
+            )
+            fig.update_layout(
+                {
+                    "title": f"Today's Sessions<br>Peak Power Forecast: {peak} kW"
+                }
             )
         return fig
 
@@ -598,48 +631,6 @@ class GetUserHoverData:
             return "Evening! 🌙"
         else:
             return "Really late at night! 🦉" 
-
-
-# Class to plot forecasts 
-class PlotForecasts:
-
-    plot_layout_key = {
-        "energy_demand_kWh": {
-            "units_measurement": "(kWh)",
-            "cleaned_quantity": "Energy Demand"
-        },
-        "avg_power_demand_W": {
-            "units_measurement": "(W)",
-            "cleaned_quantity": "Average Power Demand"
-        },
-        "peak_power_W": {
-            "units_measurement": "(W)",
-            "cleaned_quantity": "Peak Power Demand"
-        },
-    }
-
-
-    @classmethod
-    def plot_forecasts(cls, fig: go.Figure, forecasts: pd.DataFrame, quantity: str, granularity: str) -> go.Figure:
-
-        if len(forecasts) == 0:
-            return fig 
-
-        plot_layout = cls.plot_layout_key[quantity]
-
-        fig.add_trace(
-            go.Scatter(
-                x=forecasts.index,
-                y=forecasts[quantity+"_predictions"],
-                customdata=np.vstack(np.repeat([plot_layout["units_measurement"]], len(forecasts))),
-                name=f"{plot_layout['cleaned_quantity']} Forecasts", 
-                hovertemplate="<extra></extra>" +
-                    "%{x}" +
-                    "<br><i>%{y} %{customdata[0]}</i>",
-                fill="tozeroy",
-            )
-        )
-        return fig   
 
 
 # Class to plot choice analytics 
