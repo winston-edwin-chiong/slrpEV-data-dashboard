@@ -1,11 +1,10 @@
 import pandas as pd 
-from datetime import date
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from src.db.utils import db
-from pydantic import BaseModel
 
 ### --> Helper Functions <-- ###
+
 def query_date_df(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
 
     if start_date is None and end_date is None:
@@ -16,6 +15,7 @@ def query_date_df(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFr
         return df.loc[(df.index <= end_date)]
     else:
         return df.loc[(df.index >= start_date) & (df.index <= end_date)]
+    
 ### --> <-- ###
 
 
@@ -26,26 +26,28 @@ r = db.get_redis_connection()
 
 
 @app.get("/fivemindemand")
-async def five_minute_demand(start: None = None, end: None = None):
+async def five_minute_demand(start, end):
     fivemindemand = db.get_df(r, "fivemindemand")
     fivemindemand = query_date_df(fivemindemand, start, end)
     return fivemindemand.to_json()
 
 
 @app.get("/hourlydemand")
-async def hourlydemand():
+async def hourlydemand(start, end):
     hourlydemand = db.get_df(r, "hourlydemand")
+    hourlydemand = query_date_df(hourlydemand, start, end)
     return hourlydemand.to_json()
 
 @app.get("/dailydemand")
-async def dailydemand(start: None = None, end: None = None):
+async def dailydemand(start, end):
     dailydemand = db.get_df(r, "dailydemand")
     dailydemand = query_date_df(dailydemand, start, end)
     return dailydemand.to_json()
 
 @app.get("/monthlydemand")
-async def monthlydemand():
+async def monthlydemand(start, end):
     monthlydemand = db.get_df(r, "monthlydemand")
+    monthlydemand = query_date_df(monthlydemand, start, end)
     return monthlydemand.to_json()
 
 
