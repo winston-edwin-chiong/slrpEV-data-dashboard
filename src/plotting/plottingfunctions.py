@@ -290,17 +290,17 @@ class PlotDaily:
         if not df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")].empty:
 
             # get today's predictions, round, convert to kWh
-            peak = round(df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0], 1) / 1000
+            peak = df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0] / 1000
 
             # add horizontal line to figure 
             fig.add_hline(
                 y=peak,
                 line_dash="dot",
-                annotation_text=f"Peak Power Forecast: {peak} kW"
+                annotation_text=f"Peak Power Forecast: {peak:.1f} kW"
             )
             fig.update_layout(
                 {
-                    "title": f"Today's Sessions<br>Peak Power Forecast: {peak} kW"
+                    "title": f"Today's Sessions<br>Peak Power Forecast: {peak:.1f} kW"
                 }
             )
         return fig

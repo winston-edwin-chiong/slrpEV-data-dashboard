@@ -66,37 +66,43 @@ app.layout = \
                                 dbc.NavLink([
                                     html.I(className="navbar-icon bi bi-house ms-md-0 ms-1 me-2 text-primary"),
                                     "Home"
-                                ], href="/", className="text-start text-primary")
+                                ], href="/", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
                                     html.I(className="navbar-icon bi bi-graph-up ms-md-0 ms-1 me-2 text-primary"),
                                     "Alltime"
-                                ], href="/alltime", className="text-start text-primary")
+                                ], href="/alltime", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
                                     html.I(className="navbar-icon bi bi-table ms-md-0 ms-1 me-2 text-primary"),
                                     "Datatable"
-                                ], href="/data", className="text-start text-primary")
+                                ], href="/data", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
                                     html.I(className="navbar-icon bi bi-calendar-event ms-md-0 ms-1 me-2 text-primary"),
                                     "Today"
-                                ], href="/today", className="text-start text-primary")
+                                ], href="/today", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
                                     html.I(className="navbar-icon bi bi-ev-station ms-md-0 ms-1 me-2 text-primary"),
                                     "Chargers"
-                                ], href="/chargers", className="text-start text-primary")
+                                ], href="/chargers", className="text-md-center text-start text-primary")
+                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
+                            dbc.NavItem([
+                                dbc.NavLink([
+                                    html.I(className="navbar-icon bi bi-cloud-arrow-down ms-md-0 ms-1 me-2 text-primary"),
+                                    "API"
+                                ], href="/about", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
                                     html.I(className="navbar-icon bi bi-info-circle ms-md-0 ms-1 me-2 text-primary"),
                                     "About"
-                                ], href="/about", className="text-start text-primary")
+                                ], href="/about", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                         ]),
                         html.Div([
