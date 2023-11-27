@@ -1,6 +1,7 @@
 import pandas as pd 
 from typing import Annotated, List
 from fastapi import FastAPI, Query
+from fastapi.responses import PlainTextResponse
 from dotenv import load_dotenv
 from src.db.utils import db
 from datetime import datetime, timedelta
@@ -31,6 +32,10 @@ col_names = {}
 for df_name in ["fivemindemand", "hourlyforecasts", "chargers"]:
     df = db.get_df(r, df_name)
     col_names[df_name] = str(df.columns.to_list()).replace("'", "")[1:-1] # remove brackets and quotes
+
+@app.get("/", response_class=PlainTextResponse)
+async def root():
+    return "Go to https://slrpev-data-dashboard-api.onrender.com/docs for API documentation!"
 
 
 @app.get("/fivemindemand")

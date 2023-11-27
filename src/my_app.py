@@ -96,7 +96,7 @@ app.layout = \
                                 dbc.NavLink([
                                     html.I(className="navbar-icon bi bi-cloud-arrow-down ms-md-0 ms-1 me-2 text-primary"),
                                     "API"
-                                ], href="https://slrpev-data-dashboard-api.onrender.com/docs", className="text-md-center text-start text-primary")
+                                ], href="https://slrpev-data-dashboard-api.onrender.com/docs", className="text-md-center text-start text-primary", target="_blank")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
