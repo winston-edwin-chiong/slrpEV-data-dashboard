@@ -33,13 +33,9 @@ for df_name in ["fivemindemand", "hourlyforecasts", "chargers"]:
     df = db.get_df(r, df_name)
     col_names[df_name] = str(df.columns.to_list()).replace("'", "")[1:-1] # remove brackets and quotes
 
-@app.get("/", response_class=PlainTextResponse)
-async def root():
-    return "Go to https://slrpev-data-dashboard-api.onrender.com/docs for API documentation!"
 
-
-@app.get("/fivemindemand")
-async def Get_five_minute_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}.`")] = []):
+@app.get("demand/fivemindemand")
+async def five_minute_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     fivemindemand = db.get_df(r, "fivemindemand")
     fivemindemand = query_date_df(fivemindemand, start, end)
 
@@ -54,8 +50,8 @@ async def Get_five_minute_demand(start: str = None, end: str = None, columns: An
     return data
 
 
-@app.get("/hourlydemand")
-async def hourlydemand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}.`")] = []):
+@app.get("demand//hourlydemand")
+async def hourly_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     hourlydemand = db.get_df(r, "hourlydemand")
     hourlydemand = query_date_df(hourlydemand, start, end)
 
@@ -69,8 +65,8 @@ async def hourlydemand(start: str = None, end: str = None, columns: Annotated[Li
     } 
     return data
 
-@app.get("/dailydemand")
-async def dailydemand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}.`")] = []):
+@app.get("demand//dailydemand")
+async def daily_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     dailydemand = db.get_df(r, "dailydemand")
     dailydemand = query_date_df(dailydemand, start, end)
 
@@ -86,8 +82,8 @@ async def dailydemand(start: str = None, end: str = None, columns: Annotated[Lis
     return data
 
 
-@app.get("/monthlydemand")
-async def monthlydemand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}.`")] = []):
+@app.get("demand//monthlydemand")
+async def monthly_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     monthlydemand = db.get_df(r, "monthlydemand")
     monthlydemand = query_date_df(monthlydemand, start, end)
 
@@ -102,8 +98,8 @@ async def monthlydemand(start: str = None, end: str = None, columns: Annotated[L
     return data
 
 
-@app.get("/dailyforecasts")
-async def dailyforecasts(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['hourlyforecasts']}.`")] = []):
+@app.get("forecasts/dailyforecasts")
+async def daily_forecasts(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['hourlyforecasts']}`.")] = []):
     dailyforecasts = db.get_df(r, "dailyforecasts")
 
     if columns:
@@ -115,11 +111,11 @@ async def dailyforecasts(columns: Annotated[List[str], Query(description=f"Query
         "end_date": dailyforecasts.index[-1]
     }
 
-    return dailyforecasts.to_json()
+    return data
 
 
-@app.get("/hourlyforecasts")
-async def hourlyforecasts(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['hourlyforecasts']}.`")] = []):
+@app.get("forecasts/hourlyforecasts")
+async def hourly_forecasts(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['hourlyforecasts']}`.")] = []):
     hourlyforecasts = db.get_df(r, "hourlyforecasts")
 
     if columns:
@@ -131,11 +127,11 @@ async def hourlyforecasts(columns: Annotated[List[str], Query(description=f"Quer
         "end_date": hourlyforecasts.index[-1]
     }
 
-    return hourlyforecasts.to_json()
+    return data
 
 
-@app.get("/chargers")
-async def chargers(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['chargers']}.`")] = []):
+@app.get("demand/chargers")
+async def chargers(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['chargers']}`.")] = []):
     chargers = db.get_df(r, "chargers")
 
     current_time = pd.to_datetime("today")
