@@ -50,7 +50,7 @@ async def five_minute_demand(start: str = None, end: str = None, columns: Annota
     return data
 
 
-@app.get("demand//hourlydemand")
+@app.get("demand/hourlydemand")
 async def hourly_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     hourlydemand = db.get_df(r, "hourlydemand")
     hourlydemand = query_date_df(hourlydemand, start, end)
@@ -65,12 +65,11 @@ async def hourly_demand(start: str = None, end: str = None, columns: Annotated[L
     } 
     return data
 
-@app.get("demand//dailydemand")
+@app.get("demand/dailydemand")
 async def daily_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     dailydemand = db.get_df(r, "dailydemand")
     dailydemand = query_date_df(dailydemand, start, end)
 
-    print(columns)
     if columns:
         dailydemand = dailydemand[columns]
 
@@ -82,7 +81,7 @@ async def daily_demand(start: str = None, end: str = None, columns: Annotated[Li
     return data
 
 
-@app.get("demand//monthlydemand")
+@app.get("demand/monthlydemand")
 async def monthly_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     monthlydemand = db.get_df(r, "monthlydemand")
     monthlydemand = query_date_df(monthlydemand, start, end)
@@ -97,6 +96,21 @@ async def monthly_demand(start: str = None, end: str = None, columns: Annotated[
     }
     return data
 
+@app.get("demand/chargers")
+async def chargers(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['chargers']}`.")] = []):
+    chargers = db.get_df(r, "chargers")
+
+    current_time = pd.to_datetime("today")
+
+    if columns:
+        chargers = chargers[columns]
+    
+    data = {
+        "data": chargers.to_json(),
+        "time": current_time
+    }
+
+    return data
 
 @app.get("forecasts/dailyforecasts")
 async def daily_forecasts(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['hourlyforecasts']}`.")] = []):
@@ -130,18 +144,3 @@ async def hourly_forecasts(columns: Annotated[List[str], Query(description=f"Que
     return data
 
 
-@app.get("demand/chargers")
-async def chargers(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['chargers']}`.")] = []):
-    chargers = db.get_df(r, "chargers")
-
-    current_time = pd.to_datetime("today")
-
-    if columns:
-        chargers = chargers[columns]
-    
-    data = {
-        "data": chargers.to_json(),
-        "time": current_time
-    }
-
-    return data
