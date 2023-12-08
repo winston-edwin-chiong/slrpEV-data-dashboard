@@ -34,7 +34,7 @@ for df_name in ["fivemindemand", "hourlyforecasts", "chargers"]:
     col_names[df_name] = str(df.columns.to_list()).replace("'", "")[1:-1] # remove brackets and quotes
 
 
-@app.get("demand/fivemindemand")
+@app.get("/demand/fivemindemand")
 async def five_minute_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     fivemindemand = db.get_df(r, "fivemindemand")
     fivemindemand = query_date_df(fivemindemand, start, end)
@@ -50,7 +50,7 @@ async def five_minute_demand(start: str = None, end: str = None, columns: Annota
     return data
 
 
-@app.get("demand/hourlydemand")
+@app.get("/demand/hourlydemand")
 async def hourly_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     hourlydemand = db.get_df(r, "hourlydemand")
     hourlydemand = query_date_df(hourlydemand, start, end)
@@ -65,7 +65,7 @@ async def hourly_demand(start: str = None, end: str = None, columns: Annotated[L
     } 
     return data
 
-@app.get("demand/dailydemand")
+@app.get("/demand/dailydemand")
 async def daily_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     dailydemand = db.get_df(r, "dailydemand")
     dailydemand = query_date_df(dailydemand, start, end)
@@ -81,7 +81,7 @@ async def daily_demand(start: str = None, end: str = None, columns: Annotated[Li
     return data
 
 
-@app.get("demand/monthlydemand")
+@app.get("/demand/monthlydemand")
 async def monthly_demand(start: str = None, end: str = None, columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['fivemindemand']}`.")] = []):
     monthlydemand = db.get_df(r, "monthlydemand")
     monthlydemand = query_date_df(monthlydemand, start, end)
@@ -96,7 +96,7 @@ async def monthly_demand(start: str = None, end: str = None, columns: Annotated[
     }
     return data
 
-@app.get("demand/chargers")
+@app.get("/demand/chargers")
 async def chargers(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['chargers']}`.")] = []):
     chargers = db.get_df(r, "chargers")
 
@@ -112,7 +112,7 @@ async def chargers(columns: Annotated[List[str], Query(description=f"Query selec
 
     return data
 
-@app.get("forecasts/dailyforecasts")
+@app.get("/forecasts/dailyforecasts")
 async def daily_forecasts(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['hourlyforecasts']}`.")] = []):
     dailyforecasts = db.get_df(r, "dailyforecasts")
 
@@ -128,7 +128,7 @@ async def daily_forecasts(columns: Annotated[List[str], Query(description=f"Quer
     return data
 
 
-@app.get("forecasts/hourlyforecasts")
+@app.get("/forecasts/hourlyforecasts")
 async def hourly_forecasts(columns: Annotated[List[str], Query(description=f"Query select columns. Options are `{col_names['hourlyforecasts']}`.")] = []):
     hourlyforecasts = db.get_df(r, "hourlyforecasts")
 
