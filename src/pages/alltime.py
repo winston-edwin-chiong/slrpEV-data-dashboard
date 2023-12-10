@@ -89,9 +89,9 @@ tab_one_content = \
                                                 {'label': 'Energy Demand',
                                                 'value': 'energy_demand_kWh'},
                                                 {'label': 'Average Power Demand',
-                                                'value': 'avg_power_demand_W'},
+                                                'value': 'avg_power_demand_kW'},
                                                 {'label': 'Peak Power Demand',
-                                                'value': 'peak_power_W'}
+                                                'value': 'peak_power_kW'}
                                             ],
                                             value='energy_demand_kWh',  # default value
                                             clearable=False,

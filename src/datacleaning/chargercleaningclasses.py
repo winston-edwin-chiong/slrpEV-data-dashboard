@@ -53,6 +53,9 @@ class CleanChargers(BaseEstimator, TransformerMixin):
         # add vehicle model
         chargers = chargers.merge(inuse[["stationId", "vehicle_model"]], on='stationId', how='left')
 
+        # add vehicle model
+        chargers = chargers.merge(inuse[["stationId", "sch_centsPerHr", "reg_centsPerHr"]], on='stationId', how='left')
+
         # add cumulative energy delivered by each charger 
         chargers = chargers.merge(X[["stationId", "cumEnergy_Wh"]].groupby("stationId").sum(), on='stationId', how='left')
 

@@ -37,6 +37,9 @@ def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str):
         html.Span([
             html.Span([f"{vehicle_model} @ {rate/1000} kW {choice}"])
             ], className="d-inline-block my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-pill"),
+        html.Span([
+            html.Span([f"Price Goes Here!"])
+            ], className="d-inline-block my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-pill"),
         ]
     
     return html.Span([

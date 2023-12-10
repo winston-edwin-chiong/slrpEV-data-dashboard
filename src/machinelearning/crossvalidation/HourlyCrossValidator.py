@@ -9,7 +9,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 # Main Class
 class HourlyCrossValidator:
 
-    columns = ["energy_demand_kWh", "peak_power_W"]
+    columns = ["energy_demand_kWh", "peak_power_kW"]
 
     def __init__(self, max_neighbors, max_depth):
         self.max_neighbors = max_neighbors
@@ -25,7 +25,7 @@ class HourlyCrossValidator:
             best_params[column] = params
 
         # same data, different units, so same parameters
-        best_params["avg_power_demand_W"] = best_params["energy_demand_kWh"]
+        best_params["avg_power_demand_kW"] = best_params["energy_demand_kWh"]
 
         return best_params
 
@@ -71,7 +71,7 @@ class kNNCrossValidator:
             cv=[(np.arange(0, len(X_train)), np.arange(len(X_train), len(X_train_validation)))]
         )
         grid.fit(X_train_validation, y_train_validation)
-        # TODO: Instead of returning parameters, return the best model?
+        
         best_params = {
             "best_depth": grid.best_params_["subset_features__num_lags"],
             "best_n_neighbors": grid.best_params_["estimator__n_neighbors"]

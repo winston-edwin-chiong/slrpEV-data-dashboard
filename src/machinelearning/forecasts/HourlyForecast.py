@@ -13,7 +13,7 @@ class CreateHourlyForecasts:
         pass
 
     @classmethod
-    def run_hourly_forecast(cls, df: pd.DataFrame, best_params: dict, existing_forecasts: pd.DataFrame=pd.DataFrame()):
+    def run_hourly_forecast(cls, df: pd.DataFrame, best_params: dict, existing_forecasts: pd.DataFrame = pd.DataFrame()):
 
         hourly_forecast_pipeline = Pipeline([
             ("estimator", kNNPredict(best_params=best_params))
@@ -26,13 +26,13 @@ class CreateHourlyForecasts:
 
     @classmethod
     def get_empty_prediction_df(cls):
-        empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
+        empty_df = pd.DataFrame(columns=["avg_power_demand_kW_predictions", "energy_demand_kWh_predictions", "peak_power_kW_predictions"], index=pd.Index([], name="time"))
         return empty_df
 
 
 class kNNPredict(BaseEstimator, TransformerMixin):
 
-    columns = ["avg_power_demand_W", "energy_demand_kWh", "peak_power_W"]
+    columns = ["avg_power_demand_kW", "energy_demand_kWh", "peak_power_kW"]
 
     def __init__(self, best_params: dict) -> None:
         super().__init__()

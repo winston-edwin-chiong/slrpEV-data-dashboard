@@ -17,18 +17,6 @@ class db:
         This function returns a Redis connection object. 
         '''
         return redis.from_url(url=os.getenv("REDIS_URI"))
-
-        # old 
-        retry = Retry(ExponentialBackoff(), 3)
-        return redis.Redis(
-            host=os.getenv("REDIS_HOST"),
-            port=os.getenv("REDIS_PORT"),
-            username=os.getenv("REDIS_USERNAME"),
-            password=os.getenv("REDIS_PASSWORD"),
-            retry=retry,
-            retry_on_error=[BusyLoadingError, ConnectionError, TimeoutError],
-            ssl=True
-        )
     
 
     @staticmethod
@@ -40,7 +28,7 @@ class db:
     
 
     @staticmethod
-    def send_item(redis_client: redis.Redis, key: str, item):
+    def send_item(redis_client: redis.Redis, key: str, item) -> None:
         '''
         Pickles and sends item to Redis.
         '''
@@ -48,7 +36,7 @@ class db:
 
     
     @classmethod
-    def get_df(cls, redis_client: redis.Redis, name):
+    def get_df(cls, redis_client: redis.Redis, name) -> pd.DataFrame:
         """
         All dataframes except should be retrieved with this method. 
         """
@@ -60,14 +48,14 @@ class db:
     @classmethod
     def send_df(cls, redis_client: redis.Redis, df: pd.DataFrame, name: str) -> None:
         """
-        All dataframes except should be sent with this method.  
+        All dataframes should be sent with this method.  
         """
         pq = df.to_parquet()
         redis_client.set(name, pq)
 
 
     @classmethod
-    def get_multiple_df(cls, redis_client: redis.Redis, names: list) -> list:
+    def get_multiple_df(cls, redis_client: redis.Redis, names: list) -> list[pd.DataFrame]:
         """
         For retrieving multiple dataframes in a block. Returns as a list in the same order as input.
         """

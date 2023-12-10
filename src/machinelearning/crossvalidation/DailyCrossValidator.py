@@ -6,10 +6,10 @@ import pmdarima as pm
 # Main Class
 class DailyCrossValidator:
 
-    columns = ["energy_demand_kWh", "peak_power_W"]
+    columns = ["energy_demand_kWh", "peak_power_kW"]
 
     @classmethod
-    def cross_validate(cls, df):
+    def cross_validate(cls, df) -> dict[str, dict]:
 
         best_params = {}
 
@@ -19,7 +19,7 @@ class DailyCrossValidator:
             best_params[column] = params
 
         # same data, different units, so same parameters
-        best_params["avg_power_demand_W"] = best_params["energy_demand_kWh"]
+        best_params["avg_power_demand_kW"] = best_params["energy_demand_kWh"]
 
         return best_params
 
@@ -32,7 +32,7 @@ class SARIMACrossValidator:
     def __init__(self, col_name):
         self.col_name = col_name
 
-    def cross_validate_one(self, df: pd.DataFrame):
+    def cross_validate_one(self, df: pd.DataFrame) -> dict[str, dict]:
 
         X_train, X_test, y_train, y_test = self.__train_test_split(df)
 
@@ -42,7 +42,7 @@ class SARIMACrossValidator:
                                     d=0, D=1, m=7,
                                     X=None,
                                     seasonal=True, trace=True, stepwise=True)
-        # TODO: Instead of returning parameters, maybe return the whole model?
+
         return {"order": stepwise_fit.order, "seasonal_order": stepwise_fit.seasonal_order}
 
     def __train_test_split(self, df: pd.DataFrame):

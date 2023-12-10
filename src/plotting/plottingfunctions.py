@@ -52,13 +52,13 @@ class PlotMainTimeSeries:
             "units_measurement": "(kWh)",
             "cleaned_quantity": "Energy Demand"
         },
-        "avg_power_demand_W": {
-            "column_name": "avg_power_demand_W",
+        "avg_power_demand_kW": {
+            "column_name": "avg_power_demand_kW",
             "units_measurement": "(W)",
             "cleaned_quantity": "Average Power Demand"
         },
-        "peak_power_W": {
-            "column_name": "peak_power_W",
+        "peak_power_kW": {
+            "column_name": "peak_power_kW",
             "units_measurement": "(W)",
             "cleaned_quantity": "Peak Power Demand"
         },
@@ -273,7 +273,7 @@ class PlotDaily:
         fig.add_trace(
             go.Scatter(
                 x=df.index,
-                y=df["avg_power_demand_W"],
+                y=df["avg_power_demand_kW"],
                 mode='lines',
                 hoverinfo='skip',
                 line_color='rgba(0, 0, 0, 0.35)',
@@ -290,7 +290,7 @@ class PlotDaily:
         if not df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")].empty:
 
             # get today's predictions, round, convert to kWh
-            peak = df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")]["peak_power_W_predictions"].iloc[0] / 1000
+            peak = df.loc[df.index == datetime.now(pytz.timezone('US/Pacific')).strftime("%Y-%m-%d")]["peak_power_kW_predictions"].iloc[0] / 1000
 
             # add horizontal line to figure 
             fig.add_hline(
@@ -427,11 +427,11 @@ class PlotHoverHistogram:
         "energy_demand_kWh": {
             "col_name": "Energy Demand<br>(kWh)"
         },
-        "avg_power_demand_W": {
-            "col_name": "Avg. Power Demand<br>(W)"
+        "avg_power_demand_kW": {
+            "col_name": "Avg. Power Demand<br>(kW)"
         },
-        "peak_power_W": {
-            "col_name": "Peak Power<br>(W)"
+        "peak_power_kW": {
+            "col_name": "Peak Power<br>(kW)"
         },
     }
 

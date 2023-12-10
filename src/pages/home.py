@@ -52,7 +52,7 @@ def calcuate_stats_change(kwh_today, num_users, peak_power, dailydemand, raw_dat
     num_users_change = num_users - yesterday_users
 
     # calculate monthly peak power change
-    last_month_peak_power = monthlydemand.iloc[[-2]]["peak_power_W"].iloc[0] / 1000
+    last_month_peak_power = monthlydemand.iloc[[-2]]["peak_power_kW"].iloc[0]
     peak_power_change = calculate_pct_change(peak_power, last_month_peak_power)
 
     return (
@@ -202,7 +202,7 @@ def update_today_homepage_cards(n):
     thismonthdemand = monthlydemand.iloc[[-1]]
 
     # extract peak power, convert to kW
-    peak_power_float = thismonthdemand["peak_power_W"][0] / 1000
+    peak_power_float = thismonthdemand["peak_power_kW"][0]
     peak_power = f'{peak_power_float:,} kW'
 
     # workaround for length of NoneType error (no sessions today)

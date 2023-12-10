@@ -5,7 +5,7 @@ import os
 
 class CreateDailyForecasts:
 
-    columns = ["avg_power_demand_W", "energy_demand_kWh", "peak_power_W"]
+    columns = ["avg_power_demand_kW", "energy_demand_kWh", "peak_power_kW"]
 
     def __init__():
         pass
@@ -13,7 +13,7 @@ class CreateDailyForecasts:
     @classmethod
     def run_daily_forecast(cls, df: pd.DataFrame, best_params: dict, existing_forecasts: pd.DataFrame=pd.DataFrame()):
         """
-        Run a daily forecast. This function expects `best_params` to have a key for each column `avg_power_demand_W`, `energy_demand_kWh`, `peak_power_W`.
+        Run a daily forecast. This function expects `best_params` to have a key for each column `avg_power_demand_kW`, `energy_demand_kWh`, `peak_power_kW`.
         Each value should then have a key for `order` and `seasonal_order` of the ARIMA model. 
         """
 
@@ -41,6 +41,6 @@ class CreateDailyForecasts:
 
     @classmethod
     def get_empty_prediction_df(cls):
-        empty_df = pd.DataFrame(columns=["avg_power_demand_W_predictions", "energy_demand_kWh_predictions", "peak_power_W_predictions"], index=pd.Index([], name="time"))
+        empty_df = pd.DataFrame(columns=["avg_power_demand_kW_predictions", "energy_demand_kWh_predictions", "peak_power_kW_predictions"], index=pd.Index([], name="time"))
         return empty_df
 

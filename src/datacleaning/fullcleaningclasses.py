@@ -50,7 +50,8 @@ class HelperFeatureCreation(BaseEstimator, TransformerMixin):
         # filter out bad rows (this occurs when there is a very low peak power and high energy delivered)
         # also filter out excessively high duration from raw data
         X = X.loc[X["DurationHrs"] <= 24].copy()
-        X = X[~(X["Duration"].str[0].astype(int) >= 2)]
+        X["DurationDays"] = X["Duration"].str.extract(r'(\d{1,2}) days').astype(int)
+        X = X[X["DurationDays"] <= 2].copy().drop("DurationDays", axis= 1)
 
         # calculate overstay 
         X['temp_0'] = pd.Timedelta(days=0, seconds=0)
@@ -149,8 +150,16 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
 
     def transform(self, X) -> pd.DataFrame:
         X["energy_demand_kWh"] = (X["avg_power_demand_W"]/1000)/12
+
         # for the highest granularity, peak power is equal to the power demand (different for different granularities though)
         X["peak_power_W"] = X["avg_power_demand_W"]
+
+        # change units 
+        X["peak_power_W"] = X["peak_power_W"] / 1000
+        X.rename(columns={"peak_power_W": "peak_power_kW"}, inplace=True)
+        X["avg_power_demand_W"] = X["avg_power_demand_W"] / 1000
+        X.rename(columns={"avg_power_demand_W": "avg_power_demand_kW"}, inplace=True)
+        
         X.index.name = "time"
         X["day"] = X.index.day_name()
         X["month"] = X.index.month_name()
@@ -181,9 +190,9 @@ class CreateGranularities(BaseEstimator, TransformerMixin):
 
     def __init__(self, save=False) -> None:
         self.agg_key = {
-            "avg_power_demand_W": "mean",
+            "avg_power_demand_kW": "mean",
             "energy_demand_kWh": "sum",
-            "peak_power_W": "max",
+            "peak_power_kW": "max",
             "day": "first",
             "month": "first"
         }
