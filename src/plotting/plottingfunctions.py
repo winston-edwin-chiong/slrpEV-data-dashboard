@@ -54,12 +54,12 @@ class PlotMainTimeSeries:
         },
         "avg_power_demand_kW": {
             "column_name": "avg_power_demand_kW",
-            "units_measurement": "(W)",
+            "units_measurement": "(kW)",
             "cleaned_quantity": "Average Power Demand"
         },
         "peak_power_kW": {
             "column_name": "peak_power_kW",
-            "units_measurement": "(W)",
+            "units_measurement": "(kW)",
             "cleaned_quantity": "Peak Power Demand"
         },
     }
