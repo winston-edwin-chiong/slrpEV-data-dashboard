@@ -114,7 +114,7 @@ tab_one_content = \
                                 dbc.Col([ 
                                     html.Div([
                                         html.Div(["Toggle Forecasts"]),
-                                        dmc.Switch(size="md", radius="lg", checked=False, id="toggle-forecasts", color="gray"),
+                                        dmc.Switch(size="md", radius="lg", checked=True, id="toggle-forecasts", color="gray"),
                                         html.Div(["Toggle Histograms"]),
                                         dmc.Switch(size="md", radius="lg", checked=True, id="toggle-histograms", color="gray"),
                                     ], className="w-100 d-flex justify-content-center flex-column px-2 py-2 border rounded mx-0 my-2")
