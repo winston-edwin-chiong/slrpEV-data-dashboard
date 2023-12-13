@@ -37,9 +37,10 @@ def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str, 
                     ], className="d-inline-block my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-pill border border-info-subtle")
             ]),
             html.Div([
-                html.Span([
-                    html.Span([f"{vehicle_model} @ {rate/1000} kW {choice}"])
-                    ], className="d-inline-block my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-3 border border-info-subtle"),
+                html.Div([
+                    html.Div([f"{vehicle_model} @ {rate/1000} kW"]),
+                    html.Div([f"{choice}"])
+                    ], className="my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-3 border border-info-subtle"),
             ]),
             html.Div([
                 html.Span([
