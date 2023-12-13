@@ -43,9 +43,9 @@ def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str, 
             ]),
             html.Div([
                 html.Span([
-                    html.Div([f"Sched. Offer: {sched_price} ¢/hr"], className="px-2 py-1" + "bg-success-subtle rounded-end rounded-pill" if choice == "SCHEDULED" else ""),
+                    html.Div([f"Sched. Offer: {sched_price} ¢/hr"], className="px-2 py-1" + (" bg-success-subtle rounded-end rounded-pill" if choice == "SCHEDULED" else "")),
                     html.Div(className="vr"),
-                    html.Div([f"Reg. Offer: {reg_price} ¢/hr"], className="px-2 py-1" + "bg-success-subtle rounded-start rounded-pill" if choice == "REGULAR" else "")
+                    html.Div([f"Reg. Offer: {reg_price} ¢/hr"], className="px-2 py-1" + (" bg-success-subtle rounded-start rounded-pill" if choice == "REGULAR" else ""))
                     ], className="d-inline-flex align-items-center justify-content-center my-2 fw-bolder fs-6 text-dark bg-body-secondary rounded-pill border border-info-subtle")
             ])
         ]
