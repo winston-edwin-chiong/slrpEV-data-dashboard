@@ -59,7 +59,7 @@ layout = \
                                             " and ",
                                             html.A("Bootstrap", href="https://getbootstrap.com/", target="_blank", className="fw-bold text-info"),
                                             ". The app is deployed on ",
-                                            html.A("Render", href="https://render.com/", target="_blank", className="fw-bold text-info"),
+                                            html.A("Koyeb", href="https://koyeb.com/", target="_blank", className="fw-bold text-info"),
                                             "."
                                             ]),
                                     ]),
