@@ -1,6 +1,5 @@
 import redis 
 import os
-import numpy as np
 import pickle
 import pandas as pd
 from redis.backoff import ExponentialBackoff
@@ -16,7 +15,9 @@ class db:
         '''
         This function returns a Redis connection object. 
         '''
-        return redis.from_url(url=os.getenv("REDIS_URI"))
+        connection_pool = redis.ConnectionPool.from_url(url=os.getenv("REDIS_URI"))
+        retry = Retry(ExponentialBackoff(), 3)
+        return redis.Redis(connection_pool=connection_pool, retry=retry, retry_on_error=[BusyLoadingError, ConnectionError, TimeoutError])
     
 
     @staticmethod

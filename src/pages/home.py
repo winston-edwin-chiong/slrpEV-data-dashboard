@@ -3,8 +3,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import pytz
 import dash_mantine_components as dmc
-from dash.dependencies import Output, Input, State
-from plotting import plottingfunctions as pltf
+from dash.dependencies import Output, Input
 from dash import html, dcc
 from datetime import datetime, timedelta
 from db.utils import db

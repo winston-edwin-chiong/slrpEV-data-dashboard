@@ -1,6 +1,5 @@
 import dash
 import dash_bootstrap_components as dbc
-import os 
 from dash import html, dcc
 from dash.dependencies import Output, Input, State
 from dotenv import load_dotenv

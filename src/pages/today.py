@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 from dash_bootstrap_templates import ThemeChangerAIO
 from plotting import plottingfunctions as pltf
 from dash.dependencies import Input, Output, State
-from dash import html, dcc, Patch
+from dash import html, dcc
 from db.utils import db
 
 
