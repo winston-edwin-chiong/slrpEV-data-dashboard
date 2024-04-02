@@ -639,7 +639,7 @@ class GetUserHoverData:
 class PlotSchedVsReg:     
 
     @classmethod
-    def plot_sched_vs_reg(cls, df: pd.DataFrame, theme=None) -> go.Figure():
+    def plot_sched_vs_reg(cls, df: pd.DataFrame, theme=None) -> go.Figure:
 
         df = df[["sch_centsPerHr", "reg_centsPerHr", "choice"]].value_counts().to_frame("counts").reset_index()
 
@@ -667,7 +667,7 @@ class PlotSchedVsReg:
 class PlotChargers:
 
     @classmethod
-    def plot_charger_usage_bar_chart(cls, df: pd.DataFrame, theme=None) -> go.Figure():
+    def plot_charger_usage_bar_chart(cls, df: pd.DataFrame, theme=None) -> go.Figure:
 
         fig = go.Figure(
             data=[

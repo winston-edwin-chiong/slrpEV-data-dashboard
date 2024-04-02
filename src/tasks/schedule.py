@@ -12,7 +12,7 @@ from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
 # create image
 image = modal.Image.debian_slim().pip_install("pandas", "numpy", "redis", "boto3", "python-dotenv", "scikit-learn", "pmdarima", "statsmodels", "pyarrow", "fastparquet")
 
-stub = modal.Stub()
+stub = modal.Stub(name="slrpEV-data-dashboard-tasks")
 
 # logger
 logging.basicConfig(level=logging.INFO)
