@@ -25,8 +25,8 @@ jobs:
       - name: Install Modal
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install modal
 
       - name: Deploy job
         run: |
-            cd src && modal deploy --name slrpEV-data-dashboard-tasks tasks/schedule.py
+          modal deploy --name slrpEV-data-dashboard-tasks src/tasks/schedule.py
