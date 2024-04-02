@@ -18,6 +18,6 @@ Activate the Python virtual environment with `.\venv\Scripts\activate` or `sourc
 
 Start the Dash app with `.\venv\Scripts\python.exe src/dashboard.py`.
 
-Updates to the scheduled tasks (`tasks/schedule.py` file in the root directory) should be pushed automatically pushed to Modal on pushes to the main branch, but manual deployments can be triggered with `cd src && modal deploy tasks/schedule.py`. 
+Updates to the scheduled tasks (`tasks/schedule.py` file in the root directory) should be automatically pushed to Modal on pushes to the main branch, but manual deployments can be triggered with `cd src && modal deploy tasks/schedule.py`. 
 
-The API can be run with `uvicorn api.api:app --host 0.0.0.0`.
+The FastAPI can be run with `uvicorn api.api:app --host 0.0.0.0`.
