@@ -130,7 +130,7 @@ class CreateNestedSessionTimeSeries(BaseEstimator, TransformerMixin):
         at five minute granularity.
         """
 
-        date_range = pd.date_range(start=session["startChargeTime"].round("5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min").to_list()
+        date_range = pd.date_range(start=session["startChargeTime"].round("5min"), end=session["finishChargeTime"].round("5min"), freq="5min").to_list()
         power_vals = np.ones(len(date_range)) * session["true_peakPower_W"]
 
         temp_df = pd.DataFrame({"power": power_vals}, index=date_range)

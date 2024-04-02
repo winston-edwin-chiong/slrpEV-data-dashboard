@@ -1,3 +1,4 @@
+from turtle import st
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc
@@ -21,22 +22,18 @@ app.title = "slrpEV Dashboard"
 
 # theme options
 themes_options = [
-    {"label": "Bootstrap, the OG 🚼", "value": dbc.themes.BOOTSTRAP},
+    {"label": "Bootstrap, the original 🚼", "value": dbc.themes.BOOTSTRAP},
     {"label": "Cerulean, a calm blue sky ⛱️", "value": dbc.themes.CERULEAN},
     {"label": "Cosmo, an ode to Metro 🗔", "value": dbc.themes.COSMO},
-    {"label": "Cyborg, jet black and electric blue ⚫+⚡🔵", "value": dbc.themes.CYBORG},
     {"label": "Darkly, flatly in night mode 🌕", "value": dbc.themes.DARKLY},
     {"label": "Journal, crisp like a new sheet of paper 📃", "value": dbc.themes.JOURNAL},
     {"label": "Litera, the medium is the message 📰", "value": dbc.themes.LITERA},
     {"label": "Lumen, light and shadow ☀️/🌑", "value": dbc.themes.LUMEN},
     {"label": "Lux, a touch of class 👔", "value": dbc.themes.LUX},
-    {"label": "Materia, material is the metaphor 📖", "value": dbc.themes.MATERIA},
     {"label": "Minty, a fresh feel 🍭", "value": dbc.themes.MINTY},
     {"label": "Morph, a neomorphic layer 🧬", "value": dbc.themes.MORPH},
     {"label": "Pulse, a trace of purple 💜", "value": dbc.themes.PULSE},
-    {"label": "Quartz, a glassmorphic layer 🪟", "value": dbc.themes.QUARTZ},
     {"label": "Sandstone, a touch of warmth 🏜️", "value": dbc.themes.SANDSTONE},
-    {"label": "Simplex, mini and minimalist ▫️", "value": dbc.themes.SIMPLEX},
     {"label": "Sketchy, a hand-drawn look for mockups and mirth ✏️", "value": dbc.themes.SKETCHY},
     {"label": "Solar, a spin on Solarized 🌞", "value": dbc.themes.SOLAR},
     {"label": "Spacelab, silvery and sleek 🥈", "value": dbc.themes.SPACELAB},
@@ -63,44 +60,44 @@ app.layout = \
                         dbc.Nav([
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-house ms-md-0 ms-1 me-2 text-primary"),
-                                    "Home"
+                                    html.I(className="navbar-icon bi bi-house ms-md-2 ms-lg-0 ms-1 me-2 text-primary"),
+                                    html.Span("Home", className="d-md-none d-lg-inline")
                                 ], href="/", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-graph-up ms-md-0 ms-1 me-2 text-primary"),
-                                    "Alltime"
+                                    html.I(className="navbar-icon bi bi-graph-up ms-md-2 ms-lg-0 ms-1 me-2 text-primary"),
+                                    html.Span("Alltime", className="d-md-none d-lg-inline")
                                 ], href="/alltime", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-table ms-md-0 ms-1 me-2 text-primary"),
-                                    "Datatable"
+                                    html.I(className="navbar-icon bi bi-table ms-md-2 ms-lg-0 ms-1 me-2 text-primary"),
+                                    html.Span("Datatable", className="d-md-none d-lg-inline")
                                 ], href="/data", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-calendar-event ms-md-0 ms-1 me-2 text-primary"),
-                                    "Today"
+                                    html.I(className="navbar-icon bi bi-calendar-event ms-md-2 ms-lg-0 ms-1 me-2 text-primary"),
+                                    html.Span("Today", className="d-md-none d-lg-inline")
                                 ], href="/today", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-ev-station ms-md-0 ms-1 me-2 text-primary"),
-                                    "Chargers"
+                                    html.I(className="navbar-icon bi bi-ev-station ms-md-2 ms-lg-0 ms-1 me-2 text-primary"),
+                                    html.Span("Chargers", className="d-md-none d-lg-inline")
                                 ], href="/chargers", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-cloud-arrow-down ms-md-0 ms-1 me-2 text-primary"),
-                                    "API"
+                                    html.I(className="navbar-icon bi bi-cloud-arrow-down ms-md-2 ms-lg-0 ms-1 me-2 text-primary"),
+                                    html.Span("API", className="d-md-none d-lg-inline")
                                 ], href="https://slrpev-data-api-winston-edwin-chiong.koyeb.app/docs", className="text-md-center text-start text-primary", target="_blank")
-                            ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
+                            ], className="d-none d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"), # disabled for now
                             dbc.NavItem([
                                 dbc.NavLink([
-                                    html.I(className="navbar-icon bi bi-info-circle ms-md-0 ms-1 me-2 text-primary"),
-                                    "About"
+                                    html.I(className="navbar-icon bi bi-info-circle ms-md-2 ms-lg-0 ms-1 me-2 text-primary"),
+                                    html.Span("About", className="d-md-none d-lg-inline")
                                 ], href="/about", className="text-md-center text-start text-primary")
                             ], className="d-flex align-items-center btn btn-light py-0 px-1 mx-1 mb-2 mb-md-0 rounded-4"),
                         ]),
@@ -130,7 +127,7 @@ app.layout = \
         html.Div([
             html.Div([
                 dcc.Interval(
-                    id="data_refresh_interval_component",
+                    id="data-refresh-interval-component",
                     interval=25 * 60 * 1000,  # poll db every 25 minutes
                     n_intervals=0
                 ),
@@ -177,7 +174,7 @@ def toggle_navbar_collapse(n, is_open):
 
 @dash.callback(
     Output("data-refresh-signal", "data"),
-    Input("data_refresh_interval_component", "n_intervals"),
+    Input("data-refresh-interval-component", "n_intervals"),
     prevent_initial_call=True,
 )
 def data_refresh_interval(n):

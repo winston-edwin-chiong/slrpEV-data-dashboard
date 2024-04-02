@@ -3,9 +3,9 @@ import logging
 from datacleaning.FetchData import FetchData
 from datacleaning.CleanData import CleanData
 from db.utils import db
-from machinelearning.crossvalidation.DailyCrossValidator import DailyCrossValidator
+from machinelearning.crossvalidation.DailyCV import DailyCrossValidator
 from machinelearning.forecasts.DailyForecast import CreateDailyForecasts
-from machinelearning.crossvalidation.HourlyCrossValidator import HourlyCrossValidator
+from machinelearning.crossvalidation.HourlyCV import HourlyCrossValidator
 from machinelearning.forecasts.HourlyForecast import CreateHourlyForecasts
 
 
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # query data
 @stub.function(
         schedule=modal.Cron('0,10,20,30,40,50 * * * *'), 
-        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
+        secrets=[modal.Secret.from_name("slrpEV-data-dashboard-ENVS")], 
         image=image,
         mounts=[modal.Mount.from_local_python_packages(
             "datacleaning.FetchData", 
@@ -48,13 +48,13 @@ def query_data():
 # validate model parameters
 @stub.function(
         schedule=modal.Cron('5 3 1 * *'), 
-        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
+        secrets=[modal.Secret.from_name("slrpEV-data-dashboard-ENVS")], 
         image=image, 
         mounts=[modal.Mount.from_local_python_packages(
             "db.utils", 
-            "machinelearning.crossvalidation.DailyCrossValidator", 
+            "machinelearning.crossvalidation.DailyCV", 
             "machinelearning.forecasts.DailyForecast",
-            "machinelearning.crossvalidation.HourlyCrossValidator",
+            "machinelearning.crossvalidation.HourlyCV",
             "machinelearning.forecasts.HourlyForecast",
             )],
         timeout=600,
@@ -102,7 +102,7 @@ def update_params():
 
 # forecast hourly demand
 @stub.function(schedule=modal.Cron('15 * * * *'), 
-        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
+        secrets=[modal.Secret.from_name("slrpEV-data-dashboard-ENVS")], 
         image=image, 
         mounts=[modal.Mount.from_local_python_packages(
             "db.utils", 
@@ -114,6 +114,10 @@ def forecast_hourly():
 
     logger.info("Loading data...")
     data = db.get_df(r, "hourlydemand")
+
+    if not db.get_item(r, "hourlyparams"):
+        logger.info("No parameters found. Updating model parameters...")
+        update_params()
 
     logger.info("Forecasting hourly demand...")
     best_params = db.get_item(r, "hourlyparams")
@@ -128,7 +132,7 @@ def forecast_hourly():
 
 # forecast daily demand
 @stub.function(schedule=modal.Cron('45 7,15,23 * * *'), 
-        secret=modal.Secret.from_name("slrpEV-data-dashboard-ENVS"), 
+        secrets=[modal.Secret.from_name("slrpEV-data-dashboard-ENVS")], 
         image=image, 
         mounts=[modal.Mount.from_local_python_packages(
             "db.utils", 
@@ -140,6 +144,10 @@ def forecast_daily():
 
     logger.info("Loading data...")
     data = db.get_df(r, "dailydemand")
+
+    if not db.get_item(r, "dailyparams"):
+        logger.info("No parameters found. Updating model parameters...")
+        update_params()
 
     logger.info("Forecasting daily demand...")
     best_params = db.get_item(r, "dailyparams")

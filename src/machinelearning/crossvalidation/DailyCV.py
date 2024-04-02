@@ -34,7 +34,7 @@ class SARIMACrossValidator:
 
     def cross_validate_one(self, df: pd.DataFrame) -> dict[str, dict]:
 
-        X_train, X_test, y_train, y_test = self.__train_test_split(df)
+        _, _, y_train, _ = self.__train_test_split(df)
 
         stepwise_fit = pm.auto_arima(y_train,
                                     start_p=0, start_q=0,

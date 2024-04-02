@@ -20,4 +20,4 @@ Start the Dash app with `.\venv\Scripts\python.exe src/my_app.py`.
 
 Updates to the scheduled tasks (`tasks/schedule.py` file in the root directory) should be pushed to Modal with `cd src && modal deploy --name slrpEV-data-dashboard-tasks tasks/schedule.py`.
 
-
+The API can be run with `uvicorn api.api:app --host 0.0.0.0`.

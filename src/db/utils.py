@@ -15,9 +15,12 @@ class db:
         '''
         This function returns a Redis connection object. 
         '''
-        connection_pool = redis.ConnectionPool.from_url(url=os.getenv("REDIS_URI"))
         retry = Retry(ExponentialBackoff(), 3)
-        return redis.Redis(connection_pool=connection_pool, retry=retry, retry_on_error=[BusyLoadingError, ConnectionError, TimeoutError])
+        return redis.Redis(
+            connection_pool=redis.ConnectionPool.from_url(url=os.getenv("REDIS_URI")), 
+            retry=retry, 
+            retry_on_error=[BusyLoadingError, ConnectionError, TimeoutError]
+            )
     
 
     @staticmethod

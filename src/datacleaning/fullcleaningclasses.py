@@ -98,7 +98,7 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         self.rows = []
         X.apply(self.__create_ts, axis=1)
         X = pd.concat(self.rows, axis=0).sort_index()
-        X = X.resample("5MIN").sum()
+        X = X.resample("5min").sum()
         return X
 
     def __create_ts(self, session: pd.Series):
@@ -106,7 +106,7 @@ class CreateSessionTimeSeries(BaseEstimator, TransformerMixin):
         This helper function takes in a session, with a `connectTime`, `finishChargeTime`, and 
         a `peakPower_W` column. Function will return a time series at 5-min granularity. 
         """
-        date_range = pd.date_range(start=session["startChargeTime"].round("5MIN"), end=session["finishChargeTime"].round("5MIN"), freq="5min")
+        date_range = pd.date_range(start=session["startChargeTime"].round("5min"), end=session["finishChargeTime"].round("5min"), freq="5min")
         temp_df = pd.DataFrame(index=date_range)
         temp_df["avg_power_demand_W"] = session["true_peakPower_W"]  # rename
         self.rows.append(temp_df)
@@ -131,7 +131,7 @@ class ImputeZero(BaseEstimator, TransformerMixin):
             return X
 
         # "missing chunk"
-        missing_dates = pd.date_range(start=X.index[-1], end=end, freq="5MIN", inclusive="right")
+        missing_dates = pd.date_range(start=X.index[-1], end=end, freq="5min", inclusive="right")
         missing = pd.DataFrame(index=missing_dates, columns=["avg_power_demand_W"], data=0)  # impute zero
         imputed = pd.concat([X, missing], axis=0)
         # for scheduled charging, values are simulated; return up to current time to feel like dashboard is in "real time"
