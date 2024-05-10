@@ -384,6 +384,9 @@ class PlotCumulatives:
 
     @classmethod
     def plot_cumulative_vehicle_model_energy(cls, df: pd.DataFrame, start_date: str, end_date: str, theme=None) -> go.Figure:
+         # query df by date
+        df = cls.__query_date_df(df, start_date, end_date, "startChargeTime")
+        
         # group by vehicle model 
         df = df[["vehicle_model", "cumEnergy_Wh"]].groupby("vehicle_model").sum()
         df = df.sort_values("cumEnergy_Wh", ascending=False).head(20)

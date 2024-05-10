@@ -6,15 +6,12 @@ from dotenv import load_dotenv
 from dash_bootstrap_templates import ThemeChangerAIO
 from db.utils import db
 
-# styles
-dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css")
-
 # connect to Redis
 load_dotenv()
 r = db.get_redis_connection()
 
 # app instantiation
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, dbc_css], suppress_callback_exceptions=True, use_pages=True)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX, dbc.icons.BOOTSTRAP, dbc.icons.FONT_AWESOME, r"assets/dbc.min.css"], suppress_callback_exceptions=True, use_pages=True)
 server = app.server
 app.title = "slrpEV Dashboard"
 
@@ -111,7 +108,7 @@ app.layout = \
                     ], className="flex-md-row flex-column d-flex flex-grow-1 justify-content-between")
                 ], id="navbar-collapse", className="my-2", is_open=False, navbar=True)
             ], className="navbar-container ms-2 me-2", fluid=True)
-        ], className="py-2 nav-fill w-100 border-start-0 border-end-0 border-2 bg-secondary shadow-sm", expand="md"),
+        ], className="py-2 nav-fill w-100 border-2 bg-secondary shadow-sm", expand="md"),
         # --> <---#
 
 
@@ -171,7 +168,7 @@ def toggle_navbar_collapse(n, is_open):
 
 ### --> Interval Components <-- ###
 
-@dash.callback(
+@app.callback(
     Output("data-refresh-signal", "data"),
     Input("data-refresh-interval-component", "n_intervals"),
     prevent_initial_call=True,

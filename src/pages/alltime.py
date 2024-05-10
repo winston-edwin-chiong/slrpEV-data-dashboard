@@ -15,7 +15,7 @@ r = db.get_redis_connection()
 
 ### --> Helper Functions <-- ###
 
-def get_last_days_datetime(n=7):
+def get_last_days_datetime(n):
     current_time = pd.to_datetime("today") - timedelta(days=n)
     current_time = current_time.strftime("%m/%d/%Y")
     return current_time

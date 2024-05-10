@@ -84,7 +84,7 @@ layout = \
                                         html.Div(["User Information"], className="p-3 fw-bold"),
                                             html.Div([
                                                 html.Ul([
-                                                    html.Span("Lifetime number of sessions: ", className="fst-italic"),
+                                                    html.Span("Lifetime sessions: ", className="fst-italic"),
                                                     html.Span(id="num_sessions_user")
                                                     ], className="p-1"),
                                                 html.Ul([
@@ -96,7 +96,7 @@ layout = \
                                                     html.Span(id="freq_connect_time_user")
                                                     ], className="p-1"),
                                                 html.Ul([
-                                                    html.Span("Lifetime energy consumption: ", className="fst-italic"), 
+                                                    html.Span("Lifetime consumption: ", className="fst-italic"), 
                                                     html.Span(id="total_nrg_consumed_user")
                                                     ], className="p-1"),
                                                 html.Ul([
@@ -120,6 +120,7 @@ layout = \
                 ### --> <-- ###
             ])
         ], fluid=True),
+        html.Div(id="last-hovered-user", style={"display": "none"})
     ])
 
 
@@ -129,31 +130,40 @@ layout = \
     Output("freq_connect_time_user", "children"),
     Output("total_nrg_consumed_user", "children"),
     Output("pref_charging_choice_user", "children"),
+    Output("last-hovered-user", "children"),
     Input("today-graph", "hoverData"),
     State("today-graph-picker", "value"),
+    State("last-hovered-user", "children"),
     prevent_initial_call=True
 )
-def display_user_hover(hoverData, value):
+def display_user_hover(hoverData, value, last_hovered_user):
     # place holder for no hover or if graph is not the daily time series
     if hoverData is None or value != "today-aggregate-power":
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
-    # load data
-    data = db.get_df(r, "raw_data_subset")
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+    
     # get user ID
     userId = int(hoverData["points"][0]["customdata"][2])
+
+    # don't update if the same user is hovered
+    if userId == last_hovered_user:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+    # load data
+    data = db.get_df(r, "raw_data_subset")
 
     # get user hover data
     num_sessions, avg_duration, freq_connect, total_nrg, pref_charging_choice, pref_charging_choice_percent = pltf.GetUserHoverData.get_user_hover_data(data, userId)
     
-    text = (
+    output = (
         f"{num_sessions}", 
         f"{avg_duration} hours", 
         f"{freq_connect}", 
         f"{total_nrg:.1f} kWh",
-        f"{pref_charging_choice} ({pref_charging_choice_percent:.0%})"
+        f"{pref_charging_choice} ({pref_charging_choice_percent:.0%})",
+        userId
     )
 
-    return text 
+    return output
 
 
 @dash.callback(
