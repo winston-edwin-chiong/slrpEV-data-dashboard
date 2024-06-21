@@ -1,5 +1,0 @@
-{
-    "id": "lively-night-5911",
-    "type": "dash",
-    "secret-keys": ["REDIS_URI"]
-}
