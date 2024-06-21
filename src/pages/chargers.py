@@ -110,7 +110,7 @@ layout = \
                     ### --> Chargers Control Box <-- ###
                     html.Div([
                         html.Div([
-                            html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 my-3 rounded mt-3 mb-1", id="chargers-open-settings-btn"),
+                            html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 my-3 rounded mt-3 mb-1", id="chargers-open-settings-btn", disabled=True),
                         ], className="d-inline-block"),
                         html.I(id="charger-tooltip-btn", className="btn btn-sm btn-outline-secondary py-0 px-1 border border-0 rounded bi bi-info-circle fs-5"),
                         dbc.Modal(

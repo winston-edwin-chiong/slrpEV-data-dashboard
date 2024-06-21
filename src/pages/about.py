@@ -22,7 +22,7 @@ layout = \
                         html.Div([
                             dbc.Alert([
                                 html.I(className="bi bi-exclamation-triangle-fill me-2"),
-                                "This app is still under development. There may be some bugs 🐛. I'm also not paying for a lot of CPU anymore, so the app might be slower than usual."
+                                "This app is still under development. There may be some bugs 🐛. I'm also not paying for compute anymore, so the app might be slower than usual."
                             ], color="warning"),
                             html.Br(),
                             html.P([
