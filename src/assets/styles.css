@@ -45,3 +45,43 @@
         height: 70vh !important;
         }
     }
+
+/* Initial loading spinner */
+._dash-loading {
+    margin: auto;
+    color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: large;
+    transform: translate(-50%, -50%); 
+    overflow: visible;
+}
+
+._dash-loading::after {
+    content: '';
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    color: black;
+    vertical-align: text-bottom;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    -webkit-animation: spinner-border 0.75s linear infinite;
+    animation: spinner-border 0.75s linear infinite;
+    margin-top: 1rem; 
+}
+
+._dash-loading::before {
+    content: "⚡Loading (I'm not paying for this server, so it might take a bit)...";
+    display: block; 
+    color: black;
+    text-align: center;
+    margin-top: 1rem; 
+}
+      

@@ -63,6 +63,10 @@ def query_data():
 def update_params():
     r = db.get_redis_connection()
 
+    if not db.get_item(r, "dailydemand") or not db.get_item(r, "hourlydemand"):
+        logger.info("No data found. Fetching data...")
+        query_data()
+
     ### DAILY PARAMETERS ###
     logger.info("Loading daily demand data...")
     data = db.get_df(r, "dailydemand")

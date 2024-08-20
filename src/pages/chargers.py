@@ -12,15 +12,6 @@ r = db.get_redis_connection()
 
 charger_numbers_sorted = db.get_df(r, "chargers")["stationId"].sort_values(ascending=True).unique()
 
-def get_icon_state(inuse: int):
-    """
-    Returns a plug-in icon class name that is green and animated if in use, static and gray otherwise.
-    """
-    if inuse:
-        return "bi bi-plugin fs-4 position-absolute bottom-0 end-0 m-1 text-success animate__animated animate__pulse animate__infinite infinite"
-    return "bi bi-plugin fs-4 position-absolute bottom-0 end-0 m-1"
-
-
 def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str, sched_price: int, reg_price: int):
     """
     Returns the on-screen display state, `IDLE` or `IN USE` for a charger given a 0 or 1. 
@@ -32,7 +23,7 @@ def get_charger_state(inuse: int, rate: float, vehicle_model: str, choice: str, 
                     "Status: ",
                     html.Span([
                         "IN USE", 
-                        html.I(className="ms-1 bi bi-circle-fill fs-6", style={"color": "#58c21e"})
+                        html.I(className="ms-1 bi bi-plugin fs-5 animate__animated animate__pulse animate__infinite infinite", style={"color": "#58c21e"})
                         ], className="d-inline-flex align-items-center")
                     ], className="d-inline-block my-2 fw-bolder text-dark bg-body-secondary px-2 py-1 rounded-pill border border-info-subtle")
             ]),
@@ -119,7 +110,7 @@ layout = \
                     ### --> Chargers Control Box <-- ###
                     html.Div([
                         html.Div([
-                            html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 my-3 rounded mt-3 mb-1", id="chargers-open-settings-btn"),
+                            html.Button("Options", className="btn btn-outline-primary btn-lg py-1 px-2 my-3 rounded mt-3 mb-1", id="chargers-open-settings-btn", disabled=True),
                         ], className="d-inline-block"),
                         html.I(id="charger-tooltip-btn", className="btn btn-sm btn-outline-secondary py-0 px-1 border border-0 rounded bi bi-info-circle fs-5"),
                         dbc.Modal(
@@ -190,7 +181,6 @@ layout = \
                                                 ]),
                                                 dbc.ModalFooter(),           
                                             ], id=f"charger-{i}-modal", is_open=False, size="xl"),
-                                        html.I(id=f"charger-{i}-plug-in-icon"),
                                     ], className="h-100 d-flex flex-column position-relative flex-grow-1 bg-light shadow border border-secondary rounded py-2 px-3")
                                 # ], className="h-100"),
                             ], className="col-xxl-3 col-md-6 col-12")
@@ -230,7 +220,6 @@ layout = \
 # charger states
 @dash.callback(
     [Output(f"charger-{i}-usage-status", "children") for i in charger_numbers_sorted],
-    [Output(f"charger-{i}-plug-in-icon", "className") for i in charger_numbers_sorted],
     Input("data-refresh-signal", "data")
 )
 def update_charger_usage(n):
@@ -248,10 +237,7 @@ def update_charger_usage(n):
         ), 
         axis=1).to_list()
     
-    # calculate correct icons
-    icons = chargers.sort_values("stationId", ascending=True).apply(lambda row: get_icon_state(row["inUse"]), axis=1).to_list()
-
-    return inuse + icons
+    return inuse
 
 # charger utlizations
 @dash.callback(

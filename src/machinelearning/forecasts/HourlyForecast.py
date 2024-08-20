@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import os 
 from sklearn.pipeline import Pipeline
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.neighbors import KNeighborsRegressor
@@ -22,11 +21,18 @@ class CreateHourlyForecasts:
 
         forecasts = pd.concat([existing_forecasts, new_forecasts], axis=0).resample("1H").last()  # get more recent forecast
 
+        # post-processing; 12AM - 5AM are all zero & negative values are not possible
+        forecasts["hour"] = forecasts.index.hour
+        for column in [column + "_predictions" for column in kNNPredict.columns]:
+            forecasts[column] = forecasts.apply(lambda row: 0 if row["hour"] <= 5 else row[column], axis=1) 
+            forecasts[column] = forecasts.apply(lambda row: max(0, row[column]), axis=1)
+        forecasts.drop(columns=["hour"], inplace=True)
+
         return forecasts
 
     @classmethod
     def get_empty_prediction_df(cls):
-        empty_df = pd.DataFrame(columns=["avg_power_demand_kW_predictions", "energy_demand_kWh_predictions", "peak_power_kW_predictions"], index=pd.Index([], name="time"))
+        empty_df = pd.DataFrame(columns=[column + "_predictions" for column in kNNPredict.columns], index=pd.Index([], name="time"))
         return empty_df
 
 
