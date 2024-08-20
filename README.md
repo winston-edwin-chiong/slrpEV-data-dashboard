@@ -1,23 +1,28 @@
 # slrpEV-data-dashboard
-Data dashboard for slrpEV.
+A data dashboard for [slrpEV](https://sites.google.com/berkeley.edu/slrpev), the on-campus EV chargers at UC Berkeley.
 
-App is live @ https://slrpev-data-dashboard.onrender.com !
+*Insert video here.*
 
-Data from the physical chargers is located on [AWS DynamoDB](https://aws.amazon.com/dynamodb/).
+## Description
+The app provides analysis at the five-minute, hourly, daily, and monthly granularities, as well as providing day-ahead and week-ahead forecasts. The app also provides historical data visualization at the the five-minute, hourly, daily, and monthly granularities, various demand analytics, day-ahead & week-ahead forecasts, user analysis, and real-time charger usage. 
 
-Data cleaning and machine learning is executed on a schedule hosted by [Modal](https://modal.com) and results sent to [Redis](https://redis.io/).
+## Getting Started 
 
-App's frontend architecture is built with [Plotly Dash](https://dash.plotly.com/). 
+### Dependencies
+- Create a Python virtual environment with `python -m venv ./venv`.
+- Install the dependencies with `pip install -r requirements.txt`.
+- Activate the Python virtual environment with `.\venv\Scripts\activate` (Windows) or `source venv/bin/activate` (MacOS).
+- A `.env` file should hold the Redis URI. 
 
-### Local Development
-Create a Python virtual environment with `python -m venv ./venv`.
+### Running the App
+- Start the Dash app with `.\venv\Scripts\python.exe src/dashboard.py`.
+- The FastAPI can be run with `uvicorn api.api:app --host 0.0.0.0`.
 
-Install the dependencies with `pip install -r requirements.txt`.
+### Updating Modal Tasks
+- Updates to the scheduled tasks (`tasks/schedule.py` file in the `src` directory) should be automatically pushed to Modal on pushes to the main branch via Github Actions, but manual deployments can be triggered with `modal deploy src/tasks/schedule.py` (ran from the root directory). 
 
-Activate the Python virtual environment with `.\venv\Scripts\activate` or `source venv/bin/activate`, depending on operating system.
 
-Start the Dash app with `.\venv\Scripts\python.exe src/dashboard.py`.
-
-Updates to the scheduled tasks (`tasks/schedule.py` file in the root directory) should be automatically pushed to Modal on pushes to the main branch, but manual deployments can be triggered with `cd src && modal deploy tasks/schedule.py`. 
-
-The FastAPI can be run with `uvicorn api.api:app --host 0.0.0.0`.
+## Built With
+- Data from the physical chargers is located on [AWS DynamoDB](https://aws.amazon.com/dynamodb/).
+- Data cleaning and machine learning tasks are executed on a schedule hosted on [Modal](https://modal.com) and results sent to [Redis](https://redis.io/), the app's main database.
+- App's frontend is built with [Plotly Dash](https://dash.plotly.com/) and [Bootstrap](https://getbootstrap.com/). 
