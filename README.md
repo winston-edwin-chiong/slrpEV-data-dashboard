@@ -16,7 +16,6 @@ The app provides analysis at the five-minute, hourly, daily, and monthly granula
 
 ### Running the App
 - Start the Dash app with `.\venv\Scripts\python.exe src/dashboard.py`.
-- The FastAPI can be run with `uvicorn api.api:app --host 0.0.0.0`.
 
 ### Updating Modal Tasks
 - Updates to the scheduled tasks (`tasks/schedule.py` file in the `src` directory) should be automatically pushed to Modal on pushes to the main branch via Github Actions, but manual deployments can be triggered with `modal deploy src/tasks/schedule.py` (ran from the root directory). 
