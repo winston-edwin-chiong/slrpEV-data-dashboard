@@ -1,10 +1,11 @@
 # slrpEV-data-dashboard
 A data dashboard for [slrpEV](https://sites.google.com/berkeley.edu/slrpev), the on-campus EV chargers at UC Berkeley.
 
-*Insert video here.*
+> [!NOTE]
+> __Unfortunately, effective mid-2024, slrpEV is no longer receiving real-time charger data so this dashboard was taken down. ☹️__
 
 ## Description
-The app provides analysis at the five-minute, hourly, daily, and monthly granularities, as well as providing day-ahead and week-ahead forecasts. The app also provides historical data visualization at the the five-minute, hourly, daily, and monthly granularities, various demand analytics, day-ahead & week-ahead forecasts, user analysis, and real-time charger usage. 
+The app provides analysis at the five-minute, hourly, daily, and monthly granularities, as well as providing day-ahead and week-ahead forecasts. The app also provides historical data visualization at the the five-minute, hourly, daily, and monthly granularities, various demand analytics, user analysis, and real-time charger usage, and the ability to access the underlying dataset.
 
 ## Getting Started 
 
